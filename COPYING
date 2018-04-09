@@ -1,0 +1,53 @@
+webAppOS license (excluding third-party modules, which are distributed on their own terms
+as specified in the corresponding folders and/or files)
+
+Copyright 2017-2018 Institute of Mathematics and Computer Science, University of Latvia (IMCS, UL)
+
+Licensed under the EUPL, Version 1.2 or – as soon they
+will be approved by the European Commission - subsequent
+versions of the EUPL (the "Licence");
+You may not use this work except in compliance with the
+Licence.
+You may obtain a copy of the Licence at:
+
+https://joinup.ec.europa.eu/page/eupl-text-11-12
+or
+https://joinup.ec.europa.eu/software/page/eupl
+
+Unless required by applicable law or agreed to in
+writing, software distributed under the Licence is
+distributed on an "AS IS" basis,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+express or implied.
+See the Licence for the specific language governing
+permissions and limitations under the Licence.
+
+---------------------
+
+Some points clarified
+
+
+EUPL makes no obstacle for linking webAppOS code with another software component
+that could be proprietary. There is no kind of “viral effect” resulting from the EUPL licence,
+in so far linking is done for interoperability [https://joinup.ec.europa.eu/news/eupl-and-proprietary-commer].
+Thus, apps, services, modules, and engines designed for webAppOS and using webAppOS
+APIs, can be proprietary and distributed by your own terms.
+
+
+If substantial portions of third-party code were obtained under another compatible
+copyleft license (e.g. GPL) making the reuse of this copyleft licence mandatory for
+distributing that code, EUPL provides exceptions to the obligation to license derivatives
+of webAppOS under the EUPL in favor to that compatible license.
+[https://joinup.ec.europa.eu/news/eupl-and-proprietary-commer]
+
+IMCS, UL warrants copyright for the code where it is mentioned as the only contributor.
+IMCS, UL warrants copyright for portions of the code where it is mentioned as one of the
+contributors and the code fragment is marked accordingly.
+
+The code copyrighted by IMCS, UL is not intented for wilful misconduct and/or damages to persons
+despite the fact that such intension might be found in certain portions of code.
+
+The whole combination consisting of the code developed by IMCS, UL and the code
+covered by third party licenses is not indented for wilful misconduct and/or damages to persons
+despite the fact that such intension might be found in certain portions of code.
+IMCS, UL shall not be liable for the code copyrighted by third parties.
