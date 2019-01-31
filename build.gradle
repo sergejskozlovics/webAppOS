@@ -130,6 +130,11 @@ startScripts {
 }
 
 installDist {
+  doFirst {
+        mkdir "webappos/bin"
+        mkdir "webappos/lib"
+        mkdir "webappos/home"
+  }
   into('webappos')
   preserve({
         include 'apps/**'

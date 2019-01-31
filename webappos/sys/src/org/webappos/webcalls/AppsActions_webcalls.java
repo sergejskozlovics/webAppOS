@@ -1,0 +1,229 @@
+package org.webappos.webcalls;
+
+import java.io.File;
+import java.util.List;
+
+import org.webappos.fs.HomeFS;
+import org.webappos.fs.IFileSystem.PathInfo;
+import org.webappos.properties.AppProperties;
+import org.webappos.server.API;
+import org.webappos.server.APIForServerBridge;
+import org.webappos.server.ConfigStatic;
+import org.webappos.webcaller.IWebCaller;
+
+import lv.lumii.tda.kernel.TDAKernel;
+
+public class AppsActions_webcalls {
+
+	public static String getAppPropertiesByFullName(String appFullName) { // no raapi, no login
+		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(appFullName);
+		if (props==null)
+			return "{}";
+		
+		return "{\"fullName\":\""+props.app_full_name+"\",\"displayedName\":\""+props.app_displayed_name+"\",\"urlName\":\""+props.app_url_name+"\",\"iconURL\":\""+props.app_icon_url+"\",\"projectExtension\":\""+props.project_extension+"\",\"singleton\":"+props.singleton+"}";
+	}
+	
+	public static String getAppPropertiesByUrlName(String appUrlName) { // no raapi, no login
+		AppProperties props = API.propertiesManager.getAppPropertiesByUrlName(appUrlName);
+		if (props==null)
+			return "{}";
+		
+		return "{\"fullName\":\""+props.app_full_name+"\",\"displayedName\":\""+props.app_displayed_name+"\",\"urlName\":\""+props.app_url_name+"\",\"iconURL\":\""+props.app_icon_url+"\",\"projectExtension\":\""+props.project_extension+"\",\"singleton\":"+props.singleton+"}";
+	}
+	
+	public static String getAssociatedAppsByExtension(String extension, String login) { // no raapi
+		List<AppProperties> list = API.propertiesManager.getAppPropertiesByExtension(extension);
+		
+		if (list==null)
+			return "[]";
+
+		String retVal = "[";
+		for (AppProperties props : list) {
+			if (retVal.length()>1)
+				retVal+=",";
+			retVal += "{\"fullName\":\""+props.app_full_name+"\",\"displayedName\":\""+props.app_displayed_name+"\",\"urlName\":\""+props.app_url_name+"\",\"iconURL\":\""+props.app_icon_url+"\",\"projectExtension\":\""+props.project_extension+"\"}";
+		}
+		retVal+="]";
+		
+		return retVal;
+	}
+
+	public static String getAvailableApps(String anyArg, String login) { // no raapi
+		AppProperties[] arr = API.propertiesManager.getAvailableApps(login);
+		
+		String retVal = "[";
+		for (AppProperties props : arr) {
+			if (props.hidden)
+				continue;
+			
+			if (retVal.length()>1)
+				retVal+=",";
+			retVal += "{\"fullName\":\""+props.app_full_name+"\",\"displayedName\":\""+props.app_displayed_name+"\",\"urlName\":\""+props.app_url_name+"\",\"iconURL\":\""+props.app_icon_url+"\"}";
+		}
+		
+		retVal += "]";
+		return retVal;
+	}	
+
+	public static String appRequiresTemplate(String appFullName) { // no raapi, no login		
+		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(appFullName);		
+		boolean b = (props==null) || (props.initial_transformation==null) || (props.initial_transformation.isEmpty());
+		String s = "{\"result\":"+b+"}";
+		return s;
+	}
+	
+	public static String getAppTemplates(String appFullName) { // no raapi, no login
+		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(appFullName);
+		
+		if ((props==null) || (props.app_templates_search_path==null))
+			return "[]";
+		
+		String ext = props.project_extension;
+		if (ext==null)
+			return "[]";
+		
+		ext = "."+ext;
+		
+		String retVal = "[";
+		for (String path : props.app_templates_search_path) {
+
+				File f = new File(path);
+				String[] list = f.list();
+				if (list!=null)
+					for (String s : list) {
+						if (s.endsWith(ext)) {
+							if (retVal.length()>1)
+								retVal+=",";
+							retVal+="\""+s+"\"";
+						}
+					}
+				
+			
+		}
+		retVal += "]";
+		return retVal;
+	}
+
+	public static String getPublishedTemplates(String appFullName) { // no raapi, no login
+		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(appFullName);
+		if ((props==null) || (props.published_templates_search_path==null))
+			return "[]";
+		
+		String ext = props.project_extension;
+		if (ext==null)
+			return "[]";
+		
+		ext = "."+ext;
+		
+		String retVal = "[";
+		for (String path : props.published_templates_search_path) {
+
+				File f = new File(path);
+				String[] list = f.list();
+				if (list!=null)
+					for (String s : list) {
+						if (s.endsWith(ext)) {
+							if (retVal.length()>1)
+								retVal+=",";
+							retVal+="\""+s+"\"";
+						}
+					}
+				
+			
+		}
+		retVal += "]";
+		System.err.println(retVal);
+		return retVal;
+	}
+
+	public static String getUserTemplates(String appFullName, String login) { // no raapi
+		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(appFullName);
+		if ((props==null) || (props.user_templates_search_path==null))
+			return "[]";
+		
+		String ext = props.project_extension;
+		if (ext==null)
+			return "[]";
+		
+		ext = "."+ext;
+				
+		String homePrefix=ConfigStatic.HOME_DIR.replace('\\', '/')+"/";
+		
+		String retVal = "[";
+		for (String path : props.user_templates_search_path) {
+			if (path.indexOf("$LOGIN")>=0) {
+				if (login==null)
+					continue;
+				else
+					path = path.replace("$LOGIN", login);
+			}
+			
+
+			// if the path points to a home directory...
+			if (path.replace('\\', '/').startsWith(homePrefix)) {
+				
+				// use HomeFS...
+				path = path.substring(homePrefix.length()).replace('\\', '/');
+								
+				if (!HomeFS.ROOT_INSTANCE.pathExists(path))
+					continue;
+				
+				List<PathInfo> list = HomeFS.ROOT_INSTANCE.listDirectory(path);
+				if (list==null)
+					continue;
+				
+				for (PathInfo pi : list) {
+					if (pi.name.endsWith(ext)) {
+						if (retVal.length()>1)
+							retVal+=",";
+						retVal+="\""+pi.name+"\"";
+					}					
+				}
+			}
+			
+		}
+		retVal += "]";
+		return retVal;
+	}
+
+	
+	public static String bootstrapProject(String project_id, String arg, String login, String fullAppName) {
+		
+		System.out.println("in boostrapProject "+APIForServerBridge.memoryForServerBridge.getSingleSynchronizer(project_id));
+		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(fullAppName);
+		if (props==null)
+			return "{}";
+		
+		TDAKernel kernel = API.memory.getTDAKernel(project_id);
+		if (kernel==null)
+			return "{}";
+		
+		
+		
+		long it = kernel.getIteratorForAllClassObjects(kernel.KMM.SUBMITTER);
+		long rSubmitter = kernel.resolveIteratorFirst(it);
+		kernel.freeIterator(it);
+		
+		// loading engines...
+		for (String engineName : props.requires_engines) {
+			long rCmd = kernel.createObject(kernel.KMM.ATTACHENGINECOMMAND);
+			kernel.setAttributeValue(rCmd, kernel.KMM.ATTACHENGINECOMMAND_NAME, engineName);
+			kernel.createLink(rCmd, rSubmitter, kernel.KMM.COMMAND_SUBMITTER);			
+		}
+		
+		// creating ProjectCreatedEvent and launching the initial webcall
+		long rEvent = kernel.createObject(kernel.EEMM.PROJECTCREATEDEVENT);
+		
+		IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
+		seed.callingConventions = IWebCaller.CallingConventions.TDACALL;
+		seed.actionName = props.initial_transformation;
+		seed.tdaArgument = rEvent;
+		seed.login = login;
+		seed.project_id = project_id;
+		seed.jsonResult = null;
+		
+		API.webCaller.enqueue(seed);
+
+		return "{}";
+	}
+}

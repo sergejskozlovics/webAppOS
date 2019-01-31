@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:data="http:///lv.lumii.tda.data.9c215cf8-f1ee-4ace-8acd-477787d21dd2" xsi:schemaLocation="http:///lv.lumii.tda.data.9c215cf8-f1ee-4ace-8acd-477787d21dd2 convert_to_tda2_helper.ecore">
+  <data:CurrentDgrPointer graphDiagram="/167"/>
+  <data:PopUpElementType id="Properties&#x9;Enter" caption="Properties&#x9;Enter" nr="1" procedureName="interpreter.Properties.Properties" popUpDiagramType="/199" visibility="true"/>
+  <data:PopUpElementType id="Diagram Name" caption="Diagram Name" nr="2" procedureName="configurator.configurator.set_model_diagram_name" popUpDiagramType="/198"/>
+  <data:PopUpElementType id="Delete Diagram" caption="Delete Diagram" nr="1" procedureName="interpreter.Delete.delete_current_diagram" popUpDiagramType="/198"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/197"/>
+  <data:PopUpElementType id="Copy&#x9;Ctrl+C" caption="Copy&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/197"/>
+  <data:PopUpElementType id="Cut&#x9;Ctrl+X" caption="Cut&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/197"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="4" procedureName="utilities.symbol_style" popUpDiagramType="/196"/>
+  <data:PopUpElementType id="Reroute Line" caption="Reroute Line" nr="3" procedureName="utilities.Reroute" popUpDiagramType="/196"/>
+  <data:PopUpElementType id="Delete&#x9;&#x9;Delete" caption="Delete&#x9;&#x9;Delete" nr="2" procedureName="interpreter.Delete.Delete" popUpDiagramType="/196"/>
+  <data:PopUpElementType id="Properties&#x9;&#x9;Enter" caption="Properties&#x9;&#x9;Enter" nr="1" procedureName="interpreter.Properties.Properties" popUpDiagramType="/196"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="4" procedureName="utilities.symbol_style" popUpDiagramType="/195"/>
+  <data:PopUpElementType id="Reroute Line" caption="Reroute Line" nr="3" procedureName="utilities.Reroute" popUpDiagramType="/195"/>
+  <data:PopUpElementType id="Delete&#x9;&#x9;Delete" caption="Delete&#x9;&#x9;Delete" nr="2" procedureName="interpreter.Delete.Delete" popUpDiagramType="/195"/>
+  <data:PopUpElementType id="Properties&#x9;&#x9;Enter" caption="Properties&#x9;&#x9;Enter" nr="1" procedureName="interpreter.Properties.Properties" popUpDiagramType="/195"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="4" procedureName="utilities.symbol_style" popUpDiagramType="/194"/>
+  <data:PopUpElementType id="Reroute Line" caption="Reroute Line" nr="3" procedureName="utilities.Reroute" popUpDiagramType="/194"/>
+  <data:PopUpElementType id="Delete&#x9;&#x9;Delete" caption="Delete&#x9;&#x9;Delete" nr="2" procedureName="interpreter.Delete.Delete" popUpDiagramType="/194"/>
+  <data:PopUpElementType id="Properties&#x9;&#x9;Enter" caption="Properties&#x9;&#x9;Enter" nr="1" procedureName="interpreter.Properties.Properties" popUpDiagramType="/194"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="5" procedureName="utilities.symbol_style" popUpDiagramType="/193"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/193"/>
+  <data:PopUpElementType id="Copy&#x9;Ctrl+C" caption="Copy&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/193"/>
+  <data:PopUpElementType id="Cut&#x9;Ctrl+X" caption="Cut&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/193"/>
+  <data:PopUpElementType id="Properties&#x9;Enter" caption="Properties&#x9;Enter" nr="1" procedureName="interpreter.Properties.Properties" popUpDiagramType="/193"/>
+  <data:PopUpElementType id="Diagram Name" caption="Diagram Name" nr="2" procedureName="configurator.configurator.set_model_diagram_name" popUpDiagramType="/192"/>
+  <data:PopUpElementType id="Delete Diagram" caption="Delete Diagram" nr="1" procedureName="interpreter.Delete.delete_current_diagram" popUpDiagramType="/192"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/180"/>
+  <data:PopUpElementType id="Copy&#x9;Ctrl+C" caption="Copy&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/180"/>
+  <data:PopUpElementType id="Cut&#x9;Ctrl+X" caption="Cut&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/180"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="5" procedureName="utilities.symbol_style" popUpDiagramType="/181"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/181"/>
+  <data:PopUpElementType id="Copy&#x9;Ctrl+C" caption="Copy&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/181"/>
+  <data:PopUpElementType id="Cut&#x9;Ctrl+X" caption="Cut&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/181"/>
+  <data:PopUpElementType id="Properties&#x9;Enter" caption="Properties&#x9;Enter" nr="1" procedureName="interpreter.Properties.Properties" popUpDiagramType="/181"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="5" procedureName="utilities.symbol_style" popUpDiagramType="/182"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/182"/>
+  <data:PopUpElementType id="Copy&#x9;Ctrl+C" caption="Copy&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/182"/>
+  <data:PopUpElementType id="Cut&#x9;Ctrl+X" caption="Cut&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/182"/>
+  <data:PopUpElementType id="Properties&#x9;Enter" caption="Properties&#x9;Enter" nr="1" procedureName="interpreter.Properties.Properties" popUpDiagramType="/182"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="5" procedureName="utilities.symbol_style" popUpDiagramType="/183"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/183"/>
+  <data:PopUpElementType id="Copy&#x9;Ctrl+C" caption="Copy&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/183"/>
+  <data:PopUpElementType id="Cut&#x9;Ctrl+X" caption="Cut&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/183"/>
+  <data:PopUpElementType id="Properties&#x9;Enter" caption="Properties&#x9;Enter" nr="1" procedureName="interpreter.Properties.Properties" popUpDiagramType="/183"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/184"/>
+  <data:PopUpElementType id="Copy&#x9;Ctrl+C" caption="Copy&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/184"/>
+  <data:PopUpElementType id="Cut&#x9;Ctrl+X" caption="Cut&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/184"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="3" procedureName="utilities.symbol_style" popUpDiagramType="/185"/>
+  <data:PopUpElementType id="Reroute Line" caption="Reroute Line" nr="2" procedureName="utilities.Reroute" popUpDiagramType="/185"/>
+  <data:PopUpElementType id="Delete" caption="Delete" nr="1" procedureName="Delete.Delete" popUpDiagramType="/185"/>
+  <data:PopUpElementType id="Reroute Line" caption="Reroute Line" nr="2" procedureName="utilities.Reroute" popUpDiagramType="/186"/>
+  <data:PopUpElementType id="Properties&#x9;Enter" caption="Properties&#x9;Enter" nr="1" procedureName="configurator.configurator.configurator_dialog" popUpDiagramType="/186"/>
+  <data:PopUpElementType id="Delete&#x9;&#x9;Delete" caption="Delete&#x9;&#x9;Delete" nr="3" procedureName="interpreter.Delete.Delete" popUpDiagramType="/187"/>
+  <data:PopUpElementType id="Properties&#x9;Enter" caption="Properties&#x9;Enter" nr="1" procedureName="configurator.configurator.configurator_dialog" popUpDiagramType="/187"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="5" procedureName="utilities.symbol_style"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/188"/>
+  <data:PopUpElementType id="Copy&#x9;Ctrl+C" caption="Copy&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/188"/>
+  <data:PopUpElementType id="Cut&#x9;Ctrl+X" caption="Cut&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/188"/>
+  <data:PopUpElementType id="Properties&#x9;Enter" caption="Properties&#x9;Enter" nr="1" procedureName="configurator.configurator.configurator_dialog" popUpDiagramType="/188"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/189"/>
+  <data:PopUpElementType id="Copy&#x9;Ctrl+C" caption="Copy&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/189"/>
+  <data:PopUpElementType id="Cut&#x9;Ctrl+X" caption="Cut&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/189"/>
+  <data:PopUpElementType id="Properties&#x9;Enter" caption="Properties&#x9;Enter" nr="1" procedureName="configurator.configurator.configurator_dialog" popUpDiagramType="/189"/>
+  <data:PopUpElementType id="Reroute Line" caption="Reroute Line" nr="6" procedureName="utilities.Reroute" popUpDiagramType="/190"/>
+  <data:PopUpElementType id="Add Pattern" caption="Add Pattern" nr="5" procedureName="configurator.configurator.add_pattern" popUpDiagramType="/190"/>
+  <data:PopUpElementType id="Generate Instances" caption="Generate Instances" nr="4" procedureName="configurator.configurator.generate_instances" popUpDiagramType="/190"/>
+  <data:PopUpElementType id="Delete" caption="Delete" nr="3" procedureName="interpreter.Delete.Delete" popUpDiagramType="/190"/>
+  <data:PopUpElementType id="Copy" caption="Copy" nr="2" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/190"/>
+  <data:PopUpElementType id="Cut" caption="Cut" nr="1" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/190"/>
+  <data:PopUpElementType id="Diagram Translets" caption="Diagram Translets" nr="13" procedureName="configurator.configurator.add_diagram_translets" popUpDiagramType="/191"/>
+  <data:PopUpElementType id="Edit Patterns" caption="Edit Patterns" nr="10" procedureName="configurator.configurator.edit_patterns" popUpDiagramType="/191"/>
+  <data:PopUpElementType id="Generate Instances" caption="Generate Instances" nr="6" procedureName="configurator.configurator.generate_instances" popUpDiagramType="/191"/>
+  <data:PopUpElementType id="Diagram Style" caption="Diagram Style" nr="5" procedureName="configurator.configurator.diagram_style" popUpDiagramType="/191"/>
+  <data:PopUpElementType id="Add Key Shortcuts" caption="Add Key Shortcuts" nr="4" procedureName="configurator.configurator.add_diagram_key_shortcuts" popUpDiagramType="/191"/>
+  <data:PopUpElementType id="Add Context Menu" caption="Add Context Menu" nr="3" procedureName="configurator.configurator.add_diagram_popUp" popUpDiagramType="/191"/>
+  <data:PopUpElementType id="Add ToolBar" caption="Add ToolBar" nr="2" procedureName="configurator.configurator.add_diagram_toolbar" popUpDiagramType="/191"/>
+  <data:PopUpElementType id="Paste" caption="Paste" nr="1" procedureName="interpreter.CutCopyPaste.Paste" popUpDiagramType="/191"/>
+  <data:PopUpElementType id="Cut&#x9;&#x9;Ctrl+X" caption="Cut&#x9;&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/199" visibility="true"/>
+  <data:PopUpElementType id="Copy&#x9;&#x9;Ctrl+C" caption="Copy&#x9;&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/199" visibility="true"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/199" visibility="true"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="5" procedureName="utilities.symbol_style" popUpDiagramType="/199" visibility="true"/>
+  <data:PopUpElementType id="Draw All Links" caption="Draw All Links" nr="6" procedureName="visualizeMMInstances.drawLinksContextCommand" popUpDiagramType="/199" visibility="true"/>
+  <data:PopUpElementType id="Select Links" caption="Select Links" nr="7" procedureName="visualizeMMInstances.openLinkForm" popUpDiagramType="/199" visibility="true"/>
+  <data:PopUpElementType id="Properties&#x9;&#x9;Enter" caption="Properties&#x9;&#x9;Enter" nr="1" procedureName="interpreter.Properties.Properties" popUpDiagramType="/200"/>
+  <data:PopUpElementType id="Delete&#x9;&#x9;Delete" caption="Delete&#x9;&#x9;Delete" nr="2" procedureName="interpreter.Delete.Delete" popUpDiagramType="/200"/>
+  <data:PopUpElementType id="Reroute Line" caption="Reroute Line" nr="3" procedureName="utilities.Reroute" popUpDiagramType="/200"/>
+  <data:PopUpElementType id="Symbol Style" caption="Symbol Style" nr="4" procedureName="utilities.symbol_style" popUpDiagramType="/200"/>
+  <data:PopUpElementType id="Reload" caption="Reload" nr="1" procedureName="visualizeMMInstances.reloadActiveDiagram" popUpDiagramType="/201" visibility="true"/>
+  <data:PopUpElementType id="Cut&#x9;&#x9;Ctrl+X" caption="Cut&#x9;&#x9;Ctrl+X" nr="2" procedureName="interpreter.CutCopyPaste.Cut" popUpDiagramType="/202"/>
+  <data:PopUpElementType id="Copy&#x9;&#x9;Ctrl+C" caption="Copy&#x9;&#x9;Ctrl+C" nr="3" procedureName="interpreter.CutCopyPaste.Copy" popUpDiagramType="/202"/>
+  <data:PopUpElementType id="Delete&#x9;Delete" caption="Delete&#x9;Delete" nr="4" procedureName="interpreter.Delete.Delete" popUpDiagramType="/202"/>
+  <data:Palette type="/93" graphDiagram="/166">
+    <paletteElement href="#/123"/>
+    <paletteElement href="#/203"/>
+    <paletteElement href="#/168"/>
+    <paletteElement href="#/124"/>
+    <paletteElement href="#/125"/>
+  </data:Palette>
+  <data:PT_SHARP_Tab caption="tda2_temporary_1485075007064442631" isVisible="true">
+    <child href="#/445"/>
+  </data:PT_SHARP_Tab>
+  <data:PaletteType presentationElement="/91" paletteElementType="/97 /98 /99 /100 /101" graphDiagramType="/208"/>
+  <data:PaletteType paletteElementType="/102 /103 /104" graphDiagramType="/206"/>
+  <data:PaletteType paletteElementType="/105 /106 /107 /108" graphDiagramType="/205"/>
+  <data:PaletteType paletteElementType="/109 /110" graphDiagramType="/204"/>
+  <data:PaletteElementType presentationElement="/123" id="Box" caption="Box" picture="Box.bmp" nr="1" paletteType="/93" elemType="/286"/>
+  <data:PaletteElementType presentationElement="/203" id="FreeBox" caption="FreeBox" picture="FreeBox.BMP" nr="4" paletteType="/93" elemType="/171"/>
+  <data:PaletteElementType presentationElement="/168" id="Pin" caption="Pin" picture="Pin.bmp" nr="3" paletteType="/93" elemType="/165"/>
+  <data:PaletteElementType presentationElement="/124" id="Line" caption="Line" picture="Line.BMP" nr="2" paletteType="/93" elemType="/216"/>
+  <data:PaletteElementType presentationElement="/125" id="Specialization" caption="Specialization" picture="Specialization.bmp" nr="6" paletteType="/93" elemType="/215"/>
+  <data:PaletteElementType id="Box" caption="Box" picture="Instance.bmp" nr="1" paletteType="/94" elemType="/287"/>
+  <data:PaletteElementType id="Link" caption="Link" picture="Link.bmp" nr="2" paletteType="/94" elemType="/214"/>
+  <data:PaletteElementType id="Composition" caption="Composition" picture="Composition_instance.bmp" nr="3" paletteType="/94" elemType="/213"/>
+  <data:PaletteElementType id="Box" caption="Box" picture="Class.bmp" nr="1" paletteType="/95" elemType="/288"/>
+  <data:PaletteElementType id="Association" caption="Association" picture="Association.bmp" nr="1" paletteType="/95" elemType="/212"/>
+  <data:PaletteElementType id="Composition" caption="Composition" picture="Composition.bmp" nr="1" paletteType="/95" elemType="/211"/>
+  <data:PaletteElementType id="Generalization" caption="Generalization" picture="Generalization.bmp" nr="1" paletteType="/95" elemType="/210"/>
+  <data:PaletteElementType id="Instance" caption="Instance" picture="0instance.bmp" nr="1" paletteType="/96" elemType="/289"/>
+  <data:PaletteElementType id="Line" caption="Line" picture="0_line.bmp" nr="2" paletteType="/96" elemType="/209"/>
+  <data:Option caption="File" location="MENU" environmentEngine="/178" child="/112 /113 /114 /115 /116 /117 /118 /119 /120"/>
+  <data:Option caption="New..." id="new" location="MENU" onOptionSelectedEvent="engine:EnvironmentEngine" parent="/111"/>
+  <data:Option caption="Open..." id="open" location="MENU" onOptionSelectedEvent="engine:EnvironmentEngine" parent="/111"/>
+  <data:Option caption="-" location="MENU" parent="/111"/>
+  <data:Option caption="Save" id="save" location="MENU" onOptionSelectedEvent="engine:EnvironmentEngine" parent="/111"/>
+  <data:Option optionSelectedEvent="/281" caption="Save As..." id="saveas" location="MENU" onOptionSelectedEvent="engine:EnvironmentEngine" parent="/111"/>
+  <data:Option caption="-" location="MENU" parent="/111"/>
+  <data:Option caption="Close" id="close" location="MENU" onOptionSelectedEvent="engine:EnvironmentEngine" parent="/111"/>
+  <data:Option caption="-" location="MENU" parent="/111"/>
+  <data:Option caption="Exit" id="exit" location="MENU" onOptionSelectedEvent="engine:EnvironmentEngine" parent="/111"/>
+  <data:Option caption="Help" location="MENU" environmentEngine="/178" child="/122"/>
+  <data:Option caption="About" id="about" location="MENU" onOptionSelectedEvent="engine:EnvironmentEngine" parent="/121"/>
+  <data:PaletteBox type="/97" caption="Box" picture="Box.bmp"/>
+  <data:PaletteLine type="/100" caption="Line" picture="Line.BMP"/>
+  <data:PaletteLine type="/101" caption="Specialization" picture="Specialization.bmp"/>
+  <data:GraphDiagramStyle id="specificationDgr" bkgColor="16777215" printZoom="1000" screenZoom="1000" layoutMode="0" layoutAlgorithm="3" graphDiagram="/166" graphDiagramType="/208"/>
+  <data:GraphDiagramStyle id="projectDiagram" bkgColor="16777215" printZoom="1000" screenZoom="1000" layoutMode="0" layoutAlgorithm="3" graphDiagram="/167" graphDiagramType="/207"/>
+  <data:GraphDiagramStyle id="MMInstances" bkgColor="16777215" printZoom="1000" screenZoom="1000" layoutMode="0" layoutAlgorithm="3" graphDiagramType="/206"/>
+  <data:GraphDiagramStyle id="Repository" bkgColor="16777215" printZoom="1000" screenZoom="1000" layoutMode="0" layoutAlgorithm="3" graphDiagramType="/205"/>
+  <data:GraphDiagramStyle id="Box" bkgColor="16777215" printZoom="1000" screenZoom="1000" layoutMode="0" layoutAlgorithm="3" graphDiagramType="/204"/>
+  <data:EdgeStyle id="Line" caption="Line" shapeCode="1" shapeStyle="0" lineWidth="3" dashLength="0" breakLength="0" bkgColor="15790320" lineColor="9067831" elemType="/216" startShapeCode="1" startLineWidth="1" startDashLength="0" startBreakLength="0" startBkgColor="15790320" startLineColor="0" lineType="1" endShapeCode="3" endLineWidth="1" endDashLength="0" endBreakLength="0" endBkgColor="9067831" endLineColor="9067831" middleShapeCode="1" middleLineWidth="1" middleDashLength="0" middleBreakLength="0" middleBkgColor="15790320" middleLineColor="0"/>
+  <data:EdgeStyle id="Specialization" caption="Specialization" shapeCode="1" shapeStyle="0" lineWidth="3" dashLength="0" breakLength="0" bkgColor="15790320" lineColor="10498160" elemType="/215" startShapeCode="1" startLineWidth="1" startDashLength="0" startBreakLength="0" startBkgColor="15790320" startLineColor="0" lineType="1" endShapeCode="11" endLineWidth="3" endDashLength="0" endBreakLength="0" endBkgColor="10498160" endLineColor="10498160" middleShapeCode="1" middleLineWidth="1" middleDashLength="0" middleBreakLength="0" middleBkgColor="15790320" middleLineColor="0"/>
+  <data:EdgeStyle id="Link" caption="Link" shapeCode="1" shapeStyle="0" lineWidth="1" dashLength="0" breakLength="0" bkgColor="15790320" lineColor="9008690" elemType="/214" startShapeCode="1" startLineWidth="1" startDashLength="0" startBreakLength="0" startBkgColor="15790320" startLineColor="0" lineType="1" endShapeCode="1" endLineWidth="1" endDashLength="0" endBreakLength="0" endBkgColor="15790320" endLineColor="0" middleShapeCode="1" middleLineWidth="1" middleDashLength="0" middleBreakLength="0" middleBkgColor="15790320" middleLineColor="0"/>
+  <data:EdgeStyle id="Composition" caption="Composition" shapeCode="1" shapeStyle="0" lineWidth="1" dashLength="0" breakLength="0" bkgColor="15790320" lineColor="9008690" elemType="/213" startShapeCode="1" startLineWidth="1" startDashLength="0" startBreakLength="0" startBkgColor="15790320" startLineColor="0" lineType="1" endShapeCode="10" endLineWidth="1" endDashLength="0" endBreakLength="0" endBkgColor="9008690" endLineColor="9008690" middleShapeCode="1" middleLineWidth="1" middleDashLength="0" middleBreakLength="0" middleBkgColor="15790320" middleLineColor="0"/>
+  <data:EdgeStyle id="Association" caption="Association" shapeCode="1" shapeStyle="0" lineWidth="1" dashLength="0" breakLength="0" bkgColor="15790320" lineColor="4163953" elemType="/212" startShapeCode="1" startLineWidth="1" startDashLength="0" startBreakLength="0" startBkgColor="15790320" startLineColor="0" lineType="1" endShapeCode="1" endLineWidth="1" endDashLength="0" endBreakLength="0" endBkgColor="15790320" endLineColor="0" middleShapeCode="1" middleLineWidth="1" middleDashLength="0" middleBreakLength="0" middleBkgColor="15790320" middleLineColor="0"/>
+  <data:EdgeStyle id="Composition" caption="Composition" shapeCode="1" shapeStyle="0" lineWidth="1" dashLength="0" breakLength="0" bkgColor="15790320" lineColor="4163953" elemType="/211" startShapeCode="10" startLineWidth="1" startDashLength="0" startBreakLength="0" startBkgColor="4163953" startLineColor="4163953" lineType="1" endShapeCode="1" endLineWidth="1" endDashLength="0" endBreakLength="0" endBkgColor="15790320" endLineColor="0" middleShapeCode="1" middleLineWidth="1" middleDashLength="0" middleBreakLength="0" middleBkgColor="15790320" middleLineColor="0"/>
+  <data:EdgeStyle id="Generalization" caption="Generalization" shapeCode="1" shapeStyle="0" lineWidth="1" dashLength="0" breakLength="0" bkgColor="15790320" lineColor="4163953" elemType="/210" startShapeCode="1" startLineWidth="1" startDashLength="0" startBreakLength="0" startBkgColor="15790320" startLineColor="0" lineType="1" endShapeCode="11" endLineWidth="1" endDashLength="0" endBreakLength="0" endBkgColor="16777215" endLineColor="4163953" middleShapeCode="1" middleLineWidth="1" middleDashLength="0" middleBreakLength="0" middleBkgColor="15790320" middleLineColor="0"/>
+  <data:EdgeStyle id="MMLink" caption="Line" shapeCode="1" shapeStyle="0" lineWidth="1" dashLength="0" breakLength="0" bkgColor="15790320" lineColor="0" elemType="/209" startShapeCode="1" startLineWidth="1" startBkgColor="15790320" startLineColor="0" lineType="1" endShapeCode="3" endLineWidth="1" endBkgColor="15790320" endLineColor="0" middleShapeCode="1" middleLineWidth="1" middleDashLength="0" middleBreakLength="0" middleBkgColor="15790320" middleLineColor="0" lineDirection="0" startTotalWidth="0" startTotalHeight="0" endTotalWidth="0" endTotalHeight="0"/>
+  <data:TDAKernel::Submitter/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:Frame[0]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="attribute:Frame->onFrameActivatedEvent" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:PaletteElementType[0]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="attribute:PaletteElementType->shouldBeIncluded" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:PaletteElementType[1]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:PaletteElementType[2]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:PaletteElementType[3]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:PaletteElementType[4]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:ToolbarElementType[0]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="attribute:ToolbarElementType->shouldBeIncluded" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:ToolbarElementType[1]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:ToolbarElementType[2]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:ToolbarElementType[3]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:ToolbarElementType[4]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:PT#Node[0]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="attribute:GraphDiagram->treeErrorIcon" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="attribute:GraphDiagram->treeMultiUserIcon" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:GraphDiagram[1]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="attribute:GraphDiagram->style" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:OkCmd[0]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="attribute:TDAKernel::Command->info" package="/284" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:ProjectCreatedEvent[0]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="attribute:TDAKernel::Event->info" package="/284" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:ActivateDgrEvent[0]" package="/283" repository="/279"/>
+  <data:TDAKernel::ProxyReference serializedDomesticReference="object:FrameActivatedEvent[0]" package="/283" repository="/279"/>
+  <data:PortType translet="/318 /319 /320 /321 /322 /323 /324" id="Pin" caption="Pin" openPropertiesOnElementCreate="true" popUpDiagramType="/187" graphDiagramType="/208" supertype="/285" elemStyle="/280" keyboardShortcut="/368 /369" paletteElementType="/99" nodeType="/286"/>
+  <data:GraphDiagram caption="" bkgColor="16777215" printZoom="1000" screenZoom="1000" layoutMode="0" layoutAlgorithm="3" palette="/91" toolbar="/440" graphDiagramStyle="/126" graphDiagramType="/208" target_type="/207"/>
+  <data:GraphDiagram nodeParent="/445" caption="tda2_temporary_1485075007064442631" bkgColor="16777215" printZoom="1000" screenZoom="1000" layoutMode="0" layoutAlgorithm="3" graphDiagramStyle="/127" graphDiagramType="/207" currentDgrPointer="/0" historyStream="/282" project="/179">
+    <collection href="#/419"/>
+  </data:GraphDiagram>
+  <data:PalettePin type="/99" caption="Pin" picture="Pin.bmp"/>
+  <data:DialogEngine kernel="/418"/>
+  <data:Extension id="visualizeMM" caption="Metamodel visualization plugin" graphDiagramType="/204" type="plugin"/>
+  <data:FreeBoxType translet="/311 /312 /313 /314 /315 /316 /317" id="FreeBox" caption="FreeBox" openPropertiesOnElementCreate="true" popUpDiagramType="/188" graphDiagramType="/208" compartType="/270" supertype="/285" elemStyle="/293" keyboardShortcut="/364 /365 /366 /367" paletteElementType="/98"/>
+  <data:ToolType presentationElement="/179" id="Configurator" caption="Configurator" graphDiagramType="/204 /205 /206 /207 /208"/>
+  <data:ToolbarElement type="/246" caption="New Version" picture="version.BMP" procedureName="configurator.configurator.new_version"/>
+  <data:ToolbarElement type="/247" caption="Visualize MM" picture="VisualizeMM.BMP" procedureName="configurator.configurator.make_repozitory_class_diagram"/>
+  <data:ToolbarElement type="/248" caption="Project Translets" picture="ProjectTranslets.bmp" procedureName="configurator.configurator.edit_project_object"/>
+  <data:ToolbarElement type="/249" caption="Graph Diagram Engine" picture="graphDiagramEngine.bmp" procedureName="configurator.configurator.edit_head_engine"/>
+  <data:ToolbarElement type="/250" caption="Tree Engine" picture="tree.bmp" procedureName="configurator.configurator.edit_tree_engine"/>
+  <data:EnvironmentEngine kernel="/418" option="/111 /121" frame="/442 /443 /444" language="en" country="US" anyUnsavedChanges="false" commonBinDirectory="D:\tda2\bin" specificBinDirectory="D:\tda2\tools\UniversalTool" projectDirectory="C:\Users\Sergejs Kozlovics\AppData\Local\Temp\tda2_temporary_1485075007064442631" onProjectOpenedEvent="lua_engine#lua.interpreter.ProjectProcessing.project_opened" onProjectClosingEvent="lua_engine#lua.interpreter.ProjectProcessing.project_close" defaultSaveDirectory="C:\Users\Sergejs Kozlovics\Desktop"/>
+  <data:Project tag="/244" type="/172" name="tda2_temporary_1485075007064442631" version="0" graphDiagram="/167"/>
+  <data:PopUpDiagramType popUpElementType="/28 /27 /26" cType="/206" id="collection"/>
+  <data:PopUpDiagramType elemType="/213" popUpElementType="/33 /32 /31 /30 /29"/>
+  <data:PopUpDiagramType elemType="/214" popUpElementType="/38 /37 /36 /35 /34"/>
+  <data:PopUpDiagramType elemType="/287" popUpElementType="/43 /42 /41 /40 /39"/>
+  <data:PopUpDiagramType popUpElementType="/46 /45 /44" cType="/207"/>
+  <data:PopUpDiagramType elemType="/215" popUpElementType="/49 /48 /47"/>
+  <data:PopUpDiagramType elemType="/216" popUpElementType="/51 /50"/>
+  <data:PopUpDiagramType elemType="/165" popUpElementType="/53 /52"/>
+  <data:PopUpDiagramType elemType="/171" popUpElementType="/58 /57 /56 /55"/>
+  <data:PopUpDiagramType elemType="/286" popUpElementType="/62 /61 /60 /59"/>
+  <data:PopUpDiagramType popUpElementType="/68 /67 /66 /65 /64 /63" cType="/208"/>
+  <data:PopUpDiagramType popUpElementType="/76 /75 /74 /73 /72 /71 /70 /69" eType="/208"/>
+  <data:PopUpDiagramType popUpElementType="/25 /24" eType="/206" id="empty"/>
+  <data:PopUpDiagramType elemType="/288" popUpElementType="/23 /22 /21 /20 /19"/>
+  <data:PopUpDiagramType elemType="/212" popUpElementType="/18 /17 /16 /15"/>
+  <data:PopUpDiagramType elemType="/211" popUpElementType="/14 /13 /12 /11"/>
+  <data:PopUpDiagramType elemType="/210" popUpElementType="/10 /9 /8 /7"/>
+  <data:PopUpDiagramType popUpElementType="/6 /5 /4" cType="/205" id="collection"/>
+  <data:PopUpDiagramType popUpElementType="/3 /2" eType="/205" id="empty"/>
+  <data:PopUpDiagramType elemType="/289" popUpElementType="/1 /77 /78 /79 /80 /81 /82"/>
+  <data:PopUpDiagramType elemType="/209" popUpElementType="/83 /84 /85 /86"/>
+  <data:PopUpDiagramType popUpElementType="/87" eType="/204"/>
+  <data:PopUpDiagramType popUpElementType="/88 /89 /90" cType="/204"/>
+  <data:PaletteFreeBox type="/98" caption="FreeBox" picture="FreeBox.BMP"/>
+  <data:GraphDiagramType id="Instances" caption="Instances" elemType="/289 /209" eKeyboardShortcut="/417" cKeyboardShortcut="/413 /414 /415 /416" extension="/170" rClickCollection="/202" rClickEmpty="/201" paletteType="/96" toolType="/172" graphDiagramStyle="/130" procDynamicPopUpE="configurator.const.const_utilities.add_default_diagram_pop_up"/>
+  <data:GraphDiagramType tag="/243" id="Repository" caption="Repository" elemType="/288 /212 /211 /210" eKeyboardShortcut="/411 /412" cKeyboardShortcut="/407 /408 /409 /410" rClickCollection="/197" rClickEmpty="/198" paletteType="/95" toolType="/172" graphDiagramStyle="/129"/>
+  <data:GraphDiagramType tag="/242" id="MMInstances" caption="MMInstances" elemType="/287 /214 /213" eKeyboardShortcut="/395 /396" cKeyboardShortcut="/391 /392 /393 /394" rClickCollection="/180" rClickEmpty="/192" paletteType="/94" toolType="/172" graphDiagramStyle="/128"/>
+  <data:GraphDiagramType tag="/241" translet="/338" graphDiagram="/167" id="projectDiagram" caption="" presentation="/166" eKeyboardShortcut="/378" cKeyboardShortcut="/374 /375 /376 /377" rClickCollection="/184" toolType="/172" graphDiagramStyle="/127"/>
+  <data:GraphDiagramType translet="/337" graphDiagram="/166" id="specificationDgr" caption="Configurator" elemType="/285 /286 /171 /165 /216 /215" eKeyboardShortcut="/353 /354 /355 /356 /357 /358 /359" cKeyboardShortcut="/349 /350 /351 /352" rClickCollection="/190" rClickEmpty="/191" toolbarType="/277" paletteType="/93" toolType="/172" graphDiagramStyle="/126"/>
+  <data:EdgeType id="MMLink" caption="MMLink" openPropertiesOnElementCreate="true" propertyDiagram="/305" popUpDiagramType="/200" graphDiagramType="/204" compartType="/275" elemStyle="/138" paletteElementType="/110" direction="UniDirectional" end="/289" start="/289" isContainerMandatory="false"/>
+  <data:EdgeType id="Generalization" caption="Generalization" popUpDiagramType="/196" graphDiagramType="/205" elemStyle="/137" keyboardShortcut="/405 /406" paletteElementType="/108" direction="BiDirectional" end="/288" start="/288"/>
+  <data:EdgeType translet="/348" id="Composition" caption="Composition" openPropertiesOnElementCreate="true" propertyDiagram="/303" popUpDiagramType="/195" graphDiagramType="/205" compartType="/256 /255 /254 /253" elemStyle="/136" keyboardShortcut="/403 /404" paletteElementType="/107" direction="BiDirectional" end="/288" start="/288"/>
+  <data:EdgeType translet="/347" id="Association" caption="Association" openPropertiesOnElementCreate="true" propertyDiagram="/302" popUpDiagramType="/194" graphDiagramType="/205" compartType="/260 /259 /258 /257" elemStyle="/135" keyboardShortcut="/401 /402" paletteElementType="/106" direction="bidirectional" end="/288" start="/288"/>
+  <data:EdgeType translet="/343 /344" id="Composition" caption="Composition" propertyDiagram="/300" popUpDiagramType="/181" graphDiagramType="/206" compartType="/264 /263" elemStyle="/134" keyboardShortcut="/387 /388 /389 /390" paletteElementType="/104" direction="BiDirectional" end="/287" start="/287"/>
+  <data:EdgeType translet="/341 /342" id="Link" caption="Link" propertyDiagram="/299" popUpDiagramType="/182" graphDiagramType="/206" compartType="/266 /265" elemStyle="/133" keyboardShortcut="/383 /384 /385 /386" paletteElementType="/103" direction="BiDirectional" end="/287" start="/287"/>
+  <data:EdgeType translet="/333 /334 /335 /336" id="Specialization" caption="Specialization" popUpDiagramType="/185" graphDiagramType="/208" elemStyle="/132" keyboardShortcut="/372 /373" paletteElementType="/101" direction="BiDirectional" end="/285" start="/285"/>
+  <data:EdgeType translet="/325 /326 /327 /328 /329 /330 /331 /332" id="Line" caption="Line" openPropertiesOnElementCreate="true" popUpDiagramType="/186" graphDiagramType="/208" compartType="/269" supertype="/285" elemStyle="/131" keyboardShortcut="/370 /371" paletteElementType="/100" direction="BiDirectional" end="/285" start="/285"/>
+  <data:CompartStyle id="AS#Name" caption="AS#Name" nr="1" alignment="1" adjustment="0" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="16777215" fontSize="12" fontPitch="1" fontStyle="1" isVisible="1" compartType="/271"/>
+  <data:CompartStyle id="AS#Name" caption="AS#Name" nr="1" alignment="1" adjustment="0" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="16777215" fontSize="12" fontPitch="1" fontStyle="1" isVisible="1" compartType="/270"/>
+  <data:CompartStyle id="AS#Name" caption="AS#Name" nr="1" alignment="1" adjustment="24" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="1" isVisible="1" compartType="/269"/>
+  <data:CompartStyle id="Name" caption="Name" nr="1" alignment="1" adjustment="0" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="9" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="12" fontPitch="1" fontStyle="1" isVisible="1" compartType="/268"/>
+  <data:CompartStyle id="Value" caption="Value" nr="1" alignment="0" adjustment="0" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="1" isVisible="1" compartType="/267"/>
+  <data:CompartStyle id="DirectRole" caption="DirectRole" nr="1" alignment="1" adjustment="6" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/266"/>
+  <data:CompartStyle id="InverseRole" caption="InverseRole" nr="1" alignment="1" adjustment="5" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/265"/>
+  <data:CompartStyle id="DirectRole" caption="DirectRole" nr="1" alignment="1" adjustment="6" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/264"/>
+  <data:CompartStyle id="InverseRole" caption="InverseRole" nr="1" alignment="1" adjustment="5" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/263"/>
+  <data:CompartStyle id="Name" caption="Name" nr="1" alignment="1" adjustment="0" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="9" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="12" fontPitch="1" fontStyle="1" isVisible="1" compartType="/262"/>
+  <data:CompartStyle id="Value" caption="Value" nr="1" alignment="0" adjustment="0" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="1" isVisible="1" compartType="/261"/>
+  <data:CompartStyle id="DirectRole" caption="DirectRole" nr="1" alignment="1" adjustment="6" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/260"/>
+  <data:CompartStyle id="InverseRole" caption="InverseRole" nr="1" alignment="1" adjustment="5" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/259"/>
+  <data:CompartStyle id="DirectCardinality" caption="DirectCardinality" nr="1" alignment="1" adjustment="10" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/258"/>
+  <data:CompartStyle id="InverseCardinality" caption="InverseCardinality" nr="1" alignment="1" adjustment="9" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/257"/>
+  <data:CompartStyle id="DirectRole" caption="DirectRole" nr="1" alignment="1" adjustment="6" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/256"/>
+  <data:CompartStyle id="InverseRole" caption="InverseRole" nr="1" alignment="1" adjustment="5" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/255"/>
+  <data:CompartStyle id="DirectCardinality" caption="DirectCardinality" nr="1" alignment="1" adjustment="10" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/254"/>
+  <data:CompartStyle id="InverseCardinality" caption="InverseCardinality" nr="1" alignment="1" adjustment="9" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="1" fontStyle="0" isVisible="1" compartType="/253"/>
+  <data:CompartStyle id="Name" caption="Name" nr="0" alignment="0" adjustment="0" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="1" lineWidth="1" lineColor="0" fontTypeFace="Arial Narrow" fontCharSet="-70" fontColor="0" fontSize="10" fontPitch="0" fontStyle="1" isVisible="1" textDirection="0" compartType="/252"/>
+  <data:CompartStyle id="repoID" caption="Repository ID" nr="0" alignment="0" adjustment="0" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="0" fontStyle="0" isVisible="1" compartType="/272"/>
+  <data:CompartStyle id="repoClass" caption="Repository class" nr="0" alignment="0" adjustment="0" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="1" fontColor="0" fontSize="9" fontPitch="0" fontStyle="0" isVisible="1" compartType="/273"/>
+  <data:CompartStyle id="properties" caption="Property values" nr="0" alignment="0" adjustment="0" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial" fontCharSet="-70" fontColor="0" fontSize="9" fontPitch="0" fontStyle="0" isVisible="1" textDirection="0" compartType="/274"/>
+  <data:CompartStyle id="Name" caption="Link name" nr="0" alignment="0" adjustment="0" picWidth="0" picHeight="0" picPos="1" picStyle="0" adornment="0" lineWidth="1" lineColor="0" fontTypeFace="Arial Narrow" fontCharSet="-70" fontColor="0" fontSize="10" fontPitch="0" fontStyle="1" isVisible="1" textDirection="0" compartType="/275"/>
+  <data:Tag key="IsTreeNode" value="true" thing="/207"/>
+  <data:Tag key="IsTreeNode" value="true" thing="/206"/>
+  <data:Tag key="IsTreeNode" value="true" thing="/205"/>
+  <data:Tag key="isFirstVersion" value="true" thing="/179"/>
+  <data:FirstCmdPtr/>
+  <data:ToolbarElementType presentationElement="/173" id="New Version" caption="New Version" picture="version.BMP" nr="1" procedureName="configurator.configurator.new_version" toolbarType="/277"/>
+  <data:ToolbarElementType presentationElement="/174" id="Visualize MM" caption="Visualize MM" picture="VisualizeMM.BMP" nr="2" procedureName="configurator.configurator.make_repozitory_class_diagram" toolbarType="/277"/>
+  <data:ToolbarElementType presentationElement="/175" id="Project Translets" caption="Project Translets" picture="ProjectTranslets.bmp" nr="3" procedureName="configurator.configurator.edit_project_object" toolbarType="/277"/>
+  <data:ToolbarElementType presentationElement="/176" id="Graph Diagram Engine" caption="Graph Diagram Engine" picture="graphDiagramEngine.bmp" nr="4" procedureName="configurator.configurator.edit_head_engine" toolbarType="/277"/>
+  <data:ToolbarElementType presentationElement="/177" id="Tree Engine" caption="Tree Engine" picture="tree.bmp" nr="4" procedureName="configurator.configurator.edit_tree_engine" toolbarType="/277"/>
+  <data:GraphDiagramState transaction="/290" currentStateStream="/282" stateID="1"/>
+  <data:CompartType id="Name" caption="Name" isMultiple="false" concatStyle=":" isHint="false" toBeInvisible="false" isEssential="true" isGroup="false" compartStyle="/236" elemType="/289" subCompartType="/272 /273" pattern="a-zA-Z0-9-_" is_occurrence_compartment="false" isStereotype="false" nr="0" isStereotypable="false" isDiagramName="false"/>
+  <data:CompartType id="InverseCardinality" caption="InverseCardinality" isEssential="true" propertyRow="/435" compartStyle="/235" elemType="/211" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="DirectCardinality" caption="DirectCardinality" isEssential="true" propertyRow="/433" compartStyle="/234" elemType="/211" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="InverseRole" caption="InverseRole" isEssential="true" propertyRow="/434" compartStyle="/233" elemType="/211" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="DirectRole" caption="DirectRole" isEssential="true" propertyRow="/432" compartStyle="/232" elemType="/211" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="InverseCardinality" caption="InverseCardinality" isEssential="true" propertyRow="/431" compartStyle="/231" elemType="/212" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="DirectCardinality" caption="DirectCardinality" isEssential="true" propertyRow="/429" compartStyle="/230" elemType="/212" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="InverseRole" caption="InverseRole" isEssential="true" propertyRow="/430" compartStyle="/229" elemType="/212" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="DirectRole" caption="DirectRole" isEssential="true" propertyRow="/428" compartStyle="/228" elemType="/212" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="Value" caption="Value" isEssential="true" propertyRow="/427" compartStyle="/227" elemType="/288" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="Name" caption="Name" isEssential="true" propertyRow="/426" compartStyle="/226" elemType="/288" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="InverseRole" caption="InverseRole" isEssential="true" propertyRow="/425" compartStyle="/225" elemType="/213" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="DirectRole" caption="DirectRole" isEssential="true" propertyRow="/424" compartStyle="/224" elemType="/213" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="InverseRole" caption="InverseRole" isEssential="true" propertyRow="/423" compartStyle="/223" elemType="/214" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="DirectRole" caption="DirectRole" isEssential="true" propertyRow="/422" compartStyle="/222" elemType="/214" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="Value" caption="Value" isEssential="true" propertyRow="/421" compartStyle="/221" elemType="/287" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="Name" caption="Name" adornmentPrefix=":" isEssential="true" propertyRow="/420" compartStyle="/220" elemType="/287" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="AS#Name" caption="AS#Name" isEssential="true" compartStyle="/219" elemType="/216" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="AS#Name" caption="AS#Name" isEssential="true" compartStyle="/218" elemType="/171" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="AS#Name" caption="AS#Name" isEssential="true" compartStyle="/217" elemType="/286" pattern="a-zA-Z0-9-_ "/>
+  <data:CompartType id="repoID" caption="Repository ID" isMultiple="false" isHint="false" toBeInvisible="false" isEssential="true" isGroup="false" propertyRow="/436" compartStyle="/237" parentCompartType="/252" pattern="a-zA-Z0-9-_" is_occurrence_compartment="false" isStereotype="false" nr="0" isStereotypable="false" isDiagramName="false"/>
+  <data:CompartType id="repoClass" caption="Repository class" isMultiple="false" isHint="false" toBeInvisible="false" isEssential="true" isGroup="false" propertyRow="/437" compartStyle="/238" parentCompartType="/252" pattern="a-zA-Z0-9-_" is_occurrence_compartment="false" isStereotype="false" nr="0" isStereotypable="false" isDiagramName="false"/>
+  <data:CompartType id="properties" caption="Property values" isMultiple="false" isHint="false" toBeInvisible="false" isEssential="true" isGroup="false" propertyRow="/438" compartStyle="/239" elemType="/289" pattern="a-zA-Z0-9-_" is_occurrence_compartment="false" isStereotype="false" nr="0" isStereotypable="false" isDiagramName="false"/>
+  <data:CompartType id="Name" caption="Link name" isMultiple="false" isHint="false" toBeInvisible="false" isEssential="true" isGroup="false" propertyRow="/439" compartStyle="/240" elemType="/209" pattern="a-zA-Z0-9-_" is_occurrence_compartment="false" isStereotype="false" nr="0" isStereotypable="false" isDiagramName="false"/>
+  <data:GraphDiagramEngine kernel="/418" onPopUpElemSelectEvent="lua_engine#lua.interpreter.PopUpElemSelect.PopUpElemSelect" onMoveLineStartPointEvent="lua_engine#lua.interpreter.MoveLine.MoveLineStartPoint" onMoveLineEndPointEvent="lua_engine#lua.interpreter.MoveLine.MoveLineEndPoint" onL2ClickEvent="lua_engine#lua.interpreter.L2Click.L2Click" onLClickEvent="lua_engine#lua.interpreter.LClick.LClick" onRClickEvent="lua_engine#lua.interpreter.RClick.RClick" onNewLineEvent="lua_engine#lua.interpreter.NewElement.NewLine" onNewBoxEvent="lua_engine#lua.interpreter.NewElement.NewBox" onNewPinEvent="lua_engine#lua.interpreter.NewElement.NewPin" onChangeParentEvent="lua_engine#lua.interpreter.ChangeParent.ChangeParent" onActivateDgrEvent="lua_engine#lua.interpreter.ActivateDgr.ActivateDgr" onCloseDgrEvent="lua_engine#lua.utilities.do_nothing" onKeyDownEvent="lua_engine#lua.interpreter.KeyDown.KeyDown" onNewFreeBoxEvent="lua_engine#lua.interpreter.NewElement.NewFreeBox" onFreeBoxEditedEvent="lua_engine#lua.interpreter.NewElement.FreeBoxEdited" onToolbarElementSelectEvent="lua_engine#lua.interpreter.ToolbarElementSelect.ToolbarElementSelect"/>
+  <data:ToolbarType presentationElement="/440" toolbarElementType="/246 /247 /248 /249 /250" graphDiagramType="/208"/>
+  <data:PT_SHARP_Diagram caption="tda2_temporary_1485075007064442631">
+    <tab href="#/92"/>
+  </data:PT_SHARP_Diagram>
+  <data:TDAKernel::Repository proxyReference="/140 /141 /142 /143 /144 /145 /146 /147 /148 /149 /150 /151 /152 /153 /154 /155 /156 /157 /158 /159 /160 /161 /162 /163 /164" mountPoint="/283" package="/283 /284" uri="ecore:file:///C:/Users/Sergejs Kozlovics/AppData/Local/Temp/tda2_temporary_1485075007064442631/data.xmi" coveredPackage="/283 /284"/>
+  <data:PortStyle id="Pin" caption="Pin" shapeCode="1" shapeStyle="0" lineWidth="2" dashLength="0" breakLength="0" bkgColor="12419151" lineColor="9067831" elemType="/165" picture="" width="20" height="20" alignment="0" picPos="1" picStyle="0" picWidth="0" picHeight="0"/>
+  <data:OptionSelectedEvent option="/116"/>
+  <data:TDAKernel::HistoryStream currentState="/251" graphDiagram="/167">
+    <streamState href="#/251"/>
+  </data:TDAKernel::HistoryStream>
+  <data:TDAKernel::Package proxyReference="/140 /141 /142 /143 /144 /145 /146 /147 /148 /149 /150 /151 /152 /153 /154 /155 /156 /157 /158 /159 /161 /163 /164" kernel="/418" mountedRepository="/279" associatedRepository="/279" stackedRepository="/279" child="/284" simpleName=""/>
+  <data:TDAKernel::Package proxyReference="/160 /162" associatedRepository="/279" stackedRepository="/279" parent="/283" simpleName="TDAKernel"/>
+  <data:NodeType id="SuperBox" caption="SuperBox" graphDiagramType="/208" subtype="/286 /171 /165 /216" elemStyle="/291" eEnd="/216 /215" eStart="/216 /215"/>
+  <data:NodeType translet="/306 /307 /308 /309 /310" id="Box" caption="Box" openPropertiesOnElementCreate="true" popUpDiagramType="/189" graphDiagramType="/208" compartType="/271" supertype="/285" elemStyle="/292" keyboardShortcut="/360 /361 /362 /363" paletteElementType="/97" portType="/165"/>
+  <data:NodeType translet="/339 /340" id="Instance" caption="Instance" openPropertiesOnElementCreate="true" propertyDiagram="/298" popUpDiagramType="/183" graphDiagramType="/206" compartType="/268 /267" elemStyle="/294" keyboardShortcut="/379 /380 /381 /382" eEnd="/214 /213" eStart="/214 /213" paletteElementType="/102"/>
+  <data:NodeType translet="/345 /346" id="Class" caption="Class" openPropertiesOnElementCreate="true" propertyDiagram="/301" popUpDiagramType="/193" graphDiagramType="/205" compartType="/262 /261" elemStyle="/295" keyboardShortcut="/397 /398 /399 /400" eEnd="/212 /211 /210" eStart="/212 /211 /210" paletteElementType="/105"/>
+  <data:NodeType id="Instance" caption="Instance" openPropertiesOnElementCreate="true" propertyDiagram="/304" popUpDiagramType="/199" graphDiagramType="/204" compartType="/252 /274" elemStyle="/296" eEnd="/209" eStart="/209" paletteElementType="/109" isContainerMandatory="false"/>
+  <data:TDAKernel::Transaction _DOT_inverseForTDAKernel_COLON__COLON_UndoHistory_DOT_currentTransaction="/297" streamState="/251"/>
+  <data:NodeStyle id="SuperBox" caption="SuperBox" shapeCode="2" shapeStyle="0" lineWidth="2" dashLength="0" breakLength="0" bkgColor="12419151" lineColor="9067831" elemType="/285" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" width="110" height="45" alignment="0"/>
+  <data:NodeStyle id="Box" caption="Box" shapeCode="2" shapeStyle="0" lineWidth="2" dashLength="0" breakLength="0" bkgColor="12419151" lineColor="9067831" elemType="/286" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" width="110" height="45" alignment="0"/>
+  <data:NodeStyle id="FreeBox" caption="FreeBox" shapeCode="2" shapeStyle="0" lineWidth="2" dashLength="0" breakLength="0" bkgColor="13020235" lineColor="9534773" elemType="/171" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" width="110" height="45" alignment="0"/>
+  <data:NodeStyle id="Instance" caption="Instance" shapeCode="2" shapeStyle="0" lineWidth="2" dashLength="0" breakLength="0" bkgColor="13020490" lineColor="9008690" elemType="/287" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" width="110" height="45" alignment="0"/>
+  <data:NodeStyle id="Class" caption="Class" shapeCode="2" shapeStyle="0" lineWidth="2" dashLength="0" breakLength="0" bkgColor="5880731" lineColor="4163953" elemType="/288" picture="" picWidth="0" picHeight="0" picPos="1" picStyle="0" width="110" height="45" alignment="0"/>
+  <data:NodeStyle id="Instance" caption="Box" shapeCode="1" shapeStyle="0" lineWidth="1" dashLength="0" breakLength="0" bkgColor="12632256" lineColor="0" elemType="/289" picWidth="0" picHeight="0" picPos="1" picStyle="0" width="110" height="45" alignment="0"/>
+  <data:TDAKernel::UndoHistory currentTransaction="/290">
+    <transaction href="#/290"/>
+    <historyStream href="#/282"/>
+  </data:TDAKernel::UndoHistory>
+  <data:PropertyDiagram id="Instance" elemType="/287" propertyRow="/420 /421"/>
+  <data:PropertyDiagram id="Link" elemType="/214" propertyRow="/422 /423"/>
+  <data:PropertyDiagram id="Composition" elemType="/213" propertyRow="/424 /425"/>
+  <data:PropertyDiagram id="Class" elemType="/288" propertyRow="/426 /427"/>
+  <data:PropertyDiagram id="Association" elemType="/212" propertyRow="/428 /429 /430 /431"/>
+  <data:PropertyDiagram id="Composition" elemType="/211" propertyRow="/432 /433 /434 /435"/>
+  <data:PropertyDiagram id="Instance" elemType="/289" propertyRow="/436 /437 /438"/>
+  <data:PropertyDiagram id="MMLink" elemType="/209" propertyRow="/439"/>
+  <data:Translet extensionPoint="procCreateElementDomain" procedureName="configurator.const.const_utilities.add_type_seed" shouldBeIncluded="" type="/286"/>
+  <data:Translet extensionPoint="l2ClickEvent" procedureName="utilities.navigate_or_properties" shouldBeIncluded="" type="/286"/>
+  <data:Translet extensionPoint="procProperties" procedureName="configurator.configurator.configurator_dialog" shouldBeIncluded="" type="/286"/>
+  <data:Translet extensionPoint="procCopied" procedureName="configurator.configurator.configurator_seed_copied" shouldBeIncluded="" type="/286"/>
+  <data:Translet extensionPoint="procDeleteElementDomain" procedureName="configurator.configurator.delete_elem_type_from_configurator" shouldBeIncluded="" type="/286"/>
+  <data:Translet extensionPoint="procCreateElementDomain" procedureName="configurator.const.const_utilities.add_type" shouldBeIncluded="" type="/171"/>
+  <data:Translet extensionPoint="l2ClickEvent" procedureName="configurator.configurator.configurator_dialog" shouldBeIncluded="" type="/171"/>
+  <data:Translet extensionPoint="procProperties" procedureName="configurator.configurator.configurator_dialog" shouldBeIncluded="" type="/171"/>
+  <data:Translet extensionPoint="procCopied" procedureName="configurator.configurator.configurator_elem_copied" shouldBeIncluded="" type="/171"/>
+  <data:Translet extensionPoint="procPasted" procedureName="configurator.configurator.configurator_elem_pasted" shouldBeIncluded="" type="/171"/>
+  <data:Translet extensionPoint="procClipboardCleared" procedureName="configurator.configurator.delete_elem_type_from_configurator" shouldBeIncluded="" type="/171"/>
+  <data:Translet extensionPoint="procDeleteElementDomain" procedureName="configurator.configurator.delete_elem_type_from_configurator" shouldBeIncluded="" type="/171"/>
+  <data:Translet extensionPoint="procCreateElementDomain" procedureName="configurator.const.const_utilities.add_type" shouldBeIncluded="" type="/165"/>
+  <data:Translet extensionPoint="l2ClickEvent" procedureName="configurator.configurator.configurator_dialog" shouldBeIncluded="" type="/165"/>
+  <data:Translet extensionPoint="procProperties" procedureName="configurator.configurator.configurator_dialog" shouldBeIncluded="" type="/165"/>
+  <data:Translet extensionPoint="procCopied" procedureName="configurator.configurator.configurator_elem_copied" shouldBeIncluded="" type="/165"/>
+  <data:Translet extensionPoint="procPasted" procedureName="configurator.configurator.configurator_elem_pasted" shouldBeIncluded="" type="/165"/>
+  <data:Translet extensionPoint="procClipboardCleared" procedureName="configurator.configurator.delete_elem_type_from_configurator" shouldBeIncluded="" type="/165"/>
+  <data:Translet extensionPoint="procDeleteElementDomain" procedureName="configurator.configurator.delete_elem_type_from_configurator" shouldBeIncluded="" type="/165"/>
+  <data:Translet extensionPoint="procCreateElementDomain" procedureName="configurator.const.const_utilities.add_type" shouldBeIncluded="" type="/216"/>
+  <data:Translet extensionPoint="l2ClickEvent" procedureName="configurator.configurator.configurator_dialog" shouldBeIncluded="" type="/216"/>
+  <data:Translet extensionPoint="procProperties" procedureName="configurator.configurator.configurator_dialog" shouldBeIncluded="" type="/216"/>
+  <data:Translet extensionPoint="procMoveLine" procedureName="configurator.configurator.move_line_type" shouldBeIncluded="" type="/216"/>
+  <data:Translet extensionPoint="procCopied" procedureName="configurator.configurator.configurator_elem_copied" shouldBeIncluded="" type="/216"/>
+  <data:Translet extensionPoint="procPasted" procedureName="configurator.configurator.configurator_elem_pasted" shouldBeIncluded="" type="/216"/>
+  <data:Translet extensionPoint="procClipboardCleared" procedureName="configurator.configurator.delete_elem_type_from_configurator" shouldBeIncluded="" type="/216"/>
+  <data:Translet extensionPoint="procDeleteElementDomain" procedureName="configurator.configurator.delete_elem_type_from_configurator" shouldBeIncluded="" type="/216"/>
+  <data:Translet extensionPoint="procCreateElementDomain" procedureName="configurator.const.const_utilities.add_specialization" shouldBeIncluded="" type="/215"/>
+  <data:Translet extensionPoint="procDeleteElementDomain" procedureName="configurator.configurator.delete_specialization" shouldBeIncluded="" type="/215"/>
+  <data:Translet extensionPoint="procMoveLine" procedureName="configurator.configurator.move_specialization" shouldBeIncluded="" type="/215"/>
+  <data:Translet extensionPoint="procCopied" procedureName="configurator.configurator.configurator_elem_copied" shouldBeIncluded="" type="/215"/>
+  <data:Translet extensionPoint="procCopied" procedureName="configurator.configurator.copy_target_diagram" shouldBeIncluded="" type="/208"/>
+  <data:Translet extensionPoint="procDynamicPopUpE" procedureName="interpreter.RClick.project_diagram_pop_up" shouldBeIncluded="" type="/207"/>
+  <data:Translet extensionPoint="l2ClickEvent" procedureName="interpreter.Properties.Properties" shouldBeIncluded="" type="/287"/>
+  <data:Translet extensionPoint="procProperties" procedureName="interpreter.Properties.Properties" shouldBeIncluded="" type="/287"/>
+  <data:Translet extensionPoint="l2ClickEvent" procedureName="interpreter.Properties.Properties" shouldBeIncluded="" type="/214"/>
+  <data:Translet extensionPoint="procProperties" procedureName="interpreter.Properties.Properties" shouldBeIncluded="" type="/214"/>
+  <data:Translet extensionPoint="l2ClickEvent" procedureName="interpreter.Properties.Properties" shouldBeIncluded="" type="/213"/>
+  <data:Translet extensionPoint="procProperties" procedureName="interpreter.Properties.Properties" shouldBeIncluded="" type="/213"/>
+  <data:Translet extensionPoint="l2ClickEvent" procedureName="interpreter.Properties.Properties" shouldBeIncluded="" type="/288"/>
+  <data:Translet extensionPoint="procProperties" procedureName="interpreter.Properties.Properties" shouldBeIncluded="" type="/288"/>
+  <data:Translet extensionPoint="l2ClickEvent" procedureName="interpreter.Properties.Properties" shouldBeIncluded="" type="/212"/>
+  <data:Translet extensionPoint="l2ClickEvent" procedureName="interpreter.Properties.Properties" shouldBeIncluded="" type="/211"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" cType="/208"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" cType="/208"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" cType="/208"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" cType="/208"/>
+  <data:KeyboardShortcut key="Ctrl V" procedureName="interpreter.CutCopyPaste.Paste" eType="/208"/>
+  <data:KeyboardShortcut key="Ctrl T" procedureName="configurator.configurator.add_diagram_toolbar" eType="/208"/>
+  <data:KeyboardShortcut key="Ctrl P" procedureName="configurator.configurator.add_diagram_popUp" eType="/208"/>
+  <data:KeyboardShortcut key="Ctrl K" procedureName="configurator.configurator.add_diagram_key_shortcuts" eType="/208"/>
+  <data:KeyboardShortcut key="Ctrl D" procedureName="configurator.configurator.diagram_style" eType="/208"/>
+  <data:KeyboardShortcut key="Ctrl G" procedureName="configurator.configurator.generate_instances" eType="/208"/>
+  <data:KeyboardShortcut key="E" procedureName="configurator.configurator.generate_script_dialog" eType="/208"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" elemType="/286"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" elemType="/286"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/286"/>
+  <data:KeyboardShortcut key="Enter" procedureName="configurator.configurator.configurator_dialog" elemType="/286"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" elemType="/171"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" elemType="/171"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/171"/>
+  <data:KeyboardShortcut key="Enter" procedureName="configurator.configurator.configurator_dialog" elemType="/171"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/165"/>
+  <data:KeyboardShortcut key="Enter" procedureName="configurator.configurator.configurator_dialog" elemType="/165"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/216"/>
+  <data:KeyboardShortcut key="Enter" procedureName="configurator.configurator.configurator_dialog" elemType="/216"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/215"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" elemType="/215"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" cType="/207"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" cType="/207"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" cType="/207"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" cType="/207"/>
+  <data:KeyboardShortcut key="Ctrl V" procedureName="interpreter.CutCopyPaste.Paste" eType="/207"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" elemType="/287"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" elemType="/287"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/287"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" elemType="/287"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" elemType="/214"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" elemType="/214"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/214"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" elemType="/214"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" elemType="/213"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" elemType="/213"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/213"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" elemType="/213"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" cType="/206"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" cType="/206"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" cType="/206"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" cType="/206"/>
+  <data:KeyboardShortcut key="Ctrl V" procedureName="interpreter.CutCopyPaste.Paste" eType="/206"/>
+  <data:KeyboardShortcut key="F" procedureName="find.show_window" eType="/206"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" elemType="/288"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" elemType="/288"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/288"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" elemType="/288"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/212"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" elemType="/212"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/211"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" elemType="/211"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" elemType="/210"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" elemType="/210"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" cType="/205"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" cType="/205"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" cType="/205"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" cType="/205"/>
+  <data:KeyboardShortcut key="Ctrl V" procedureName="interpreter.CutCopyPaste.Paste" eType="/205"/>
+  <data:KeyboardShortcut key="F" procedureName="find.show_window" eType="/205"/>
+  <data:KeyboardShortcut key="Ctrl X" procedureName="interpreter.CutCopyPaste.Cut" cType="/204"/>
+  <data:KeyboardShortcut key="Ctrl C" procedureName="interpreter.CutCopyPaste.Copy" cType="/204"/>
+  <data:KeyboardShortcut key="Delete" procedureName="interpreter.Delete.Delete" cType="/204"/>
+  <data:KeyboardShortcut key="Enter" procedureName="interpreter.Properties.Properties" cType="/204"/>
+  <data:KeyboardShortcut key="Ctrl V" procedureName="interpreter.CutCopyPaste.Paste" eType="/204"/>
+  <data:TDAKernel::TDAKernel attachedEngine="/178 /276 /441 /169" rootPackage="/283" engineForAttachFrameCommand="EnvironmentEngine" engineForFrameActivatedEvent="EnvironmentEngine" engineForFrameDeactivatingEvent="EnvironmentEngine" engineForCloseFrameRequestedEvent="EnvironmentEngine" engineForDetachFrameCommand="EnvironmentEngine" engineForRefreshOptionsCommand="EnvironmentEngine" engineForOptionSelectedEvent="EnvironmentEngine" engineForProjectCreatedEvent="EnvironmentEngine" engineForProjectOpenedEvent="EnvironmentEngine" engineForCloseProjectCommand="EnvironmentEngine" engineForProjectClosingEvent="EnvironmentEngine" engineForFrameResizedEvent="EnvironmentEngine" engineForLaunchTransformationInForegroundCommand="EnvironmentEngine" engineForActivateFrameCommand="EnvironmentEngine" engineForLaunchGUITransformationCommand="EnvironmentEngine" engineForShowInformationBarCommand="EnvironmentEngine" engineForEnqueueForegroundTransformationCommand="EnvironmentEngine" engineForPopUpCmd="GraphDiagramEngine" engineForOkCmd="GraphDiagramEngine" engineForActiveDgrCmd="GraphDiagramEngine" engineForActiveDgrViewCmd="GraphDiagramEngine" engineForPasteCmd="GraphDiagramEngine" engineForUpdateDgrCmd="GraphDiagramEngine" engineForCloseDgrCmd="GraphDiagramEngine" engineForSaveDgrCmd="GraphDiagramEngine" engineForActiveElementCmd="GraphDiagramEngine" engineForAfterConfigCmd="GraphDiagramEngine" engineForSaveStylesCmd="GraphDiagramEngine" engineForStyleDialogCmd="GraphDiagramEngine" engineForDefaultStyleCmd="GraphDiagramEngine" engineForRefreshDgrCmd="GraphDiagramEngine" engineForUpdateStyleCmd="GraphDiagramEngine" engineForRerouteCmd="GraphDiagramEngine" engineForAlignSizeCmd="GraphDiagramEngine" engineForPopUpElemSelectEvent="GraphDiagramEngine" engineForToolbarElementSelectEvent="GraphDiagramEngine" engineForPasteGraphClipboardEvent="GraphDiagramEngine" engineForDeleteCollectionEvent="GraphDiagramEngine" engineForCopyCutCollectionEvent="GraphDiagramEngine" engineForCopyCollectionEvent="GraphDiagramEngine" engineForMoveLineStartPointEvent="GraphDiagramEngine" engineForMoveLineEndPointEvent="GraphDiagramEngine" engineForL2ClickEvent="GraphDiagramEngine" engineForLClickEvent="GraphDiagramEngine" engineForRClickEvent="GraphDiagramEngine" engineForNewLineEvent="GraphDiagramEngine" engineForNewBoxEvent="GraphDiagramEngine" engineForExecTransfEvent="GraphDiagramEngine" engineForNewPinEvent="GraphDiagramEngine" engineForChangeParentEvent="GraphDiagramEngine" engineForActivateDgrEvent="GraphDiagramEngine" engineForCloseDgrEvent="GraphDiagramEngine" engineForOKStyleDialogEvent="GraphDiagramEngine" engineForKeyDownEvent="GraphDiagramEngine" engineForNewFreeBoxEvent="GraphDiagramEngine" engineForNewFreeLineEvent="GraphDiagramEngine" engineForFreeBoxEditedEvent="GraphDiagramEngine" engineForFreeLineEditedEvent="GraphDiagramEngine" engineForNewForkEvent="GraphDiagramEngine" engineForRevokeGraphDiagramStateCommand="GraphDiagramEngine" engineForRevertGraphDiagramStateCommand="GraphDiagramEngine" engineForDestroyGraphDiagramStateCommand="GraphDiagramEngine" engineForPT_SHARP_Event="TreeEngine" engineForPT_SHARP_SelectEvent="TreeEngine" engineForPT_SHARP_ExpandEvent="TreeEngine" engineForPT_SHARP_ColapseEvent="TreeEngine" engineForPT_SHARP_DoubleClickEvent="TreeEngine" engineForPT_SHARP_RightClickEvent="TreeEngine" engineForPT_SHARP_KeyDownEvent="TreeEngine" engineForPT_SHARP_Cmd="TreeEngine" engineForPT_SHARP_SelectCmd="TreeEngine" engineForPT_SHARP_ExpandCmd="TreeEngine" engineForPT_SHARP_ColapseCmd="TreeEngine" engineForPT_SHARP_RefreshCmd="TreeEngine" engineForPT_SHARP_PopUpCmd="TreeEngine" engineForD_SHARP_Command="DialogEngine" engineForD_SHARP_Event="DialogEngine" engineForD_SHARP_RowMovedEvent="DialogEngine" engineForD_SHARP_ColumnMovedEvent="DialogEngine" engineForD_SHARP_MultiLineTextBoxChangeEvent="DialogEngine" engineForD_SHARP_TreeNodeSelectEvent="DialogEngine" engineForD_SHARP_AddTreeNodeCmd="DialogEngine" engineForD_SHARP_DeleteTreeNodeCmd="DialogEngine" engineForD_SHARP_SelectTreeNodeCmd="DialogEngine" engineForD_SHARP_ExpandTreeNodeCmd="DialogEngine" engineForD_SHARP_CollapseTreeNodeCmd="DialogEngine" engineForD_SHARP_ListBoxChangeEvent="DialogEngine" engineForD_SHARP_TabChangeEvent="DialogEngine" engineForD_SHARP_TreeNodeMoveEvent="DialogEngine" engineForD_SHARP_CopyToClipboardCmd="DialogEngine" engineForD_SHARP_KeyDownEvent="DialogEngine" engineForD_SHARP_TreeNodeExpandedEvent="DialogEngine" engineForD_SHARP_TreeNodeCollapsedEvent="DialogEngine"/>
+  <data:Collection/>
+  <data:PropertyRow id="Name" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/268" propertyDiagram="/298" caption="Name"/>
+  <data:PropertyRow id="Value" rowType="TextArea" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/267" propertyDiagram="/298" caption="Value"/>
+  <data:PropertyRow id="DirectRole" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/266" propertyDiagram="/299" caption="DirectRole"/>
+  <data:PropertyRow id="InverseRole" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/265" propertyDiagram="/299" caption="InverseRole"/>
+  <data:PropertyRow id="DirectRole" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/264" propertyDiagram="/300" caption="DirectRole"/>
+  <data:PropertyRow id="InverseRole" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/263" propertyDiagram="/300" caption="InverseRole"/>
+  <data:PropertyRow id="Name" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/262" propertyDiagram="/301" caption="Name"/>
+  <data:PropertyRow id="Value" rowType="TextArea" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/261" propertyDiagram="/301" caption="Value"/>
+  <data:PropertyRow id="DirectRole" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/260" propertyDiagram="/302" caption="DirectRole"/>
+  <data:PropertyRow id="DirectCardinality" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/258" propertyDiagram="/302" caption="DirectCardinality"/>
+  <data:PropertyRow id="InverseRole" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/259" propertyDiagram="/302" caption="InverseRole"/>
+  <data:PropertyRow id="InverseCardinality" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/257" propertyDiagram="/302" caption="InverseCardinality"/>
+  <data:PropertyRow id="DirectRole" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/256" propertyDiagram="/303" caption="DirectRole"/>
+  <data:PropertyRow id="DirectCardinality" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/254" propertyDiagram="/303" caption="DirectCardinality"/>
+  <data:PropertyRow id="InverseRole" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/255" propertyDiagram="/303" caption="InverseRole"/>
+  <data:PropertyRow id="InverseCardinality" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/253" propertyDiagram="/303" caption="InverseCardinality"/>
+  <data:PropertyRow id="repoID" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/272" propertyDiagram="/304" caption="Repository ID"/>
+  <data:PropertyRow id="repoClass" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/273" propertyDiagram="/304" caption="Repository class"/>
+  <data:PropertyRow id="properties" rowType="TextArea" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/274" propertyDiagram="/304" caption="Property values"/>
+  <data:PropertyRow id="Name" rowType="InputField" isEditable="true" isReadOnly="false" isFirstRespondent="false" compartType="/275" propertyDiagram="/305" caption="Link name"/>
+  <data:Toolbar type="/277" graphDiagram="/166">
+    <toolbarElement href="#/173"/>
+    <toolbarElement href="#/174"/>
+    <toolbarElement href="#/175"/>
+    <toolbarElement href="#/176"/>
+    <toolbarElement href="#/177"/>
+  </data:Toolbar>
+  <data:TreeEngine kernel="/418" onPT_SHARP_ExpandEvent="lua_engine#lua.interpreter.tree.Expand" onPT_SHARP_ColapseEvent="lua_engine#lua.interpreter.tree.Colapse" onPT_SHARP_KeyDownEvent="lua_engine#lua.interpreter.tree.KeyDown" onPT_SHARP_DoubleClickEvent="lua_engine#lua.interpreter.tree.DoubleClick" onPT_SHARP_SelectEvent="lua_engine#lua.interpreter.tree.Select" onPT_SHARP_RightClickEvent="lua_engine#lua.interpreter.tree.RightClick"/>
+  <data:Frame caption="" contentURI="hwnd:9046102" location="left" environmentEngine="/178"/>
+  <data:Frame caption="" contentURI="hwnd:7407750" location="toolbar" environmentEngine="/178"/>
+  <data:Frame caption="tda2_temporary_1485075007064442631" contentURI="hwnd:3213542" location="center" onFrameActivatedEvent="dll(581169680):GraphDiagramEngineLibrary:HandleFrameActivatedEvent" onFrameDeactivatingEvent="dll(581169680):GraphDiagramEngineLibrary:HandleFrameDeactivatingEvent" onCloseFrameRequestedEvent="dll(581169680):GraphDiagramEngineLibrary:HandleCloseFrameRequestedEvent" environmentEngine="/178"/>
+  <data:PT_SHARP_Node thing="/167" caption="tda2_temporary_1485075007064442631"/>
+</xmi:XMI>

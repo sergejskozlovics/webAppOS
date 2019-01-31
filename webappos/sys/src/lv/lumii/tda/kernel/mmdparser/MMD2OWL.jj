@@ -1,0 +1,351 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(MMD2OWL)
+
+package lv.lumii.tda.kernel.mmdparser;
+
+import java.io.*;
+import java.util.*;
+import org.apache.commons.io.IOUtils;
+
+public class MMD2OWL
+{
+  public static boolean debug = false;
+  private java.io.PrintStream output;
+  
+  public static void main(String args[]) throws ParseException {
+    InputStream streamCopy;
+    String str;
+	try
+	{	  
+    	str = IOUtils.toString(System.in, "UTF-8");
+    	byte[] b = str.getBytes("UTF-8");
+		streamCopy = new ByteArrayInputStream(b);
+	}
+	catch(Throwable t)
+	{
+		System.err.println(t.toString());
+		return;
+	}
+
+    Set<String> dups = new HashSet<String>();
+    MMD2OWL p = new MMD2OWL(streamCopy);
+        
+    String err = p.checkSyntax(dups);
+    if (err!=null)    {     
+    	System.err.println("Syntax check error: "+err);
+    	return;
+    }
+
+    if (dups.size() >0)    {      
+    	System.err.println(dups.size()+" duplicates found:");
+    	for (String s : dups)
+    		System.err.println("  "+s);
+   }
+
+	try
+	{	  
+    	byte[] b = str.getBytes("UTF-8");
+		streamCopy = new ByteArrayInputStream(b);
+	}
+	catch(Throwable t)
+	{
+		System.err.println(t.toString());
+		return;
+	}
+    
+    
+    MMD2OWL p2 = new MMD2OWL(streamCopy);
+    p2.setDuplicates(dups);
+    err = p2.mmd2owl(System.out);
+    if (err!=null)
+    	System.err.println("Error: "+err);
+  }
+
+  private Set<String> names = new HashSet<String>();
+  private Set<String> duplicateNames = new HashSet<String>();
+  private boolean onlyCheckSyntax = true;
+  private StringBuffer loadErrors = null;
+
+  private String removeQuotes(String s)
+  {
+    if ((s.length()>=2) && (s.codePointAt(0)==0x22) && (s.codePointAt(s.length()-1)==0x22))
+    	return s.substring(1, s.length()-1);
+    if ((s.length()>=2) && (s.codePointAt(0)==0x201C) && (s.codePointAt(s.length()-1)==0x201D))
+    	return s.substring(1, s.length()-1);
+    if (s.startsWith("'") && s.endsWith("'"))
+    	return s.substring(1, s.length()-1);
+    else
+    	return s;
+  }
+
+  public void setDuplicates(Set<String> duplicates)
+  {
+    duplicateNames.addAll(duplicates);
+  }
+  
+  public String checkSyntax(Set<String> returnedDuplicates)
+  {
+    onlyCheckSyntax = true;
+    names.clear();
+    duplicateNames.clear();
+    try    {
+      	output = null;   
+    	Start();
+    	returnedDuplicates.addAll(duplicateNames);
+    	return null;
+	} catch (ParseException e1) {
+	  return e1.toString();
+	}
+  }
+    // returns null if OK, or error description
+  public String mmd2owl(java.io.PrintStream _output)
+  {
+    onlyCheckSyntax = false;
+    output = _output;
+    loadErrors = new StringBuffer();
+    try
+    {
+      	output.println("Prefix(:=<http://tda.lumii.lv/GraphDiagramEngineMetamodel/v1.5#>)");
+      	output.println("Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)");
+		output.println("Ontology( <http://tda.lumii.lv/GraphDiagramEngineMetamodel/v1.5>");
+    	Start();
+		output.println(")"); // end of ontology
+    	if (loadErrors.length()==0) {    	  
+    	  loadErrors = null;
+    	  output = null;
+    	  return null;
+   		}
+   		else {		  output = null;
+		  String s = loadErrors.toString();
+		  loadErrors.delete(0, loadErrors.length());
+		  loadErrors = null;	  
+		  return s;   		     		}
+	} catch (ParseException e1) {
+	  output = null;
+	  String s = loadErrors.toString();
+	  loadErrors.delete(0, loadErrors.length());
+	  loadErrors = null;	  
+	  return e1.toString();//s;
+	}      
+  }
+
+  private String makeName(String s)  {
+    s = removeQuotes(s.replaceAll("\\s+",""));
+    int i=s.indexOf(":");
+    while (i >= 0)    {     
+      s = s.substring(0, i)+s.substring(i+1);
+      i=s.indexOf(":");
+    }
+    return s;  }
+}
+
+PARSER_END(MMD2OWL)
+
+SKIP :
+{
+  < " " > |
+  < "\r" > |
+  < "\n" > |
+  < "\t" > |
+  < "//" (~["\n"])* "\n" >
+}
+
+void Start() :
+{
+}
+{
+	"MMDefStart;"
+	(MetamodelOperation() ";")*
+	"MMDefEnd;"
+	<EOF>
+}
+
+void MetamodelOperation() :
+{
+}
+{
+  Class() | Attr() | Rel() | Assoc()
+}
+
+void Class() :
+{
+}
+{  
+	"class"
+	<NAME>
+	{
+	  if (!onlyCheckSyntax)	  {	    
+		  if (MMDParser.debug)
+		    System.out.println(" >>adding class `" + token.image + "'...");
+
+		  output.println("Declaration(Class(:"+makeName(token.image)+"))"); // removing spaces...
+	  }
+	  else	  {
+	  		String name = makeName(token.image);
+	  		if (names.contains(name))
+	  			duplicateNames.add(name);
+	  		else
+	  			names.add(name);
+	  }
+	}
+}
+
+void Attr() :
+{
+  String className;
+  String attrName;
+  String attrType;
+}
+{
+	"attr"
+	<NAME> {className=makeName(token.image);}
+	"."
+	<NAME> {attrName=makeName(token.image);}
+	":"
+	<NAME> {attrType=makeName(token.image).toLowerCase();}
+
+	{
+	  if (!onlyCheckSyntax)	  {	    
+		  if (duplicateNames.contains(attrName))
+	        attrName += "Of"+className;
+			
+		  if (MMDParser.debug)
+		    System.out.println(">>adding "+attrType+" attr "+attrName+" of "+className+"...");
+
+		    // TODO: adjust attrName
+
+		  output.println("Declaration(DataProperty(:"+attrName+"))");
+		  output.println("DataPropertyDomain(:"+attrName+" :"+className+")");
+		  if (attrType.startsWith("int"))
+		    output.println("DataPropertyRange( :"+attrName+" xsd:integer )");
+		  else
+		  if (attrType.equals("real") || attrType.equals("float"))
+		    output.println("DataPropertyRange( :"+attrName+" xsd:decimal )");
+		  else		    output.println("DataPropertyRange( :"+attrName+" xsd:string )");		  
+	  }
+	  else	  {	  		if (names.contains(attrName))
+	  			duplicateNames.add(attrName);
+	  		else
+	  			names.add(attrName);
+	  }
+	}
+}
+
+void Rel() :
+{
+	String subClassName;
+	String superClassName;
+}
+{
+	"rel"
+	<NAME> {subClassName=makeName(token.image);}
+	"." "subClassOf" "."
+	<NAME> {superClassName=makeName(token.image);}
+
+	{
+	  if (!onlyCheckSyntax)	  {
+        if (MMDParser.debug)
+	  	  System.out.println(">>generalization "+subClassName+"->"+superClassName+"...");
+		  output.println("SubClassOf(:"+subClassName+" :"+superClassName+")");
+	  }
+	}
+}
+
+void Assoc() :
+{
+	boolean isComposition;
+	String sourceClass;
+	String sourceRole;
+	String sourceCardinality;
+	String targetClass;
+	String targetRole;
+	String targetCardinality;
+	boolean sourceOrdered;
+	boolean targetOrdered;
+}
+{
+	(
+	  "assoc" {isComposition=false;}
+	  |
+	  "compos"{isComposition=true;}
+	)
+	<NAME> {sourceClass=makeName(token.image);}
+	"."
+	["{ordered}"] {sourceOrdered = token.image.equals("{ordered}");}	  	  
+	"["
+	Cardinality() {sourceCardinality=token.image;}
+	"]"
+	<NAME> {sourceRole=makeName(token.image);}
+	"/"
+	<NAME> {targetRole=makeName(token.image);}
+	"["
+	Cardinality() {targetCardinality=token.image;}
+	"]"
+	["{ordered}"] {targetOrdered = token.image.equals("{ordered}");}	  	  
+	"."
+	<NAME> {targetClass=makeName(token.image);}
+
+	{	  
+	  if (!onlyCheckSyntax)	  {
+		if (duplicateNames.contains(sourceRole))
+			sourceRole += "Of"+targetClass;
+		if (duplicateNames.contains(targetRole))
+			targetRole += "Of"+sourceClass;
+	    
+        if (MMDParser.debug) {
+	      if (isComposition)
+	        System.out.print(">>compos ");
+	      else
+	        System.out.print(">>assoc ");	    
+	      System.out.println(sourceClass+" "+sourceCardinality+" "+sourceRole+" "+sourceOrdered+" <-> "+
+	                                 targetClass+" "+targetCardinality+" "+targetRole+" "+targetOrdered+"...");
+        }
+
+		String msg = "Could not create ";
+		if (isComposition)
+		  msg += "composition ";
+		else
+		  msg += "association ";
+	    msg += "between "+sourceClass+"["+sourceCardinality+"]("+sourceRole+") and "+
+	                             targetClass+"["+targetCardinality+"]("+targetRole+").";
+        
+		output.println("Declaration(ObjectProperty(:"+sourceRole+"))");
+		output.println("Declaration(ObjectProperty(:"+targetRole+"))");
+
+		output.println("InverseObjectProperties(:"+sourceRole+" :"+targetRole+")");
+
+		output.println("ObjectPropertyDomain(:"+targetRole+" :"+sourceClass+")");
+		output.println("ObjectPropertyRange(:"+targetRole+" :"+targetClass+")");
+		output.println("ObjectPropertyDomain(:"+sourceRole+" :"+targetClass+")");
+		output.println("ObjectPropertyRange(:"+sourceRole+" :"+sourceClass+")");
+	  }
+	  else
+	  {
+  		if (names.contains(sourceRole))
+  			duplicateNames.add(sourceRole);
+  		else
+  			names.add(sourceRole);
+  		if (names.contains(targetRole))
+  			duplicateNames.add(targetRole);
+  		else
+  			names.add(targetRole);
+	  }
+	}
+}
+
+void Cardinality() :
+{
+}
+{
+	"1" | "1..1" | "0..1" | "0..*" | "*" | "1..*"
+}
+
+TOKEN :
+{
+  < NAME : ((["a"-"z","A"-"Z","0"-"9","_","#"]|"::")+   |   ("\"") (["a"-"z","A"-"Z","0"-"9","_","#"," "]|"::")+ ("\"") ) >
+}
+
+ 
