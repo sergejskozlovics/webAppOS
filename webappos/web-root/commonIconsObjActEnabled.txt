@@ -1,0 +1,1 @@
+put file commonIconsObjActEnabled.png into webAppOS\web-root\dijit\icons\images
