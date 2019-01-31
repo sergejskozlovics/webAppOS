@@ -1,0 +1,114 @@
+##### MAIN SERVER CONFIGURATION #####
+
+# domain_or_ip is the address that end users will type into their browsers;
+# domain_or_ip must be without protocol, since webAppOS will listen to 4 protocols, namely,
+# http and ws, and (if secure==true) https and wss.
+# domain_or_ip may contain a port number (e.g., for debug purposes or in case default ports 80 and 443
+# are not available)
+# domain_or_ip may be an IP address (with optional port number)
+# domain_or_ip MAY NOT contain a path (currently?)
+# domain_or_ip=localhost:4570
+
+domain_or_ip=DOMAIN_OR_IP_PLACEHOLDER
+
+# The port number that webAppOS will listen to.
+# It is strongly recommended to launch webAppOS as non-root user because of
+# security reasons. However, ports below 1024 are protected from non-root users in *NIX systems.
+# On of the solutions is to configure redirection from <domain> ports 80 and 443
+# to the current host and the ports specified below (see docs).
+# For Windows machines you can just specify ports 80 and 443 right away
+# (unless they are already occupied by IIS or Apache).
+port=4570
+secure_port=4571
+
+# Some webAppOS app may require additional ports. That may occur if these
+# two conditions are met:
+# * domain is specified as IP
+# * the webAppOS app requires the whole path of the URI
+#   (i.e., subpath /apps/appname is bad for the given app).
+# If this is the case, webAppOS will occupy ports free_port+0, free_port+1, free_port+2, etc.
+# Please, ensure that these ports are open (firewall doesn't block them) and,
+# in case of redirection, URLs <domain>:free_port+i are redirected to <current host>:free_port+i
+free_port=4572
+
+web_processor_bus_service_port=1200
+
+# the secure flag instructs webAppOS to use https and wss whenever possible;
+# http will be redirected to https, and certificates will be obtained automatically via ACME;
+# the secure flag requires ALL the following conditions to be met:
+# * the domain must contain no port number (default ports 80 and 443 will be used to
+#   pass the ACME challenge)
+# * domain is not an IP address
+# * domain is not "localhost"
+# if secure=false, the admininstrator can manage certificates by their own
+# (e.g., in apache web-server) and set up forwarding to webAppOS via plain http
+secure=true
+
+
+# acme_uri is the address, to which webAppOS will connect to obtain/renew server-side
+# signed certificates; certificates are obtained/renewed automatically via the ACME protocol;
+
+# Use the following URL for staging environment.
+# (Let's Encrypt provides increased request limits,
+#  but browsers won't trust these certificates,
+#  see https://letsencrypt.org/docs/staging-environment/)
+acme_url=acme://letsencrypt.org/staging
+
+# Use the following URL for production environment.
+# Most modern browsers will trust certificates issued via this URI.
+# (Attention! Limits apply, see https://letsencrypt.org/docs/rate-limits/)
+#acme_url=acme://letsencrypt.org
+
+# After how many days we have to renew the server certificate via ACME
+acme_renew_interval=60
+
+
+##### DATABASE (REGISTRY) CONFIGURATION #####
+# Registry currently uses CouchDB (other DBs in the future?)
+# registry_url is in the form http://User:Password@IP:PORT
+# If registry_url is not specified (empty), webAppOS will use JSON files
+# in $WEBAPPOS_ROOT/etc/registry
+
+# registry_url=http://webappos:webappos@127.0.0.1:5984
+
+##### SMTP MAIL SERVER CONFIGURATION #####
+# We currently support TLS SMTP (support other protocols in the future via email_sender_class setting?)
+# We enable STARTTLS only when port is 587 (default port).
+# You can specify port 25, but then STARTTLS will not be used.
+#smtp_server=smtp.webappos.org:25
+smtp_server=SMTP_SERVER_PLACEHOLDER
+smtp_auth=SMTP_AUTH_PLACEHOLDER
+smtp_from=SMTP_FROM_PLACEHOLDER
+smtp_from_name=webAppOS server
+
+#smtp_server=smtp.gmail.com:587
+#smtp_auth=
+#smtp_from=noreply@test.webappos.org
+#smtp_from_name=My webAppOS server
+
+##### A TOKEN FOR ACCESSING WS AND OTHER SERVICES FROM STANDALONE WEBAPPOS #####
+standalone_token=supercalifragilisticexpialidocious
+
+##### MIME-TYPES #####
+mimes=/Desktop:directory/desktop;/Pictures:directory/pictures;.lua:source/lua
+
+##### VIRTUAL MACHINES #####
+#qemu_path=$WEBAPPOS_ROOT/util/qemu
+
+##### MRAM SETTINGS #####
+# in megabytes (approximately, actual limits will apply to number of actions and characters)
+# TODO:
+# max_mram_per_project=5
+# max_total_mram_slots=500
+# max_mram_slots_per_user=5
+# TODO: max_webproc_ram= via java mx arg?
+
+# The total maximal number of users that 
+# can access a single project. There must be at least 2 users
+# allowed (the server and the browser).
+# For debugers and shared multi-user projects specify some greater value.
+# log(max_users_per_project) bits will be predefined for repository references.
+max_users_per_project=2
+
+
+#inline_webcalls=true

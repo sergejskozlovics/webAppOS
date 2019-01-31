@@ -1,0 +1,458 @@
+# Group: Apps-related functions
+
+##
+# Function: getAppPropertiesByFullName
+#   Returns some properties of the given app.
+#
+#   Parameter:
+#     appFullName - full app name
+#
+#   Returns:
+#     a JSON object
+#   ---Code---
+#      {
+#        fullName: "<name-of-webAppOS-app.app>",
+#        displayedName:: "<name-of-webAppOS-app>",
+#        urlName: "<name-of-app-without-blanks-lower-case>",
+#        iconURL: "<icon-path>",
+#        projectExtension: "app-project-extension",
+#        singleton: true|false
+#      }
+#   ----------
+#      or {}, if no app corresponds to the given full app name;
+public\ static\ webappos.getAppPropertiesByFullName(appFullName)=staticjava:org.webappos.webcalls.AppsActions_webcalls#getAppPropertiesByFullName
+
+##
+# Function: getAppPropertiesByUrlName
+#   Returns some properties of the given app.
+#
+#   Parameter:
+#     appUrlName - app URL name
+#
+#   Returns:
+#     a JSON object
+#   ---Code---
+#      {
+#        fullName: "<name-of-webAppOS-app.app>",
+#        displayedName:: "<name-of-webAppOS-app>",
+#        urlName: "<name-of-app-without-blanks-lower-case>",
+#        iconURL: "<icon-path>",
+#        projectExtension: "app-project-extension",
+#        singleton: true|false
+#      }
+#   ----------
+#      or {}, if no app corresponds to the given URL name;
+public\ static\ webappos.getAppPropertiesByUrlName(appUrlName)=staticjava:org.webappos.webcalls.AppsActions_webcalls#getAppPropertiesByUrlName
+
+##
+# Function: getAssociatedAppsByExtension
+#   Finds installed webAppOS apps (availabe for the current login)
+#   that are able to handle projects or files with the given file extension.
+#
+#   Parameter:
+#      extension - project file extension (with or without a dot)
+#
+#   Returns:
+#     a JSON _array_ of objects
+#   ---Code---
+#      {
+#        fullName: "<name-of-webAppOS-app.app>",
+#        displayedName:: "<name-of-webAppOS-app>",
+#        urlName: "<name-of-app-without-blanks-lower-case>",
+#        iconURL: "<icon-path>",
+#        projectExtension: "app-project-extension"
+#      }
+#   ----------
+static\ webappos.getAssociatedAppsByExtension(extension)=staticjava:org.webappos.webcalls.AppsActions_webcalls#getAssociatedAppsByExtension
+
+##
+# Function: getAvailableApps
+#   Finds installed webAppOS apps that are available for the current login.
+#
+#   Returns:
+#     a JSON _array_ of objects
+#   ---Code---
+#      {
+#        fullName: "<name-of-webAppOS-app.app>",
+#        displayedName:: "<name-of-webAppOS-app>",
+#        urlName: "<name-of-app-without-blanks-lower-case>",
+#        iconURL: "<icon-path>"
+#      }
+#   ----------
+static\ webappos.getAvailableApps=staticjava:org.webappos.webcalls.AppsActions_webcalls#getAvailableApps
+
+##
+# Function: appRequiresTemplate
+#   Returns wheter the given app requires initial template to create a new project.
+#   If not, then a new project can be bootstrapped via the initial transformation specified for this app.
+#
+#   Parameter:
+#      appFullName - the full name of the application
+#
+#   Returns:
+#   ---Code---
+#      {
+#        result: true|false //true (if a template is required) or false (if the initial transformation can be used)
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+public\ static\ webappos.appRequiresTemplate(appFullName)=staticjava:org.webappos.webcalls.AppsActions_webcalls#appRequiresTemplate
+
+##
+# Function: getAppTemplates
+#   Returns all app templates that can be used to create a new project for the given app.
+#
+#   Parameter:
+#      appFullName - the full name of the application
+#
+#   Returns:
+#     a JSON array of template names (strings);
+#     [], if no app templates found;
+public\ static\ webappos.getAppTemplates(appFullName)=staticjava:org.webappos.webcalls.AppsActions_webcalls#getAppTemplates
+
+##
+# Function: getPublishedTemplates
+#   Returns all published templates that can be used to create a new project for the given app.
+#
+#   Parameter:
+#      appFullName - the full name of the application
+#
+#   Returns:
+#     a JSON array of template names (strings);
+#     [], if no app templates found;
+public\ static\ webappos.getPublishedTemplates(appFullName)=staticjava:org.webappos.webcalls.AppsActions_webcalls#getPublishedTemplates
+
+##
+# Function: getUserTemplates
+#   Returns local user templates (from the user's home folder) that can be used to create a new project for the given app.
+#
+#   Parameter:
+#      appFullName - the full name of the application
+#
+#   Returns:
+#     a JSON array of template names (strings);
+#     [], if no user templates found;
+static\ webappos.getUserTemplates(appFullName)=staticjava:org.webappos.webcalls.AppsActions_webcalls#getUserTemplates
+
+##
+# Function: bootstrapProject
+#   Launches the initial web call of the current app
+#   to bootstrap the project, which is being created.
+#
+#   Returns:
+#     {}
+webappos.bootstrapProject()=staticjava:org.webappos.webcalls.AppsActions_webcalls#bootstrapProject
+
+# Group: File system-related functions
+
+##
+# Function: getFileContentAsUTF8String
+#   Reads the given file from the user's home directory.
+#
+#   Parameter:
+#      fileName - the file name relative to the global webAppOS /home directory
+#                 (user login must be the first path element)
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        content: "<file-content-as-string>"
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+static\ webappos.getFileContentAsUTF8String(fileName)=staticjava:org.webappos.webcalls.FSActions_webcalls#getFileContentAsUTF8String
+
+##
+# Function: fileExists
+#   Checks whether the given path exists in the user's home directory.
+#
+#   Parameter:
+#      fileName - the file name relative to the global webAppOS /home directory
+#                 (user login must be the first path element)
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        result: true|false
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+static\ webappos.fileExists(fileName)=staticjava:org.webappos.webcalls.FSActions_webcalls#fileExists
+
+##
+# Function: isDirectory
+#   Checks whether the given path exists and is a directory.
+#
+#   Parameter:
+#      fileName - the file/directory name relative to the global webAppOS /home directory
+#                 (user login must be the first path element)
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        result: true|false
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+static\ webappos.isDirectory(fileName)=staticjava:org.webappos.webcalls.FSActions_webcalls#isDirectory
+
+##
+# Function: getFileContentFromCurrentProjectAsUTF8String
+#   Reads the given file from the cache folder of the current webAppOS project.
+#
+#   Parameter:
+#      fileName - the file name relative to the project cache folder
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        content: "<file-content-as-string>"
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+webappos.getFileContentFromCurrentProjectAsUTF8String(fileName)=staticjava:org.webappos.webcalls.FSActions_webcalls#getFileContentFromCurrentProjectAsUTF8String
+
+##
+# Function: deleteFile
+#   deletes the the given file from the user's home directory
+#
+#   Parameter:
+#      fileName - the file name relative to the global webAppOS /home directory
+#                 (user login must be the first path element)
+#
+#   Returns:
+#   ---Code---
+#      {
+#        result: true|false
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+static\ webappos.deleteFile(fileName)=staticjava:org.webappos.webcalls.FSActions_webcalls#deleteFile
+##
+# Function: deleteFileFromCurrentProject
+#   deletes the the given file from the cache folder of the current webAppOS project
+#
+#   Parameter:
+#      fileName - the file name relative to the project cache folder
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        result: true|false
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+webappos.deleteFileFromCurrentProject(fileName)=staticjava:org.webappos.webcalls.FSActions_webcalls#deleteFileFromCurrentProject
+
+##
+# Function: uploadFile
+#   creates (uploads) the file with the given content in the user's home directory
+#
+#   Parameter:
+#     a JSON object
+#   ---Code---
+#      {
+#        fileName: "<file-name-relative-to-the-/home-folder>", // (user login must be the first path element)
+#        content: "<file-content-as-string>"
+#      }
+#   ----------
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        result: true|false
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+static\ webappos.uploadFile(JSON)=staticjava:org.webappos.webcalls.FSActions_webcalls#uploadFileToCurrentProject
+
+##
+# Function: uploadFileToCurrentProject
+#   creates (uploads) the file with the given content within the cache folder of the current webAppOS project
+#
+#   Parameter:
+#     a JSON object
+#   ---Code---
+#      {
+#        fileName: "<file-name-relative-to-the-project-cache-folder>",
+#        content: "<file-content-as-string>"
+#      }
+#   ----------
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        result: true|false
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+webappos.uploadFileToCurrentProject(JSON)=staticjava:org.webappos.webcalls.FSActions_webcalls#uploadFileToCurrentProject
+
+##
+# Function: renameActiveProject
+#   Renames the active project. The current user must be the owner of the project
+#   (i.e., the old and new project_id must start with "<login>/")
+#
+#   Parameter:
+#     a JSON object
+#   ---Code---
+#      {
+#        project_id: "old/path/relative/to/global/home",
+#        new_project_id: "new/path/relative/to/global/home"
+#      }
+#   ----------
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        result: true|false
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+webappos.renameActiveProject(JSON)=staticjava:org.webappos.webcalls.FSActions_webcalls#renameActiveProject
+
+# Group: Registry-related functions
+
+##
+# Function: getUserRegistryValue
+#   Gets the value of the given registry key in the "users" area of the registry.
+#
+#   Parameter:
+#     a string represeting a path to key, e.g., "path/to/key"
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        result: <value-as-primitive-or-JSON>
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+static\ webappos.getUserRegistryValue(key)=staticjava:org.webappos.webcalls.RegistryActions_webcalls#getUserRegistryValue
+
+##
+# Function: setUserRegistryValue
+#   Sets the value of the given registry key in the "users" area of the registry.
+#
+#   Parameter:
+#     a JSON object
+#   ---Code---
+#      {
+#        key: "path/to/key",
+#        value: <value-as-primitive-or-JSON>
+#      }
+#   ----------
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        result: true|false
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        result: "false",
+#        error: "<message>"
+#      }
+#   ----------
+static\ webappos.setUserRegistryValue(JSON)=staticjava:org.webappos.webcalls.RegistryActions_webcalls#setUserRegistryValue
+
+# Group: Web calls-related functions
+##
+# Function: getAvailableWebCalls
+#   Returns the currently available web calls.
+#   If called statically, only static web calls are returned, otherwise,
+#   static + app-specific web calls are returned.
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        <action<i>-name>: {
+#          resolvedInstructionSet: "<instruction-set-name>",
+#          resolvedLocation: "<specific-location>",
+#          isPublic: true|false,
+#          isStatic: true|false,
+#          isInline: true|false,
+#          isSingle: true|false,
+#          isClient: true|false,
+#          callingConventions: "tdacall" or "jsoncall"
+#        },
+#        ...
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+static\ webappos.getAvailableWebCalls()=staticjava:org.webappos.webcalls.WebCallsActions_webcalls#getAvailableWebCalls
+
+
+# @}

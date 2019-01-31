@@ -1,0 +1,7 @@
+#proc-type address/location instances/cores name reconnect ms
+#use TAB or space as delimiter
+#local will be launched (and re-launched on fail) automatically, remote - not
+localjava org.webappos.webproc.DefaultWebProcessor 1 "Default web processor" 1000
+# localnode path/to/node 1	"Node web processor" 0
+# remote rmi:1.2.3.4:123 1 "Some remote"   5
+

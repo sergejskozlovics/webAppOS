@@ -1,0 +1,4 @@
+tdacall\ TDAKernel\:\:AttachEngineCommand=staticjava:org.webappos.bridge.BridgeEventsCommandsHook#executeAttachEngineCommand
+tdacall\ TDAKernel\:\:InsertMetamodelCommand=staticjava:org.webappos.bridge.BridgeEventsCommandsHook#executeInsertMetamodelCommand
+tdacall\ TDAKernel\:\:LaunchTransformationCommand=staticjava:org.webappos.bridge.BridgeEventsCommandsHook#executeLaunchTransformationCommand
+tdacall\ TDAKernel\:\:LaunchTransformationInBackgroundCommand=staticjava:org.webappos.bridge.BridgeEventsCommandsHook#executeLaunchTransformationCommand
