@@ -1,0 +1,2 @@
+tdacall\ D#Command=staticjava:lv.lumii.tda.webde.DialogEngine_webcalls#prepareCommand
+single\ tdacall\ continueD#Command=clientjs:executeD_Command

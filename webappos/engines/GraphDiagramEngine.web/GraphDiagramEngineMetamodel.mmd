@@ -1,0 +1,435 @@
+MMDefStart;
+ rel TDAKernel::AsyncCommand.subClassOf.TDAKernel::Command;
+
+ class PresentationElement;
+
+ class GraphDiagramType;
+
+ class GraphDiagramEngine;
+ rel GraphDiagramEngine.subClassOf.TDAKernel::Engine;
+      attr GraphDiagramEngine.onPopUpElemSelectEvent:String;
+      attr GraphDiagramEngine.onPasteGraphClipboardEvent:String;
+      attr GraphDiagramEngine.onDeleteCollectionEvent:String;
+      attr GraphDiagramEngine.onCopyCutCollectionEvent:String;
+      attr GraphDiagramEngine.onCopyCollectionEvent:String;
+      attr GraphDiagramEngine.onMoveLineStartPointEvent:String;
+      attr GraphDiagramEngine.onMoveLineEndPointEvent:String;
+      attr GraphDiagramEngine.onL2ClickEvent:String;
+      attr GraphDiagramEngine.onLClickEvent:String;
+      attr GraphDiagramEngine.onRClickEvent:String;
+      attr GraphDiagramEngine.onNewLineEvent:String;
+      attr GraphDiagramEngine.onNewBoxEvent:String;
+      attr GraphDiagramEngine.onExecTransfEvent:String;
+      attr GraphDiagramEngine.onNewPinEvent:String;
+      attr GraphDiagramEngine.onChangeParentEvent:String;
+      attr GraphDiagramEngine.onActivateDgrEvent:String;
+      attr GraphDiagramEngine.onCloseDgrEvent:String;
+      attr GraphDiagramEngine.onOKStyleDialogEvent:String;
+      attr GraphDiagramEngine.onKeyDownEvent:String;
+      attr GraphDiagramEngine.onNewFreeBoxEvent:String;
+      attr GraphDiagramEngine.onNewFreeLineEvent:String;
+      attr GraphDiagramEngine.onFreeBoxEditedEvent:String;
+      attr GraphDiagramEngine.onFreeLineEditedEvent:String;
+
+      //command apakshklases;
+      class OkCmd;
+      class PopUpCmd;
+      class ActiveDgrCmd;
+      class ActiveDgrViewCmd;
+      class PasteCmd;
+      class UpdateDgrCmd;
+      class CloseDgrCmd;
+      class SaveDgrCmd;
+      class ActiveElementCmd;
+      class AfterConfigCmd;
+      class SaveStylesCmd;
+      class StyleDialogCmd;
+      class DefaultStyleCmd;
+      class RefreshDgrCmd;
+      class UpdateStyleCmd;
+      class RerouteCmd;
+      class AlignSizeCmd;
+
+      //event apakshklases;
+      class PopUpElemSelectEvent;
+      class PasteGraphClipboardEvent;
+      class DeleteCollectionEvent;
+      class CopyCutCollectionEvent;
+      class CopyCollectionEvent;
+      class MoveLineStartPointEvent;
+      class MoveLineEndPointEvent;
+      class L2ClickEvent;
+      class LClickEvent;
+      class RClickEvent;
+      class NewLineEvent;
+      class NewBoxEvent;
+      class ExecTransfEvent;
+      class NewPinEvent;
+      class ChangeParentEvent;
+      class ActivateDgrEvent;
+      class CloseDgrEvent;
+      class OKStyleDialogEvent;
+      class KeyDownEvent;
+      class NewFreeBoxEvent;
+      class NewFreeLineEvent;
+      class FreeBoxEditedEvent;
+      class FreeLineEditedEvent;
+      class ToolbarElementSelectEvent;
+
+//stili;
+      class Style;
+
+      class GraphDiagramStyle;
+              attr GraphDiagramStyle.id:String;
+              attr GraphDiagramStyle.caption:String;
+              attr GraphDiagramStyle.bkgColor:Integer;
+              attr GraphDiagramStyle.printZoom:Integer;
+              attr GraphDiagramStyle.screenZoom:Integer;
+              attr GraphDiagramStyle.layoutMode:Integer;
+              attr GraphDiagramStyle.layoutAlgorithm:Integer;
+
+      class ElemStyle;
+              attr ElemStyle.id:String;
+              attr ElemStyle.caption:String;
+              attr ElemStyle.shapeCode:Integer;
+              attr ElemStyle.shapeStyle:Integer;
+              attr ElemStyle.lineWidth:Integer;
+              attr ElemStyle.dashLength:Integer;
+              attr ElemStyle.breakLength:Integer;
+              attr ElemStyle.bkgColor:Integer;
+              attr ElemStyle.lineColor:Integer;
+              attr ElemStyle.dynamicTooltip:Integer;
+
+      class NodeStyle;
+              attr NodeStyle.picture:String;
+              attr NodeStyle.picWidth:Integer;
+              attr NodeStyle.picHeight:Integer;
+              attr NodeStyle.picPos:Integer;
+              attr NodeStyle.picStyle:Integer;
+              attr NodeStyle.width:Integer;
+              attr NodeStyle.height:Integer;
+              attr NodeStyle.alignment:Integer;
+
+      class EdgeStyle;
+              attr EdgeStyle.startShapeCode:Integer;
+              attr EdgeStyle.startLineWidth:Integer;
+//              attr EdgeStyle.startDashLength:Integer;
+//              attr EdgeStyle.startBreakLength:Integer;
+              attr EdgeStyle.startBkgColor:Integer;
+              attr EdgeStyle.startLineColor:Integer;
+              attr EdgeStyle.lineType:Integer;
+              attr EdgeStyle.endShapeCode:Integer;
+              attr EdgeStyle.endLineWidth:Integer;
+//              attr EdgeStyle.endDashLength:Integer;
+//              attr EdgeStyle.endBreakLength:Integer;
+              attr EdgeStyle.endBkgColor:Integer;
+              attr EdgeStyle.endLineColor:Integer;
+              attr EdgeStyle.middleShapeCode:Integer;
+              attr EdgeStyle.middleLineWidth:Integer;
+              attr EdgeStyle.middleDashLength:Integer;
+              attr EdgeStyle.middleBreakLength:Integer;
+              attr EdgeStyle.middleBkgColor:Integer;
+              attr EdgeStyle.middleLineColor:Integer;
+
+      class PortStyle;
+              attr PortStyle.picture:String;
+              attr PortStyle.width:Integer;
+              attr PortStyle.height:Integer;
+              attr PortStyle.alignment:Integer;
+	      attr PortStyle.picPos:Integer;
+              attr PortStyle.picStyle:Integer;
+
+      class FreeBoxStyle;
+
+      class FreeLineStyle;
+
+      class CompartStyle;
+              attr CompartStyle.id:String;
+              attr CompartStyle.caption:String;
+              attr CompartStyle.nr:Integer;
+              attr CompartStyle.alignment:Integer;
+              attr CompartStyle.adjustment:Integer;
+              attr CompartStyle.picture:String;
+              attr CompartStyle.picWidth:Integer;
+              attr CompartStyle.picHeight:Integer;
+              attr CompartStyle.picPos:Integer;
+              attr CompartStyle.picStyle:Integer;
+              attr CompartStyle.adornment:Integer;
+              attr CompartStyle.lineWidth:Integer;
+              attr CompartStyle.lineColor:Integer;
+              attr CompartStyle.fontTypeFace:String;
+              attr CompartStyle.fontCharSet:Integer;
+              attr CompartStyle.fontColor:Integer;
+              attr CompartStyle.fontSize:Integer;
+              attr CompartStyle.fontPitch:Integer;
+              attr CompartStyle.fontStyle:Integer;
+              attr CompartStyle.isVisible:Integer;
+              attr CompartStyle.lineStartDirection:Boolean;
+              attr CompartStyle.lineEndDirection:Boolean;
+              attr CompartStyle.breakAtSpace:Integer;
+              attr CompartStyle.compactVisible:Integer;
+              attr CompartStyle.dynamicTooltip:Integer;
+
+      //popUps;
+      class PopUpDiagram;
+
+      class PopUpElement;
+              attr PopUpElement.caption:String;
+              attr PopUpElement.procedureName:String;
+              //attr PopUpElement.visibility:Boolean;
+      //palette;
+      class Palette;
+      class PaletteElement;
+              attr PaletteElement.caption:String;
+              attr PaletteElement.picture:String;
+      class PaletteBox;
+      class PaletteLine;
+      class PalettePin;
+      class PaletteFreeBox;
+      class PaletteFreeLine;
+
+      //toolbar;
+      class Toolbar;
+      class ToolbarElement;
+              attr ToolbarElement.caption:String;
+              attr ToolbarElement.picture:String;
+              attr ToolbarElement.procedureName:String;
+
+      class CurrentDgrPointer;
+      class GraphDiagram;
+              attr GraphDiagram.caption:String;
+              attr GraphDiagram.style:String;
+              attr GraphDiagram.graphDgrType:String;
+              attr GraphDiagram.isReadOnly:Boolean;
+              attr GraphDiagram.remoteId:String;
+              attr GraphDiagram.targetDiagramRemoteId:String;
+              attr GraphDiagram.treeErrorIcon:String;
+              attr GraphDiagram.treeMultiUserIcon:String;
+              attr GraphDiagram.multiComment:String;
+              attr GraphDiagram.isReadOnly2:Boolean;
+
+              attr GraphDiagram.bkgColor:Integer;
+              attr GraphDiagram.printZoom:Integer;
+              attr GraphDiagram.screenZoom:Integer;
+              attr GraphDiagram.layoutMode:Integer;
+              attr GraphDiagram.layoutAlgorithm:Integer;
+
+
+      class Collection;
+
+      class Element;
+              attr Element.style:String;
+              attr Element.location:String;
+      class Node;
+
+      class Edge;
+
+      class Port;
+
+      class FreeBox;
+              attr FreeBox.freeBox_x:Integer;
+              attr FreeBox.freeBox_y:Integer;
+              attr FreeBox.freeBox_w:Integer;
+              attr FreeBox.freeBox_h:Integer;
+              attr FreeBox.freeBox_z:Integer;
+
+      class FreeLine;
+              attr FreeLine.freeLine_x1:Integer;
+              attr FreeLine.freeLine_y1:Integer;
+              attr FreeLine.freeLine_xn:Integer;
+              attr FreeLine.freeLine_yn:Integer;
+              attr FreeLine.freeLine_z:Integer;
+
+      class Compartment;
+              attr Compartment.input:String;
+              attr Compartment.style:String;
+              attr Compartment.value:String;
+              attr Compartment.isGroup:String;
+
+
+//beidz klasu un atributu definesanu;
+
+//apaksklases;
+      //command;
+      rel PopUpCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel OkCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel ActiveDgrCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel ActiveDgrViewCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel PasteCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel UpdateDgrCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel CloseDgrCmd.subClassOf.TDAKernel::AsyncCommand;
+//      rel ExecTransfCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel SaveDgrCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel ActiveElementCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel AfterConfigCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel SaveStylesCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel StyleDialogCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel DefaultStyleCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel RefreshDgrCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel UpdateStyleCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel RerouteCmd.subClassOf.TDAKernel::AsyncCommand;
+      rel AlignSizeCmd.subClassOf.TDAKernel::AsyncCommand;
+
+      //event;
+      rel PopUpElemSelectEvent.subClassOf.TDAKernel::Event;
+      rel ToolbarElementSelectEvent.subClassOf.TDAKernel::Event;
+      rel PasteGraphClipboardEvent.subClassOf.TDAKernel::Event;
+      rel DeleteCollectionEvent.subClassOf.TDAKernel::Event;
+      rel CopyCutCollectionEvent.subClassOf.TDAKernel::Event;
+      rel CopyCollectionEvent.subClassOf.TDAKernel::Event;
+      rel MoveLineStartPointEvent.subClassOf.TDAKernel::Event;
+      rel MoveLineEndPointEvent.subClassOf.TDAKernel::Event;
+      rel L2ClickEvent.subClassOf.TDAKernel::Event;
+      rel LClickEvent.subClassOf.TDAKernel::Event;
+      rel RClickEvent.subClassOf.TDAKernel::Event;
+      rel NewLineEvent.subClassOf.TDAKernel::Event;
+      rel NewBoxEvent.subClassOf.TDAKernel::Event;
+      rel ExecTransfEvent.subClassOf.TDAKernel::Event;
+      rel NewPinEvent.subClassOf.TDAKernel::Event;
+      rel ChangeParentEvent.subClassOf.TDAKernel::Event;
+      rel ActivateDgrEvent.subClassOf.TDAKernel::Event;
+      rel CloseDgrEvent.subClassOf.TDAKernel::Event;
+      rel OKStyleDialogEvent.subClassOf.TDAKernel::Event;
+      rel KeyDownEvent.subClassOf.TDAKernel::Event;
+      rel NewFreeBoxEvent.subClassOf.TDAKernel::Event;
+      rel NewFreeLineEvent.subClassOf.TDAKernel::Event;
+      rel FreeBoxEditedEvent.subClassOf.TDAKernel::Event;
+      rel FreeLineEditedEvent.subClassOf.TDAKernel::Event;
+
+      //elemStyle;
+      rel GraphDiagramStyle.subClassOf.Style;
+      rel ElemStyle.subClassOf.Style;
+      rel EdgeStyle.subClassOf.ElemStyle;
+      rel NodeStyle.subClassOf.ElemStyle;
+      rel PortStyle.subClassOf.ElemStyle;
+      rel FreeBoxStyle.subClassOf.NodeStyle;
+      rel FreeLineStyle.subClassOf.EdgeStyle;
+      rel CompartStyle.subClassOf.Style;
+
+      //paletteElement;
+      rel PaletteBox.subClassOf.PaletteElement;
+      rel PaletteLine.subClassOf.PaletteElement;
+      rel PalettePin.subClassOf.PaletteElement;
+      rel PaletteFreeBox.subClassOf.PaletteElement;
+      rel PaletteFreeLine.subClassOf.PaletteElement;
+
+      //element;
+      rel Edge.subClassOf.Element;
+      rel Node.subClassOf.Element;
+      rel Port.subClassOf.Element;
+      rel FreeBox.subClassOf.Element;
+      rel FreeLine.subClassOf.Element;
+
+      //presentationElement;
+      rel GraphDiagram.subClassOf.PresentationElement;
+      rel Element.subClassOf.PresentationElement;
+      rel PopUpDiagram.subClassOf.PresentationElement;
+      rel PopUpElement.subClassOf.PresentationElement;
+      rel Toolbar.subClassOf.PresentationElement;
+      rel ToolbarElement.subClassOf.PresentationElement;
+      rel Palette.subClassOf.PresentationElement;
+      rel PaletteElement.subClassOf.PresentationElement;
+      rel Compartment.subClassOf.PresentationElement;
+
+
+      //graphdiagram;
+      assoc GraphDiagram.[*]graphDiagram/palette[*].Palette;
+      assoc GraphDiagram.[*]graphDiagram/toolbar[*].Toolbar;
+      assoc GraphDiagram.[*]graphDiagram/graphDiagramStyle[*].GraphDiagramStyle;
+      assoc GraphDiagram.[*]graphDiagram/graphDiagramType[*].GraphDiagramType;
+
+      //popup;
+      assoc PopUpDiagram.[0..1]popUpDiagram/popUpCmd[*].PopUpCmd;
+      compos PopUpDiagram.[1]popUpDiagram/popUpElement[*].PopUpElement;
+      assoc PopUpElemSelectEvent.[*]popUpElemSelectEvent/popUpElement[1].PopUpElement;
+
+      //palette;
+      compos Palette.[1]palette/paletteElement[*]{ordered}.PaletteElement;
+
+      //toolbar;
+      compos Toolbar.[1]toolbar/toolbarElement[*].ToolbarElement;
+      assoc ToolbarElement.[0..1]toolbarElement/toolbarElementSelectEvent[0..1].ToolbarElementSelectEvent;
+
+      //comprtStyle;
+      //compos ElemStyle.[1]elemStyle/compartStyle[*].CompartStyle;
+      assoc Compartment.[*]compartment/compartStyle[0..1].CompartStyle;
+
+      //graphDiagram;
+      assoc CurrentDgrPointer.[0..1]currentDgrPointer/graphDiagram[1].GraphDiagram;
+      compos GraphDiagram.[*]graphDiagram/collection[1].Collection;
+      //assoc GraphDiagram.[*]graphDiagram/graphDiagramType[1].GraphDiagramType;
+      compos GraphDiagram.[0..1]graphDiagram/element[*].Element;
+      assoc TDAKernel::Command.[*]command/graphDiagram[*].GraphDiagram;
+
+      assoc ActivateDgrEvent.[*]activateDgrEvent/graphDiagram[1].GraphDiagram;
+
+      //element;
+      compos Collection.[0..1]collection/element[*].Element;
+      assoc Element.[*]element/elemStyle[1].ElemStyle;
+      assoc OkCmd.[0..1]okCmd/element[*].Element;
+      assoc DefaultStyleCmd.[0..1]defaultStyleCmd/element[*].Element;
+      assoc PasteCmd.[0..1]pasteCmd/element[*].Element;
+      assoc ActiveElementCmd.[0..1]activeElementCmd/element[*].Element;
+      assoc StyleDialogCmd.[0..1]styleDialogCmd/element[*].Element;
+      compos Node.[0..1]container/component[*].Node;
+      compos Node.[1]node/port[*].Port;
+      assoc RerouteCmd.[0..1]rerouteCmd/element[*].Element;
+      assoc AlignSizeCmd.[0..1]alignSizeCmd/element[*].Element;
+
+      assoc L2ClickEvent.[*]l2ClickEvent/element[0..1].Element;
+      assoc LClickEvent.[*]lClickEvent/element[0..1].Element;
+      assoc RClickEvent.[*]rClickEvent/element[0..1].Element;
+      assoc NewLineEvent.[*]newLineEventS/start[0..1].Element;
+      assoc NewLineEvent.[*]newLineEventE/end[0..1].Element;
+      assoc NewLineEvent.[*]newLineEvent/paletteLine[1].PaletteLine;
+      assoc NewBoxEvent.[0..1]newBoxEvent/paletteBox[1].PaletteBox;
+      assoc NewBoxEvent.[0..1]newBoxEvent/node[0..1].Node;
+      assoc ChangeParentEvent.[1]changeParentEventN/node[0..1].Node;
+      assoc ChangeParentEvent.[1]changeParentEventT/target[0..1].Node;
+      assoc NewPinEvent.[0..1]newPinEvent/node[1].Node;
+      assoc NewPinEvent.[0..1]newPinEvent/palettePin[1].PalettePin;
+
+      assoc NewFreeBoxEvent.[0..1]newFreeBoxEvent/paletteFreeBox[1].PaletteFreeBox;
+      assoc NewFreeLineEvent.[0..1]newFreeLineEvent/paletteFreeLine[1].PaletteFreeLine;
+
+      assoc MoveLineStartPointEvent.[*]moveLineStartPointEventT/target[0..1].Element;
+      assoc MoveLineStartPointEvent.[*]moveLineStartPointEventE/edge[1].Edge;
+      assoc MoveLineEndPointEvent.[*]moveLineEndPointEventT/target[0..1].Element;
+      assoc MoveLineEndPointEvent.[*]moveLineEndPointEventE/edge[1].Edge;
+
+      assoc FreeBoxEditedEvent.[*]freeBoxEditedEvent/element[0..1].Element;
+      assoc FreeLineEditedEvent.[*]freeLineEditedEvent/element[0..1].Element;
+
+      compos Element.[0..1]element/compartment[*]{ordered}.Compartment;
+
+      assoc Edge.[*]eStart/start[1].Element;
+      assoc Edge.[*]eEnd/end[1].Element;
+
+      assoc GraphDiagram.[*]target/source[*].Element;
+      assoc GraphDiagram.[*]child/parent[*].Element;
+
+      assoc Compartment.{ordered}[*]subCompartment/parentCompartment[*].Compartment;
+
+      //assoc PresentationElement.[*]presentationElement/updateStyleCmd[*].UpdateStyleCmd;
+
+      assoc Element.[*]element/updateStyleCmd[*].UpdateStyleCmd;
+
+      //assoc Style.[*]style/updateStyleCmd[*].UpdateStyleCmd;
+      assoc ElemStyle.[*]elemStyle/updateStyleCmd[*].UpdateStyleCmd;
+
+
+  // Frame is from EE metamodel
+  class Frame; 
+    attr Frame.caption:string;
+    attr Frame.contentURI:String;
+    attr Frame.location:String;
+    attr Frame.isResizeable:boolean;
+    attr Frame.isClosable:boolean;
+    attr Frame.onFrameActivatedEvent:String;
+    attr Frame.onFrameDeactivatingEvent:String;
+    attr Frame.onFrameResizedEvent:String;
+    attr Frame.onCloseFrameRequestedEvent:String;
+
+  assoc GraphDiagram.[0..1]graphDiagram/frame[0..1].Frame;
+
+MMDefEnd;

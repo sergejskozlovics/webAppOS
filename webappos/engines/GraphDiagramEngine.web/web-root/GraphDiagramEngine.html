@@ -1,0 +1,797 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <!-- dojo with jquery support --->
+<!--  <script src="/dojo/dojo.js" data-dojo-config="async:1, packages: [{ name: 'jquery', location: '/', main: 'jquery' }]"></script>
+  <link rel="stylesheet" href="/themes/flat/flat.css" media="screen">
+  <script>define.amd.jQuery = true;</script>-->
+
+<!--  <script src="/dojo/dojo.js" data-dojo-config="async:0"></script>-->
+
+
+  <script type="text/javascript" src="/jquery.js"></script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+  <script type="text/javascript" src="/webappos.js"></script>
+
+  <script type="text/javascript" src="imcs_diagrameditor/ajoo_helpers.js"></script>
+  <script type="text/javascript" src="imcs_diagrameditor/ajoo_wrapper.js"></script>
+  <script type="text/javascript" src="imcs_diagrameditor/de_helpers.js"></script>
+  <script type="text/javascript" src="imcs_diagrameditor/imcs_layoutengine.js"></script>
+  <script type="text/javascript" src="imcs_diagrameditor/IMCSDiagramEditor.js"></script>
+
+
+
+</head>    
+<body id="theBody">
+  <div id="diagramDiv">
+  </div>
+  <span id="popUpDiv" style="position:absolute; z-index:2; background-color:white;"></span>
+  <div id="wrapDiv" style="opacity:0.2; z-index:1; position:absolute; left:0; top:0; right:0; bottom:0; background-color:ffffff; display:none;"
+     onclick="event.preventDefault(); popUpDiv.innerHTML=''; $('#wrapDiv').hide();"
+     oncontextmenu="event.preventDefault(); popUpDiv.innerHTML=''; $('#wrapDiv').hide();"></div>'+
+<script>
+
+
+///// GLOBAL VARIABLES /////
+
+var gd; // GraphDiagram object in the repository
+var imcs_de;  // diagram object IMCSDiagramEditor
+//var elHash = {}; // element.reference -> element.hash (if hashes differ, the element must be re-added)
+//var elLastLocation = {}; // element.reference -> element last location string used in window.layout
+
+var serverSideLayout = false;//true;
+
+var newBoxLocation = null;
+var newLineLocation = null;
+
+var lastRenderRequestTime = new Date();
+var inRender = false;
+
+var activeExecuted = false;
+var lastReadOnly = false;
+
+
+function updateCollection(rDiagram, rElementsArr)
+// rElementsArr is an array of elements, where at least the reference and
+// the location(:String) attributes are specified
+{
+   console.log("in update collection "+rElementsArr.length);
+   var arr = [];
+   for (var i=0; i<rElementsArr.length; i++) {
+     var el = tda.model[rElementsArr[i].reference];
+     if (!rElementsArr[i].reference || !el)
+       continue;
+     var className = el.getClassName();
+/*     if (className=="Node") {
+       el.setLocation(rElementsArr[i].location);
+     }
+     else
+     if (className=="Edge") {
+       el.setLocation(rElementsArr[i].location);
+     }*/
+     if ((className=="Node") || (className=="Edge"))
+       arr.push(el);
+   }
+
+   var gd = tda.model[rDiagram];
+
+   var ptr = tda.model.CurrentDgrPointer.getFirstObject();
+   ptr.setGraphDiagram(gd);
+
+   var collArr = gd.getCollection();
+   for (var i=0; i<collArr.length; i++) {
+     collArr[i].setElement([]);
+     collArr[i].delete();
+   }
+
+console.log("UPDATE COLLECTION",arr.length);
+   var coll = new tda.model.Collection();
+   coll.setElement(arr);
+   gd.setCollection([coll]);
+}
+
+
+function updateLocations(rElementsArr)
+// rElementsArr is an array of elements, where at least the reference and
+// the location(:String) attributes are specified
+{
+   console.log("in update locations "+rElementsArr.length);
+   for (var i=0; i<rElementsArr.length; i++) {
+     var el = tda.model[rElementsArr[i].reference];
+     var className = el.getClassName();
+     if (className=="Node") {
+       el.setLocation(rElementsArr[i].location);
+     }
+     else
+     if (className=="Edge") {
+       el.setLocation(rElementsArr[i].location);
+     }
+     else
+     if (className=="Compartment") {
+       el.setStyle(rElementsArr[i].style);
+     }
+   }
+}
+
+
+///// HANDLING EVENT OptionSelectedEvent /////
+function handleOptionSelectedEvent(ev)
+{
+try {
+console.log("handleOptionSelectedEvent ev="+ev);
+console.log("handleOptionSelectedEvent tda.model[11836]="+tda.model[11836]);
+console.log("handleOptionSelectedEvent ev.option="+ev.option);
+  console.log("handleOptionSelectedEvent "+ev.option[0].caption);
+  var ee = tda.model.EnvironmentEngine.getFirstObject();
+  var rocmd = new tda.model.RefreshOptionsCommand();
+  rocmd.setEnvironmentEngine(ee);
+  tda.model.submit(rocmd);
+  
+  if (ev.option[0].caption == "Semi-automatic") {
+    gd.setLayoutMode(0);
+console.log("SWITCHED TO SEMI-AUTOMATIC");
+    smartLayoutAndRefresh(gd, null, true); // no changes, just reset layout to incremental (if needed)
+  }
+  else
+  if (ev.option[0].caption == "Manual") {
+    gd.setLayoutMode(1);
+    imcs_de.setLayoutManager(null);
+    smartLayoutAndRefresh(gd, [], true); // no changes, just reset layout to manual
+  }
+  else
+  if (ev.option[0].caption == "Symmetrically") {
+    gd.setLayoutAlgorithm(5);
+    smartLayoutAndRefresh(gd, [], false);
+  }
+  else
+  if (ev.option[0].caption == "Hierarchically") {
+    gd.setLayoutAlgorithm(2);
+    smartLayoutAndRefresh(gd, [], false);
+  }
+  else
+  if (ev.option[0].caption == "Universally") {
+    gd.setLayoutAlgorithm(3);
+    smartLayoutAndRefresh(gd, [], false);
+  }  
+}
+catch(t) {
+console.log("HANDLE OPTION SELECTED EXCEPTION");
+console.log(t.stack);
+}
+}
+
+///// RENDER FUNCTIONS /////
+function now()
+{
+  var d = new Date();
+  return d.getTime();
+}
+
+function isFork(node) {
+        if (node.elemType && (node.elemType[0].caption=="HorizontalFork"))
+          return true;
+
+	if (node.elemType && (node.elemType[0].caption=="VerticalFork"))
+	  return true;
+  return false;
+}
+
+function renderOptions(gd)
+{
+  var arr = gd.frame[0].getOption();
+  var arr2 = [];
+  for (var i=0; i<arr.length; i++)
+    if (arr[i].id == "gdelayout")
+         arr2.push(arr[i]);
+
+  for (var i=0; i<arr2.length; i++)
+    arr2[i].delete();
+  
+  var opt = new tda.model.Option();
+  opt.setCaption("Layout");
+  opt.setLocation("RIBBON");
+  opt.setFrame(gd.frame);
+  opt.setId("gdelayout");
+
+  var opt0 = new tda.model.Option();
+  opt0.setCaption("Layout mode:");
+  opt0.setLocation("RADIO");
+  opt0.setFrame(gd.frame);
+  opt.linkChild(opt0);
+
+  var opt1 = new tda.model.Option();
+  opt1.setCaption("Semi-automatic");
+  opt1.setOnOptionSelectedEvent("engine:GraphDiagramEngine");
+  opt1.setFrame(gd.frame);
+  opt0.linkChild(opt1);
+  var opt2 = new tda.model.Option();
+  opt2.setCaption("Manual");
+  opt2.setOnOptionSelectedEvent("engine:GraphDiagramEngine");
+  opt2.setFrame(gd.frame);
+  opt0.linkChild(opt2);
+
+  if (gd.layoutMode == 0)
+    opt1.setLocation("SELECTED"); // 0 = semi-automatic
+  else
+    opt2.setLocation("SELECTED"); // 1 = manual
+
+  var optL = new tda.model.Option();
+  optL.setLocation("LABEL");
+  optL.setCaption("Re-arrange:");
+  opt.linkChild(optL);
+
+  var optU = new tda.model.Option();
+  optU.setCaption("Universally");
+  optU.setOnOptionSelectedEvent("engine:GraphDiagramEngine");
+  optU.setFrame(gd.frame);
+  optL.linkChild(optU);
+  var optH = new tda.model.Option();
+  optH.setCaption("Hierarchically");
+  optH.setOnOptionSelectedEvent("engine:GraphDiagramEngine");
+  optH.setFrame(gd.frame);
+  optL.linkChild(optH);
+  var optS = new tda.model.Option();
+  optS.setCaption("Symmetrically");
+  optS.setOnOptionSelectedEvent("engine:GraphDiagramEngine");
+  optS.setFrame(gd.frame);
+  optL.linkChild(optS);
+
+  var ee = tda.model.EnvironmentEngine.getFirstObject();
+//  ee.linkOption(opt);
+
+  var arr = ee.getOption();
+  var arr2 = [];
+  arr2.push(opt);
+  console.log(">>>OPTION Layout");
+  for (var i=0; i<arr.length; i++) {
+    arr2.push(arr[i]);
+    console.log(">>>OPTION "+arr[i].getCaption());
+  }
+//  arr.splice(0, 0, opt);
+  ee.setOption(arr2);
+
+  var arr3 = ee.getOption();
+  for (var i=0; i<arr3.length; i++)
+    console.log("ARR3=> "+arr3[i].getCaption());
+
+  var rocmd = new tda.model.RefreshOptionsCommand();
+  rocmd.setEnvironmentEngine(ee);
+  tda.model.submit(rocmd);
+
+}
+
+function repoElementsToDiagram(gd, elements) {
+    // just add to the diagram...
+    for (var i=0; i<elements.length; i++) {
+      var obj = elements[i];
+      var s = obj.getClassName();
+      if (s=="Node") {
+        if (imcs_de.boxExists(obj.reference)) {
+//          imcs_de.removeBox(obj.reference);
+console.log("REPO ADD BOX");
+          imcs_de.addBox(obj);
+//          var loc = new NodeLocation(obj.location);
+//          imcs_de.updateBoxLocation(obj.reference, loc.getX(), loc.getY(), loc.getWidth(), loc.getHeight()); 
+        }
+        else
+          imcs_de.addBox(obj);
+      }
+    }
+    // just add to the diagram...
+    for (var i=0; i<elements.length; i++) {
+      var obj = elements[i];
+      var s = obj.getClassName();
+      if (s == 'Edge') {
+        if (imcs_de.lineExists(obj.reference)) {
+console.log("REPO ADD LINE",obj);
+//            var loc = new EdgeLocation(obj.location);
+//            imcs_de.updateLineLocation(obj.reference, loc.getPointsXY()); 
+            imcs_de.removeLine(obj.reference);     // THIS IS A SLOW-DOWN, otherwise, updateLineLocation cannot find points...
+            imcs_de.addLine(obj);
+        }
+        else
+          imcs_de.addLine(obj);
+      }
+    }
+}
+
+function smartLayoutAndRefresh(gd, elements, isIncremental, fAfter) {
+// !TODO: select with refresh
+
+  var arr = gd.element;
+/*variant (slow, but works always):  if (elements && (elements.length>0)) {
+    arr = elements;
+  }*/
+/*optimized variant:*/
+  if (elements) {
+    arr = elements;
+  }
+
+  console.log("smartLayoutAndRefresh", arr);
+  if (!arr) {
+    if (fAfter)
+      fAfter();
+    return;
+  }
+
+
+  if (isIncremental) {
+    // check, whether we need to arrange from scratch...
+    var zeroCnt = 0;
+    var nodeCnt = 0;
+    var edgeCnt = 0;
+    var forksCnt = 0;
+
+    for (var i=0; i<arr.length; i++) {
+      var obj = arr[i];
+      var s = arr[i].getClassName();
+      if (s=="Node") {
+        nodeCnt++;
+        var loc = new NodeLocation(obj.location);
+        if ((loc.getWidth()==0) || (loc.getHeight()==0))
+          zeroCnt++;
+        if (isFork(arr[i]))
+          forksCnt++;
+      }
+      else
+      if (s == 'Edge') {
+        edgeCnt++;
+      }
+    }
+
+
+    if (zeroCnt > nodeCnt/2) {
+      console.log("SWITCH FROM INCREMENTAL TO UNIVERSAL");
+      isIncremental = false; // arrange from scratch; too many nodes with zero coos...
+      if (forksCnt>0) {
+         console.log("SWITCH TO HIERARCHICAL");
+         gd.setLayoutAlgorithm(2);
+      }
+    }
+  }
+
+  // now we know how we have to re-adjust the layout...
+
+  // MANUAL...
+  if ((isIncremental) && (gd.layoutMode == 1)) { // manual
+    imcs_de.setLayoutManager(null);
+    repoElementsToDiagram(gd, gd.element);
+    imcs_de.refresh(fAfter);
+    return;
+  }
+
+
+  if (serverSideLayout) {
+  // SERVER-SIDE...
+    imcs_de.setLayoutManager(null);
+    var layoutName=null;
+    if (!isIncremental) {
+      layoutName = "UNIVERSAL";
+      if (gd.layoutAlgorithm == 2) {
+        layoutName = "INVERSE_VERTICAL";
+      }
+      else
+        if (gd.layoutAlgorithm == 5)
+          layoutName = "SYMMETRIC";
+    }
+
+    tda.model.jsonsubmitAsync("layoutGraphDiagram",
+      {reference:gd.reference,layoutName:layoutName},
+      function(res) {
+        console.log("jsonsubmitAsync RETURNED: ",res);
+        repoElementsToDiagram(gd, gd.element);
+        imcs_de.refresh(fAfter);
+      });
+    // server-side layout done!
+  }
+  else {
+    if (isIncremental) {
+      if (!imcs_de.layout) {
+console.log("SEMI-AUTOMATIC SET DEFAULT LAY MNGR");
+        imcs_de.setDefaultLayoutManager(true);
+      }
+console.log("SEMI-AUTOMATIC REPO ELEMENTS TO DIAGRAM");
+      repoElementsToDiagram(gd, arr);
+console.log("SEMI-AUTOMATIC REFRESH");
+      imcs_de.refresh(fAfter);
+    }
+    else {
+      imcs_de.setLayoutManager(null);
+
+      repoElementsToDiagram(gd, arr);
+
+      var layoutName = "UNIVERSAL";
+      if (gd.layoutAlgorithm == 2) {
+        layoutName = "INVERSE_VERTICAL";
+      }
+      else
+        if (gd.layoutAlgorithm == 5)
+          layoutName = "SYMMETRIC";
+
+console.log("BEFORE RESET",gd.layoutMode);
+      imcs_de.resetLayout(layoutName);
+
+console.log("BEFORE REFRESH");
+      imcs_de.refresh(fAfter);
+
+      //if (gd.layoutMode == 1)
+        //imcs_de.setLayoutManager(null); // setting back to manual
+    }
+  }
+}
+
+function renderFirst(gd, readOnly)
+{
+  console.log("rendering first "+gd);
+  
+  renderOptions(gd);
+
+  window.inRender = true;
+
+  var rFrame = webappos.js_util.get_query_value("frameReference");
+  gd.setFrame(tda.model[rFrame]);
+
+  var settings = {};
+
+  try {
+    settings.backgroundColor = intToColor(parseInt(gd.bkgColor));
+  }
+  catch(t) {
+    settings.backgroundColor = "#f0f8ff";
+  }
+
+  settings.diagramDiv = "diagramDiv";
+  settings.readOnly = readOnly;
+  lastReadOnly = readOnly;
+
+  if (gd.palette && (gd.palette.length>0))
+    settings.paletteElements = gd.palette[0].paletteElement;
+  else
+    settings.paletteElements = [];
+
+
+  if (!readOnly) {
+  	settings.onNewBox = function (paletteElement_reference, x, y, w, h) {
+  		console.log("IMCS callback: onNewBox ", paletteElement_reference, x, y, w, h);
+
+  		var location = new NodeLocation();
+  		location.setX(x);
+  		location.setY(y);
+  		location.setWidth(w);
+  		location.setHeight(h);
+  		newBoxLocation = location.toString();
+
+  		var event = new tda.model.NewBoxEvent();
+  		event.setPaletteBox( tda.model[paletteElement_reference] );
+  		tda.model.submit(event);
+  		
+  		// !!!!TODO: delete this box from dgr; it will be added during renderNext
+  	};
+
+  	settings.onNewLine = function(paletteElement_reference, src_reference, tgt_reference, points) {
+  		console.log("IMCS callback: onNewLine", paletteElement_reference, src_reference, tgt_reference, points);
+
+  		var location = new EdgeLocation();
+  		location.setPointsXY(points);
+  		newLineLocation = location.toString();
+
+  		var event = new tda.model.NewLineEvent();
+  		event.setPaletteLine( tda.model[paletteElement_reference] );
+  		event.setStart( tda.model[src_reference] );
+  		event.setEnd( tda.model[tgt_reference] );
+  		tda.model.submit(event);
+  		// !!!!TODO: delete this line from dgr; it will be added during renderNext
+  	};
+
+
+  	settings.onElementsMoved = function(rElementsArr) {
+  		// received the array of boxes and lines with the reference and location attributes according
+  		// to TDA JSON syntax and AZ encoding (as string);
+  		console.log("IMCS callback: onElementsMoved", rElementsArr);
+		updateLocations(rElementsArr);
+  		  // TODO: via setTimeout sync to server, or via async jsonsubmit storeObjects...
+  	};
+
+  } // if not readOnly...
+
+  settings.onElementsSelected = function(rElementsArr) {
+  	// received the array of boxes and lines with the reference attributes
+  	console.log("IMCS callback: onElementsSelected", rElementsArr);
+        updateCollection(gd.reference, rElementsArr);
+  };
+
+  settings.onElementDoubleClick = function(reference) {
+    console.log("IMCS callback: onElementDoubleClick");
+    // updating current collection...
+    var el = tda.model[reference];
+    updateCollection(gd.reference, [el]);
+    var event = new tda.model.L2ClickEvent();
+    event.setElement(el);
+    tda.model.submit(event);
+  };
+
+  settings.onElementRightClick = function(reference) {
+
+
+    // updating current collection...
+    var el = tda.model[reference];
+    updateCollection(gd.reference, [el]);
+
+    var event = new tda.model.RClickEvent();
+    event.setElement(el);
+    tda.model.submit(event);
+  };
+
+  settings.onDiagramRightClick = function() {
+    console.log("IMCS callback: onDiagramRightClick");
+
+    // updating current collection...
+    var event = new tda.model.RClickEvent();
+    tda.model.submit(event);
+  };
+
+  settings.onceReady = function() {
+    console.log("IMCS callback: onceReady");
+
+    smartLayoutAndRefresh(gd, gd.element/*all elms*/, true/*incremental*/, function() {
+      window.inRender = false;
+    });
+
+    // TODO: perhaps, we can launch server-side layout in parallel with loading ajoo...
+    // but then we have to launch it before onceReady and then synchronize return call and onceReady call
+
+  }; // onceReady
+
+
+  imcs_de = new IMCSDiagramEditor(settings);
+}
+
+function renderNext(gd, elements)
+{
+  console.log("rendering next",gd, elements);
+  window.inRender = true;
+
+  // check for deleted elements...
+  var boxes = imcs_de.getBoxesSet();
+  var lines = imcs_de.getLinesSet();
+
+  if (gd.element)
+    for (var i=0; i<gd.element.length; i++) {
+      if (!boxes[gd.element[i].reference]) {
+        // perhaps, we need to set newBoxLocation
+        if (!gd.element[i].location) {
+          gd.element[i].setLocation(newBoxLocation);
+          newBoxLocation = null;
+        }
+      }
+      else
+        delete boxes[gd.element[i].reference];
+      if (!lines[gd.element[i].reference]) {
+        // perhaps, we need to set newLineLocation
+        if (!gd.element[i].location) {
+          gd.element[i].setLocation(newLineLocation);
+          newLineLocation = null;
+        }
+      }
+      else
+        delete lines[gd.element[i].reference];
+    }
+  // now boxes and lines contain only elements that are in the diagram, but not in the repository...
+  for (var x in lines) {
+    imcs_de.removeLine(x);
+  }
+  for (var x in boxes) {
+    imcs_de.removeBox(x);
+  }
+
+  smartLayoutAndRefresh(gd, elements, true/*incremental*/, function() {
+    window.inRender = false;
+  });
+
+}
+
+
+function renderGraphDiagram(_gd, _readOnly, _elements, _delayed) {
+  window.gd = _gd;
+
+  if (!_delayed) {
+    // delaying the request (perhaps, there are other requests upcoming)...
+    lastRenderRequestTime = new Date();
+    setTimeout( function() {
+      var currTime = new Date();
+      var diff = currTime.getTime() - lastRenderRequestTime.getTime();
+      if ((diff>=600) && (typeof _gd != 'undefined')) {
+        console.log("DIFF between renders: "+diff);
+        // there was no other render request
+        renderGraphDiagram(_gd, _readOnly, _elements, true);
+      }
+      else {
+        // otherwise, another render request will be executed
+        console.log("ignoring render request", diff);
+      }
+    }, 605);
+    return;
+  }
+
+  if (window.inRender) {
+    setTimeout( function() {
+      renderGraphDiagram(_gd, _readOnly, _elements, true);
+    }, 100);
+    return;
+  }
+
+  if ((!imcs_de) || (_readOnly != lastReadOnly))
+    renderFirst(_gd, _readOnly);
+  else
+    renderNext(_gd, _elements);
+};
+
+///// EXECUTING COMMANDS /////
+
+function getChangedElements(cmd) {
+  if (cmd.element) {
+    console.log("CHANGED COMMAND "+cmd.element.length+" ELMS");
+    return cmd.element;
+  }
+
+  var gd = cmd.graphDiagram[0];
+
+  if (!imcs_de)
+    return gd.element;
+
+  var ok = true;
+  if (!gd.collection || (gd.collection.length==0))
+    ok = false;
+  else
+  if (!gd.collection[0].element || (gd.collection[0].element.length==0))
+    ok = false;
+
+  if (gd.collection) {
+    console.log("GD COLLECTION",gd.collection.length);
+    if (gd.collection.length>0)
+      console.log(gd.collection[0].element);
+  }
+  if (ok) {
+    console.log("CHANGED SELECTED "+gd.collection[0].element.length+" ELMS");
+    return gd.collection[0].element; // return selected elements as possible changed...
+  }
+
+  // return newly added elements...
+  var arr = [];
+  if (gd.element) {
+    for (var i=0; i<gd.element.length; i++)
+      if (!imcs_de.boxExists(gd.element[i].reference) && !imcs_de.lineExists(gd.element[i].reference)) {
+        arr.push(gd.element[i]);
+      }
+  }
+  console.log("CHANGED NEW "+arr.length+" ELMS");
+if (arr.length==1)
+console.log("ARR="+arr[0].reference);
+  return arr;
+}
+
+function executeActiveDgrCmd(a) {
+  console.log("command ActiveDgrCmd");
+  activeExecuted = true;
+  lastReadOnly = false;
+  renderGraphDiagram(a.graphDiagram[0], false, getChangedElements(a)); // non-read-only
+
+}
+function executeActiveDgrViewCmd(a) {
+  console.log("command ActiveDgrViewCmd");
+  activeExecuted = true;
+  lastReadOnly = true;
+  renderGraphDiagram(a.graphDiagram[0], true, getChangedElements(a)); // read-only
+}
+
+function executeOkCmd(a) {
+  console.log("command OkCmd");
+  if (!activeExecuted) {
+    console.log("OkCmd return");
+    return;
+  }
+  if (a.element) {
+    console.log(a.element.size, a.element);
+  }
+  renderGraphDiagram(a.graphDiagram[0], lastReadOnly, getChangedElements(a));
+}
+
+function executeUpdateDgrCmd(a) {
+  console.log("command UpdateDgrCmd");
+//  if (!activeExecuted)
+//    return;
+  renderGraphDiagram(a.graphDiagram[0], lastReadOnly, getChangedElements(a));
+}
+
+function executeActiveElementCmd(a) {
+  console.log("command ActiveElementCmd");
+  if (!activeExecuted)
+    return;
+  
+  if (a.element && (a.element.length>0)) {
+    var f = function() {
+      console.log("active el dgr ok",a.element);
+      // adding elements, if they have not been added....
+      var arr = [];
+      for (var i=0; i<a.element.length; i++)
+        if (!imcs_de.boxExists(a.element[i].reference) && !imcs_de.lineExists(a.element[i].reference)) {
+          arr.push(a.element[i]);
+        }
+      if (arr.length>0)
+         renderGraphDiagram(a.graphDiagram[0], lastReadOnly, arr); // adding new elements...
+      console.log("selecting",a.element);
+      updateCollection(a.graphDiagram[0].reference, a.element);
+      imcs_de.selectElements(a.element);
+    };
+    f();
+  }
+}
+
+var globalMouseEvent;
+$( document ).mousemove(function( event ) {
+  globalMouseEvent = event;
+});
+
+function _executePopUpTransf(name) {
+  popUpDiv.innerHTML=''; $('#wrapDiv').hide();
+
+  var cmd = new tda.model["TDAKernel::LaunchTransformationCommand"];
+  if (name.indexOf("lua.")==0)
+  	cmd.setUri("lua:"+name.substring(4));
+  else
+  	cmd.setUri("lua:"+name);
+  console.log("submitting transformation: "+cmd.uri);
+  tda.model.submit(cmd);
+
+}
+
+function executePopUpCmd(a) {
+  console.log("command PopUpCmd",a);
+  if (!a.popUpDiagram || (a.popUpDiagram.length==0))
+    return;
+  var d = a.popUpDiagram[0];
+  if (!d.popUpElement || (d.popUpElement.length==0))
+    return;
+  var elms = d.popUpElement;
+
+  var s = "<ul id='popUpMenu'>";
+  for (var i=0; i<elms.length; i++) {
+    if (!elms[i].caption)
+      continue;
+    var arr = elms[i].caption.split("\t");
+    s += "<li onclick='_executePopUpTransf(\""+elms[i].procedureName+"\")'><div>"+arr[0]+"</div></li>";
+  }
+  s += "</ul>";
+
+  popUpDiv.innerHTML = s;
+  $("#popUpMenu").menu( {
+    classes: {
+      "ui-menu": "highlight"
+    },
+    position: {
+      my: "left+3 bottom-3",
+      of: globalMouseEvent,
+      collision: "fit"
+    }
+  });
+  if (globalMouseEvent.pageX+$("#popUpDiv").width() >= document.body.clientWidth)
+     globalMouseEvent.pageX = document.body.clientWidth-$("#popUpDiv").width();
+  if (globalMouseEvent.pageY+$("#popUpDiv").height() >= document.body.clientHeight)
+     globalMouseEvent.pageY = document.body.clientHeight-$("#popUpDiv").height();
+  $("#popUpDiv").css("left", globalMouseEvent.pageX);
+  $("#popUpDiv").css("top", globalMouseEvent.pageY);
+
+  $("#wrapDiv").show();
+
+}
+
+/*function executePT_RefreshCmd(a) {
+  console.log("command PT#RefreshCmd");
+  renderGraphDiagram(a.graphDiagram[0], lastReadOnly);
+} */
+
+</script>
+</body>
+</html>

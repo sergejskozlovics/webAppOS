@@ -1,0 +1,115 @@
+/* Tiny Scrollbar */
+#scrollbar1 {z-index:2000; right:0px; bottom:15px; position:absolute; overflow:hidden; opacity:0.2}
+#scrollbar1 .viewport { width: 0px; height: 550px; overflow: hidden; position: relative; }
+#scrollbar1 .overview { list-style: none; position: absolute; left: 0; top: 0; padding: 0; margin: 0; }
+#scrollbar1 .scrollbar{ background: transparent url(images/bg-scrollbar-track-y.png) 0 0; position: relative; background-position: 0 0; float: right; width: 15px; }
+#scrollbar1 .track { background: transparent url(images/bg-scrollbar-trackend-y.png) no-repeat 0 100%; height: 100%; width:13px; position: relative; padding: 0 1px; }
+#scrollbar1 .thumb { background: transparent url(images/bg-scrollbar-thumb-y.png) no-repeat 50% 100%; /*background-size: 100%;*/ height: 20px; width: 25px; cursor: pointer; overflow: hidden; position: absolute; top: 0; left: -5px;}
+#scrollbar1 .thumb .end { background: transparent url(images/bg-scrollbar-thumb-y.png) no-repeat 50% 0; overflow: hidden; height: 5px; width: 25px; }
+#scrollbar1 .disable { display: none; }
+.noSelect { user-select: none; -o-user-select: none; -moz-user-select: none; -khtml-user-select: none; -webkit-user-select: none; }
+#scrollbar1:hover {opacity:1.0;}
+#scrollbar1:active {opacity:1.0;}
+
+
+#scrollbar2 {z-index:2000; margin-left:40px; left:0px; bottom:0px; position:absolute; overflow:hidden; opacity:0.2;}
+#scrollbar2 .viewport { width: 800px; height: 0px; overflow: hidden; position: relative; }
+#scrollbar2 .overview { list-style: none; position: absolute; left: 0; top: 0; padding: 0; margin: 0; }
+#scrollbar2 .scrollbar{ background: transparent url(images/bg-scrollbar-track-x.png) 0 0; position: relative; height: 15px; }
+#scrollbar2 .track { background: transparent url(images/bg-scrollbar-trackend-x.png) no-repeat  100% 0; width: 100%; height:13px; position: relative; padding: 0 1px; }
+#scrollbar2 .thumb { background: transparent url(images/bg-scrollbar-thumb-x.png) no-repeat 100% 50%; /*background-size: 100%;*/ height: 25px; width:20px; cursor: pointer; overflow: hidden; position: absolute; top: -5px; left: 0;}
+#scrollbar2 .thumb .end { background: transparent url(images/bg-scrollbar-thumb-x.png) no-repeat 0 50%; overflow: hidden; height: 25px; width: 5px; }
+#scrollbar2 .disable { display: none; }
+#scrollbar2:hover {opacity:1.0;}
+#scrollbar2:active {opacity:1.0;}
+
+#theZoomMoveDiv {z-index:2000; width:3em; right:20px; bottom:20px; position:absolute; margin:0; padding:0;
+-webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none; }
+#theZoomDiv {z-index:2000;opacity:0.5; background-color:#AAAAAA; }
+#theZoomDiv:hover {opacity:1.0; }
+#theZoomDiv:active {opacity:1.0;}
+#theZoomIn { opacity:0.4; border-bottom:1px solid #BBBBBB; font-family: Verdana; font-size: 1.5em; margin:0; padding:0; text-align:center;} 
+#theZoomIn:hover {opacity:1.0;cursor: pointer;}
+#theZoomIn:active {opacity:1.0;cursor: pointer;}
+#theZoomOut { opacity:0.4; border-bottom:1px solid #BBBBBB; font-size: 1.5em; margin:0; padding:0; text-align:center;} 
+#theZoomOut:hover {opacity:1.0;cursor: pointer;}
+#theZoomOut:active {opacity:1.0;cursor: pointer;}
+#theMiddleDiv { opacity:0; position:float; height:10px;} 
+#theMoveDiv { opacity:0.4; background-color:#AAAAAA; font-size: 1.5em; margin:0; padding:0; text-align:center;} 
+#theMoveDiv:hover {opacity:1.0;cursor: pointer;}
+#theMoveDiv:active {opacity:1.0;cursor: pointer;}
+
+/*#scrollbar2
+{
+  margin-left:50;
+  bottom:15;
+}
+
+#scrollbar2 .viewport
+{
+    width:800px;
+    height:15px;
+    overflow:hidden;
+    position:relative;
+}
+
+#scrollbar2 .overview
+{
+    list-style:none;
+    padding:0;
+    margin:0;
+    position:absolute;
+    left:0;
+    top:0;
+}
+
+#scrollbar2 .overview img
+{
+    float:left;
+}
+
+#scrollbar2 .scrollbar
+{
+    background:transparent url(images/bg-scrollbar-track-x.png) no-repeat 0 0;
+    background-size: 800 15;
+    position:relative;
+    margin:0 0 5px;
+    clear:both;
+    height:15px;
+}
+
+/*#scrollbar2 .track
+{
+    background:transparent url(images/bg-scrollbar-trackend-x.png) no-repeat 100% 0;
+    width:100%;
+    height:15px;
+    position:relative;
+}
+
+#scrollbar2 .thumb
+{
+    background:transparent url(images/bg-scrollbar-thumb-x.png) no-repeat 100% 50%;
+    height:25px;
+    cursor:pointer;
+    overflow:hidden;
+    position:absolute;
+    left:0;
+    top:-5px;
+}
+
+#scrollbar2 .thumb .end
+{
+    background:transparent url(images/bg-scrollbar-thumb-x.png) no-repeat 0 50%;
+    overflow:hidden;
+    height:25px;
+    width:5px;
+}
+
+#scrollbar2 .disable
+{
+    display:none;
+}
+*/

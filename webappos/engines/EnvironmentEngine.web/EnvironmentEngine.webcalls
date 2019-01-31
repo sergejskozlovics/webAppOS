@@ -1,0 +1,8 @@
+tdacall\ AttachFrameCommand=clientjs:executeAttachFrameCommand
+tdacall\ DetachFrameCommand=clientjs:executeDetachFrameCommand
+tdacall\ PostMessageToFrameCommand=clientjs:executePostMessageToFrameCommand
+tdacall\ ShowInformationBarCommand=clientjs:executeShowInformationBarCommand
+tdacall\ RefreshOptionsCommand=clientjs:executeRefreshOptionsCommand
+jsoncall\ browseForFileToUpload(filterStr)=clientjs:browseForFileToUpload
+jsoncall\ browseForFile_index(filterStr)=clientjs:browseForFile_index
+jsoncall\ browseForFile_download(ext)=clientjs:browseForFile_download

@@ -1,0 +1,1886 @@
+<html>
+<head>
+	<script src="/dojo/dojo.js" data-dojo-config="async:1"></script>
+  <link rel="stylesheet" href="/dijit/themes/flat/flat.css" media="screen">
+  <link rel="stylesheet" href="/webappos.css">
+<!--  <link rel="stylesheet" href="/dijit/themes/claro/claro.css" media="screen">-->
+	<script type="text/javascript" src="/webappos.js"></script>
+
+	<script src="/jquery.min.js"></script>
+	<script type="text/javascript" src="imcs_layoutengine/imcs_layoutengine.js"></script>
+
+<style>
+</style>
+	
+</head>
+<body id="theBody" class="flat" style="padding:0; margin:0;">
+<script>
+if (!tda.model.DialogEngine)
+  document.body.innerHTML = "This is Web Dialog Engine; tda.model not found!";
+</script>
+<div id="mainLayout" style="padding:0; margin:0;"><div>
+
+<script>
+
+var bkg = webappos.js_util.get_query_value("bkg");
+//console.log("BKGGGG is "+bkg);
+if (bkg)
+  theBody.style["background-color"]="#"+bkg;
+
+var frameRef = webappos.js_util.get_query_value("frameReference");
+var iframe = window.parent["iframe"+frameRef];
+//alert("DE iframe="+iframe+" "+frameRef);
+
+function getTextWidth(s, fontInfo) {
+        if (!s)
+          return 0;
+	s = s.split("&nbsp;").join("W").split("\&nbsp;").join("W");
+	if (!fontInfo)
+		fontInfo = $(document.body).css("fontSize")+" "+$(document.body).css("fontFamily");
+	var canvas = document.createElement("canvas");
+	var ctx = canvas.getContext("2d");
+	ctx.font = fontInfo;//"20pt Arial";  // This can be set programmaticly from the element's font-style if desired
+	var textWidth = ctx.measureText(s).width;
+	return textWidth+1;
+}
+
+	
+function isReadOnly(rComponent) {
+	var c = tda.model[rComponent];
+	var cc = null;
+	if ((c.container) && (c.container.length>0))
+		cc = c.container[0];
+		
+	if (typeof c.readOnly == 'undefined') {
+		if (cc==null)
+			return false; // non-read-only by default
+		else
+			return isReadOnly(cc.reference);
+	}
+	else {
+		return c.readOnly;
+	}
+}
+
+var formObject = null;
+var closeCommandGiven = false;
+
+function callEventHandler(c, eventName) {
+	// check for legacy event handlers...
+	if (c.eventHandler && (c.eventHandler.length>0)) {
+		for (var i=0; i<c.eventHandler.length; i++) {
+			if ((c.eventHandler[i].eventName == eventName)
+                          ||((eventName=="Close")&&(c.eventHandler[i].eventName=="Click"))
+                          ||((eventName=="Close")&&(c.eventHandler[i].eventName=="CancelButtonClick"))
+                        )
+                        {
+				if (c.eventHandler[i].transformationName != "lua_engine") {
+					console.log("!!!non-lua legacy transformation: ",c.eventHandler[i].transformationName,c.eventHandler[i].procedureName);
+					continue;
+				}
+				if ((eventName.toLowerCase() == "change")
+				  ||(eventName.toLowerCase() == "focuslost")
+				  ||(eventName.toLowerCase() == "focusgained")
+				){
+					var ev = new tda.model["D#Event"];
+					ev.setEventName(eventName);
+					ev.setInfo(eventName);
+					console.log("d#event",eventName,ev);
+					ev.setSource(c);
+					
+					
+					var cmd = new tda.model["TDAKernel::LaunchTransformationCommand"];
+					if (c.eventHandler[i].procedureName.indexOf("lua.")==0)
+						cmd.setUri("lua("+ev.reference+"):"+c.eventHandler[i].procedureName.substring(4));
+					else
+						cmd.setUri("lua("+ev.reference+"):"+c.eventHandler[i].procedureName);
+					console.log("submitting transformation for D#Event: "+cmd.uri);
+					tda.model.submit(cmd);
+				}
+				if (eventName.toLowerCase() == "close") {
+					if (window.closeCommandGiven)
+						continue; // do not emit close event, if the form is closed via a transformation
+					var ev = new tda.model["D#Event"];
+
+					if ((typeof c.buttonClickOnClose != 'undefined') && ((c.buttonClickOnClose==false)||(c.buttonClickOnClose=="false"))) {						
+						ev.setEventName("Close");
+						ev.setInfo("Close");
+						console.log("d#event close",ev);
+						ev.setSource(c);
+					}
+					else {
+						// searching for cancelButton or defaultButton
+						var b = null;
+						if (c.cancelButton && (c.cancelButton.length>0))
+							b = c.cancelButton[0];
+						if (b==null)
+							if (c.defaultButton && (c.defaultButton.length>0))
+								b = c.defaultButton[0];
+						
+						if (b!=null) {
+							// simulate "Click"...
+							ev.setEventName("Click");
+							ev.setInfo("Click");
+							console.log("d#event close->click",ev);
+							ev.setSource(b);
+						}
+						else {
+							ev.setEventName("CancelButtonClick");
+							ev.setInfo("CancelButtonClick");
+							console.log("d#event close->CancelButtonClick",ev);
+							ev.setSource(c);
+						}
+					}
+					
+					var cmd = new tda.model["TDAKernel::LaunchTransformationCommand"];
+					if (c.eventHandler[i].procedureName.indexOf("lua.")==0)
+						cmd.setUri("lua("+ev.reference+"):"+c.eventHandler[i].procedureName.substring(4));
+					else
+						cmd.setUri("lua("+ev.reference+"):"+c.eventHandler[i].procedureName);
+					console.log("submitting transformation for D#Event: "+cmd.uri);
+					tda.model.submit(cmd);
+				}
+				if (eventName.toLowerCase() == "click") {
+					var ev = new tda.model["D#Event"];
+
+					ev.setEventName("Click");
+					ev.setInfo("Click");
+					ev.setSource(c);
+					console.log("d#event click");
+//					console.log(ev);
+
+					var cmd = new tda.model["TDAKernel::LaunchTransformationCommand"];
+					if (c.eventHandler[i].procedureName.indexOf("lua.")==0)
+						cmd.setUri("lua("+ev.reference+"):"+c.eventHandler[i].procedureName.substring(4));
+					else
+						cmd.setUri("lua("+ev.reference+"):"+c.eventHandler[i].procedureName);
+					console.log("submitting transformation for D#Event: "+cmd.uri);
+					tda.model.submit(cmd);
+				}
+			}
+		}
+	}
+}
+
+require(["/webappos.js", "dojo", "dijit/registry", "dijit/focus", "dijit/form/RadioButton", "dijit/form/CheckBox", "dijit/form/TextBox", "dijit/form/Select", "dojo/data/ObjectStore", "dojo/store/Memory", "dijit/form/Button", "dijit/form/SimpleTextarea", "dijit/form/ComboBox", "dojox/layout/TableContainer", "dijit/layout/BorderContainer", "dijit/layout/TabContainer", "dojox/layout/ContentPane", "dijit/Dialog", "dijit/Toolbar", "dijit/form/MultiSelect", "dojox/form/CheckedMultiSelect", "dojo/dom", "dojo/_base/window", "dojo/domReady!"],
+function(x, dojo, registry, focusUtil, RadioButton, CheckBox, TextBox, Select, ObjectStore, Memory, Button, SimpleTextArea, ComboBox, TableContainer, BorderContainer, TabContainer, ContentPane, Dialog, Toolbar, MultiSelect, CheckedMultiSelect, dom, win) {
+
+function getWidgetByNode(node){
+    var result = null;
+    while (!result && node){
+        result = registry.byNode(node);
+        if (node.parentElement)
+            node = node.parentElement;
+        else
+            node = null;
+    }
+    return result;
+}
+
+		var detachDojoChild = function(child/*dojo component*/) {
+			if (!child)
+			  return;
+			// returns child index in the parent container (or -1)
+			var p = child.getParent();
+			if (!p)
+			  return;
+			var pos;
+			var siblings = p.getChildren();
+			for (var i=0; i<siblings.length; i++)
+				if (siblings[i] == child) {
+					pos = i;
+					break;
+				}
+			
+			p.removeChild(child);
+			return pos;
+		};
+		var attachDojoChild = function(c/*repo obj*/, pos) {
+//			if (!pos)
+//				pos = -1;
+
+				// attach for the first time...
+  			if (c.container && (c.container.length>0)) {
+				var cc = c.container[0];
+				if (window["r"+cc.reference]) { // parent is present, adding its child...
+console.log("attach child "+c.reference);
+					window["r"+cc.reference].addChild(window["r"+c.reference], pos);
+		                        if (cc.isKindOf("D#VerticalBox")) {
+						window["r"+c.reference].style = window["r"+c.reference].style.split("display:inline-block").join("display:block");
+						setTimeout(function(ref) {
+						require(["dojo/domReady!"], function() {
+						   if (window["r"+ref]) {
+	        	                                window["r"+ref].domNode.style.display = "block";
+							dojo.style(window["r"+ref].id, "display","block");
+						   }	
+						   else {
+						     console.log("COULD NOT SET DISPLAY STYLE FOR "+ref+" "+c.getClassName());
+						   }
+						});
+						},1000,c.reference);
+					}
+  				}
+	  		}
+		};
+
+
+window.finalize = function() {
+	var focusedWidget = getWidgetByNode(focusUtil.curNode);
+	console.log("in finalize", focusUtil.curNode,focusedWidget,formObject,closeCommandGiven);
+	if (focusedWidget!=null) {
+		console.log("in finalize onchange/blur");
+		if (focusedWidget.onChange)
+			focusedWidget.onChange();
+		if (focusedWidget.onBlur)
+			focusedWidget.onBlur();
+	}
+	if ((formObject != null)&&(closeCommandGiven==false)) {
+		callEventHandler(formObject, "Close");
+	}
+};
+
+window.callback = {
+	getAnchor: function(rComponent) {
+		var c = tda.model[rComponent];
+		if (c.isKindOf("D#Tab"))
+			return "parent";
+			
+		return "sibling";
+	},
+	load: function(rComponent) {
+        	var c = tda.model[rComponent];
+
+        	var inRefresh = !(typeof window["r"+rComponent] === "undefined");
+
+	        if (inRefresh) {
+//alert("REFRESH "+c.getClassName()+" "+c.text);
+
+/*		    if (c.isKindOf("D#Container")) {
+		      alert("Reload currently not impelemented for containers! ("+c.getClassName()+")");
+ 		      return;
+		    }*/
+                    var b = (c.isKindOf("D#ListBox")) || (c.isKindOf("D#CheckBox")) || (c.isKindOf("D#MultiLineTextBox")) || (c.isKindOf("D#TextArea"));
+		    if (!b)
+			return;
+		}
+
+	
+			if (c.isKindOf("D#Form")) {
+				$(document.body).css("opacity","0");
+				
+				window.mainLayout = new TableContainer({ // vertical box
+					cols: 1,
+				        orientation: "vert",
+					spacing: 10,
+					showLabels: false,
+					id: "dojo"+rComponent,
+					style: "padding:0; margin:0; left:0;top:0;",
+				}, "mainLayout");
+				window["r"+rComponent] = window.mainLayout;
+			}
+			else
+			if (c.isKindOf("D#TabContainer")) {
+				window["r"+rComponent] = new TabContainer({
+				  region: "center",
+				  id: "dojo"+rComponent,
+				  tabPosition: "top",
+				  style: "padding:0; margin:0; left:0;top:0;",
+				});
+			}
+			else
+			if (c.isKindOf("D#Tab")) {
+				window["r"+rComponent] = new TableContainer({
+				  cols: 1,
+				  orientation: "vert",
+				  showLabels: false,
+				  title: c.caption,
+				  id: "dojo"+rComponent,
+				  style: "padding:0; margin:0;",
+				});
+			}
+			else
+			if (c.isKindOf("D#HorizontalBox")) {
+				window["r"+rComponent] = new TableContainer({
+				  cols: callback.getChildren(rComponent).length,
+				  spacing: 10,
+				  orientation: "horiz",
+				  showLabels: false,
+				  id: "dojo"+rComponent,
+				  style: "padding:0; margin:0; margin-top:0; border:0; display:inline-block;",
+				});
+			}
+			else
+			if (c.isKindOf("D#Row")) {
+				window["r"+rComponent] = new TableContainer({
+				  cols: callback.getChildren(rComponent).length,
+				  orientation: "horiz",
+				  spacing: "10px",
+				  cellSpacing: "10px",
+				  cellspacing: "10px",
+				  "cell-spacing": "10px",
+				  showLabels: false,
+				  id: "dojo"+rComponent,
+				  style: "padding:0; margin:0; margin-top:0; border:0; spacing:10px; display:inline-block;",
+				});
+
+/*				window.dialogLayout.loadStarted(rComponent);				
+				var fComponent = function(rComponent) {
+					require(["dojo/domReady!"], function() {
+						window.dialogLayout.loadFinished(rComponent);
+					});
+				};				
+				window["r"+rComponent].startup();
+                                fComponent(rComponent);*/
+			}
+			else
+			if (c.isKindOf("D#GroupBox")) {
+				window["r"+rComponent] = new TableContainer({
+				  cols: 1,
+				  orientation: "vert",
+				  spacing: 10,
+				  showLabels: false,
+				  id: "dojo"+rComponent,
+				  style: "padding:9; margin:0; border-style: groove;  border-radius:5px; border-width:1px;",
+				});
+			}
+			else
+			if (c.isKindOf("D#VerticalBox")) {
+				window["r"+rComponent] = new TableContainer({
+				  cols: 1,
+				  orientation: "vert",
+				  spacing: 10,
+				  showLabels: false,
+				  id: "dojo"+rComponent,
+				  style: "padding:0; margin:0; border:0;",
+				});
+			}
+			else
+			if (c.isKindOf("D#Column")) {
+				window["r"+rComponent] = new TableContainer({
+				  cols: 1,
+				  orientation: "vert",
+				  spacing: 10,
+				  showLabels: false,
+				  id: "dojo"+rComponent,
+				  style: "padding:0; margin:0; border:0;",
+				});
+			}
+			else
+			if (c.isKindOf("D#Label")) {
+				if (inRefresh) {
+					window["r"+rComponent].set("content", c.caption); //???
+				}
+				else {
+        				window["r"+rComponent] = new ContentPane({ 
+        		                  content: c.caption,
+        				  id: "dojo"+rComponent,
+        				  style: "padding:0;background-color:transparent;"
+        				});
+				}
+			}
+			else
+			if (c.isKindOf("D#ComboBox")) {
+				var data = [];
+				var items = c.getItem();
+				for (var i=0; i<items.length; i++) {
+					data.push({id:c.item[i].reference, label:items[i].value});
+				}
+
+//				alert("d#combo "+items.length);
+				var options = new Memory({
+					data: data
+				});
+			
+				var pane;
+
+				if (inRefresh)
+					pane = window["r"+rComponent];
+				else
+					pane = new ContentPane({ 
+					  id: "dojopane"+rComponent,
+					  style: "padding:0;margin:0;",
+					});
+				
+				var readOnly = isReadOnly(rComponent);
+				
+				var nonEditable = (typeof c.editable != 'undefined') && ((c.editable==false)||(c.editable=="false"));
+				if (nonEditable) {
+					//alert("select! "+data.length+" "+readOnly+" non-editable "+c.editable);
+					var os = new ObjectStore({ objectStore: options });
+					var select = new Select({
+		 			        id: "dojo"+rComponent,
+						store: os,
+					        style: "padding:0;margin:0;display:inline-block;resize:none;",
+					});
+					
+					var storeToRepo = function(c, select) {
+						var val = select.get("value");
+						c.setText(val);
+						c.setSelected([]);
+						for (var i=0; i <select.store.data.length; i++) {
+							if (val == select.store.data[i].label) {
+								c.setSelected(tda.model[select.store.data[i].id]);
+								//console.log("select linking: ", rComponent, this.store.data[i].id);
+								break;
+							}
+						}
+					};
+					
+					if (readOnly==true)
+						select.set("disabled", true);
+					else
+						select.on("change", function(){
+					      console.log("combo change",c.getClassName());
+							storeToRepo(c, this/*select*/);
+							// calling event handler...
+							callEventHandler(c, "Change");
+//						callEventHandler(c, "FocusLost");
+						});
+						
+					select.on("focus", function(){
+//					      console.log("combo focus");
+						callEventHandler(c, "FocusGained");
+					});
+					select.on("blur", function(){
+					      console.log("combo focus_lost",c.getClassName());
+						storeToRepo(c, this);
+						callEventHandler(c, "FocusLost");
+					});
+					pane.addChild(select);
+					
+				}
+				else {
+					//alert("combo! "+data.length+" "+readOnly+" editable "+c.editable);
+					var combo = new ComboBox({ 
+					  id: "dojo"+rComponent,
+					  store: options,
+					  searchAttr: "label",
+					  value: c.text,
+					  style: "padding:0;margin:0;display:inline-block;resize:none;",
+					});
+					
+					var storeToRepo = function(c, combo) {
+						var val = combo.get("value");
+						//alert(val);
+						c.setText(val);
+						c.setSelected([]);
+						for (var i=0; i <combo.store.data.length; i++) {
+							if (val == combo.store.data[i].label) {
+								c.setSelected(tda.model[combo.store.data[i].id]);
+								//console.log("combo linking: ", rComponent, this.store.data[i].id);
+								break;
+							}
+						}
+						console.log("combo store value: ", c.reference, combo.get("value"),c.text,this);
+					};
+					
+					var myc = c;
+					if (readOnly==true)
+						combo.set("disabled", true);
+						
+					combo.on("change", function(){
+					      console.log("combo2 changed",myc.reference,myc.getClassName());
+						storeToRepo(myc, this/*combo*/);
+						// calling event handler...
+						callEventHandler(myc, "Change");
+					});
+					combo.on("focus", function(){
+						callEventHandler(myc, "FocusGained");
+					});
+					
+					combo.on("blur", function(){
+						storeToRepo(myc, this);
+						var combo=this;
+						// want "change" first, thus we use setTimeout
+						//setTimeout(function() {
+					      console.log("combo2 focus_lost",myc.getClassName());
+							storeToRepo(myc, combo);
+							callEventHandler(myc, "FocusLost");
+						//},0);
+					});
+					pane.addChild(combo);
+				}
+				
+				window["r"+rComponent] = pane;
+			}
+			else
+			if (c.isKindOf("D#ListBox")) {
+				var sel = win.doc.createElement('select');
+				sel.id = "select"+c.reference;
+				sel.style.width="100%";
+				var multiple = ((c.multiSelect==true) || (c.multiSelect=="true"));
+
+				var items = c.getItem();
+				for (var i=0; i<items.length; i++) {
+		            		var opt = win.doc.createElement('option');
+				        opt.innerHTML = items[i].value;
+				        opt.id = "option"+items[i].reference;
+				        opt.value = items[i].reference;
+				        sel.appendChild(opt);
+				}
+
+				var readOnly = isReadOnly(rComponent);
+				
+				var nonEditable = (typeof c.editable != 'undefined') && ((c.editable==false)||(c.editable=="false"));
+
+				var pos;
+				var w, h, x, y;
+				if (inRefresh) {
+					var old = window["r"+rComponent];
+					w = dojo.style("dojo"+rComponent, "width");
+					h = dojo.style("dojo"+rComponent, "height");
+					x = dojo.style("dojo"+rComponent, "margin-left");
+					y = dojo.style("dojo"+rComponent, "margin-top");
+					pos = detachDojoChild(old);
+					old.destroy();
+				}
+
+                                var ms = new MultiSelect({
+				  id: "dojo"+c.reference,
+				  name: 'select'+c.reference,
+//				  multiple : false, -- doesn't work
+				}, sel);
+
+				if (inRefresh) {
+console.log("REFRESH MS "+c.reference);
+					window["r"+rComponent] = ms;
+//					alert("refrsh listbox "+pos);
+					attachDojoChild(c, pos);
+
+					dojo.style("dojo"+rComponent,"overflow","hidden");
+					dojo.style("dojo"+rComponent,"position","relative");
+					dojo.style("dojo"+rComponent,"width",w+"px");
+					dojo.style("dojo"+rComponent,"height",h+"px");
+					dojo.style("dojo"+rComponent,"display","inline-block");
+					
+					dojo.style("dojo"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojo"+rComponent,"margin-top",y+"px"); // relative to prev. child
+				}
+
+				var valArr = [];
+				var repoArr = c.getSelected();
+	                        for (i=0; i<repoArr.length; i++)
+				    valArr.push( repoArr[i].reference ); // ?parseInt
+
+			        ms.set("value", valArr);
+
+				ms.on("change", function(ids){
+				  if ((ids.length>1) && (!multiple)) {
+				    ms.set("value", [ids[0]]);
+				    return;
+				  }
+//				  console.log("OLD SELECTED", c.selected&&c.selected.length?c.selected[0].reference:"none");
+				  var arr = [];
+				  for (i=0; i<ids.length; i++)
+				    arr.push( tda.model[ids[i]] ); // ?parseInt
+				  c.setSelected(arr);
+//				  console.log("MS CHANGE", ids, ms);
+//				  console.log("NEW SELECTED", c.selected&&c.selected.length?c.selected[0].reference:"none");
+				});
+
+				ms.on("focus", function(){
+					callEventHandler(c, "FocusGained");
+				});
+				
+				ms.on("blur", function(){
+					callEventHandler(c, "FocusLost");
+				});
+				
+
+				window["r"+rComponent] = ms;
+
+
+	 			console.log("ms refresh loadStarted "+ rComponent);
+ 				window.dialogLayout.loadStarted(rComponent);
+ 				ms.startup();
+ 			
+ 				var fComponent = function(rComponent) {
+	 				require(["dojo/domReady!"], function() {
+						window["r"+rComponent] = ms;
+ 						window.dialogLayout.loadFinished(rComponent);
+ 						console.log("ms refresh loadFinished "+rComponent);
+ 					});
+ 				};
+
+	 			setTimeout(fComponent, 0, rComponent);
+
+			}
+			else
+			if (c.isKindOf("D#MultiLineTextBox") || c.isKindOf("D#TextArea")) {
+			        var pane;
+				var area;
+//if (inRefresh)
+  //alert("REFRESH2 "+c.getClassName()+" "+c.text);
+			        if (!inRefresh) {
+					pane = new ContentPane({ 
+					  id: "dojopane"+rComponent,
+					});
+					area = new SimpleTextArea({ 
+					  id: "dojo"+rComponent,
+					  rows: 4,
+					  cols: 20,
+					  style: "resize:none;margin:0; padding:0;position:relative;width:100%;height:100%;",
+//					  value: c.text,
+					});
+        				window["r"+rComponent] = pane;
+        				window["dojo"+rComponent] = area;
+					pane = window["r"+rComponent];
+					area = window["dojo"+rComponent];
+				}
+				else {
+					pane = window["r"+rComponent];
+					area = window["dojo"+rComponent];
+				}
+
+				var positionFromRepo = function(c,area) {};
+				var positionToRepo = function(c,area) {};
+
+				if (c.isKindOf("D#MultiLineTextBox")) {
+				  positionAndValueFromRepo = function(c,area) {
+    				    var position=0;
+                                    var sss="";
+      				    var arr = c.getTextLine();
+      				    var posDone = false;
+      				    var wasLine = false;
+      				    for (var q=0; q<arr.length; q++) {
+      					if (!arr[q].getDeleted()) {
+    					  var text=(arr[q].text?arr[q].text:"");
+      					  if (wasLine) {
+      					    sss += "\n"+text;
+    					    position += 1+text.length;
+      					  }
+      					  else {
+      					    sss += text;
+    					    position += text.length;
+    					    wasLine = true;
+      					  }
+
+    					  if (!posDone && (arr[q].getParentMultiLineTextBox().length>0)) {
+    					     area.textbox.setSelectionRange(position, position);
+    					     posDone=true;
+    					  }
+      					}
+      				    }
+      				    for (var q=0; q<arr.length; q++) {
+							if (arr[q].getDeleted())
+								arr[q].delete();
+      				    }
+						arr = c.getTextLine();
+						if (arr.length==0) {
+							var line = new tda.model["D#TextLine"]();
+							line.setDeleted(false);
+							line.setInserted(true);
+							line.setEdited(false);
+							c.setTextLine([line]);
+							c.setCurrent([line]); // == line.setParentMultiLineTextBox(c);
+						}
+						else {
+							if (!posDone) {
+								// link "current" to the first text line...
+								c.setCurrent([arr[0]]);
+try{ // we use try-catch here, since setSelectionRange may throw an exception in firefox under linux
+								area.textbox.setSelectionRange(0,0);
+}
+catch(t) {}
+							}
+						}
+				    //c.setText(ssS);
+//alert("positionAndValueFromRepo "+sss+" "+c.text);
+				    area.set("value", sss);
+      				  };
+				  positionToRepo = function(c,area) {
+					var arr = c.getTextLine();
+					var position = area.textbox.selectionStart;
+					for (var q=0; q<arr.length; q++) {
+						if (!arr[q].getDeleted()) {
+							var text = arr[q].text?arr[q].text:"";
+							if (position<=text.length) {
+								c.setCurrent(arr[q]);
+								break;
+							}
+							else {
+								position-=text.length;
+								position--; // \n
+							}
+						}
+					}
+					if (c.getCurrent().length==0) {
+						if (arr.length>0) {
+							c.setCurrent([arr[0]]);
+							area.textbox.setSelectionRange(0,0);
+						}
+					}
+				  };
+
+//alert("REFRESH MULTILINE");
+      				  positionAndValueFromRepo(c,area);
+				}
+				else {
+				  area.set("value", c.text);
+				}
+
+				if (!inRefresh) {
+        				pane.addChild(area);
+        				window["r"+rComponent] = pane;
+        				window["dojo"+rComponent] = area;
+					pane = window["r"+rComponent];
+					area = window["dojo"+rComponent];
+
+        				area.on("focus", function(){
+        				  if (c.isKindOf("D#MultiLineTextBox"))
+        				    positionToRepo(c, area);
+        				  callEventHandler(c, "FocusGained");
+        				});
+        				area.on("click", function(){
+        				  if (c.isKindOf("D#MultiLineTextBox"))
+        				    positionToRepo(c, area);
+        				});
+        				area.on("blur", function(){
+        				  if (c.isKindOf("D#MultiLineTextBox"))
+        				    positionToRepo(c, area);
+        				  callEventHandler(c, "FocusLost");
+        				});
+        				area.on("change", function(){
+							//var oldVal = c.getText();
+        					var val = this.get("value");
+        					c.setText(val);
+        					if (c.isKindOf("D#MultiLineTextBox")) {
+
+        						var arr = c.getTextLine();
+								var vArr = val.split("\n");
+								
+								var i=0;
+								while ((i<arr.length)&&(i<vArr.length)&&(arr[i].text==vArr[i]))
+									i++;
+								var j=arr.length-1; var jv=vArr.length-1;
+								while ((j>=0)&&(jv>=0)&&(arr[j].text==vArr[jv])) {
+									j--;
+									jv--;
+								}
+								j++;   // exactly where the "tail" starts
+								jv++;
+								
+								if (jv==j) { // the same amount of rows...
+									for (var k=0; k<i; k++) {
+										arr[k].setDeleted(false);
+										arr[k].setInserted(false);
+										arr[k].setEdited(false);
+									}
+									for (var k=i; k<j; k++) {
+										arr[k].setDeleted(false);
+										arr[k].setInserted(false);
+										arr[k].setEdited(true);
+										arr[k].setText(vArr[k]);
+									}
+									for (var k=j; k<arr.length; k++) {
+										arr[k].setDeleted(false);
+										arr[k].setInserted(false);
+										arr[k].setEdited(false);
+									}
+									c.setTextLine(arr);
+								}
+								else
+								if (jv<j) { // some rows deleted...
+									for (var k=0; k<i; k++) {
+										arr[k].setDeleted(false);
+										arr[k].setInserted(false);
+										arr[k].setEdited(false);
+									}
+									for (var k=i; k<jv; k++) {
+										arr[k].setDeleted(false);
+										arr[k].setInserted(false);
+										arr[k].setEdited(true);
+										arr[k].setText(vArr[k]);
+									}
+									for (var k=jv; k<j; k++) {
+										arr[k].setDeleted(true);
+										arr[k].setInserted(false);
+										arr[k].setEdited(false);
+									}
+									for (var k=j; k<arr.length; k++) {
+										arr[k].setDeleted(false);
+										arr[k].setInserted(false);
+										arr[k].setEdited(false);
+									}
+								}
+								else {// (j<jv)
+									var newArr = [];
+									// some rows inserted...
+									for (var k=0; k<i; k++) {
+										var line = arr[k];
+										line.setDeleted(false);
+										line.setInserted(false);
+										line.setEdited(false);
+										newArr.push(line);
+									}
+									for (var k=i; k<j; k++) {
+										var line = arr[k];
+										line.setDeleted(false);
+										line.setInserted(false);
+										line.setEdited(true);
+										line.setText(vArr[k]);
+										newArr.push(line);
+									}									
+									for (var k=j; k<jv; k++) {
+										var line = new tda.model["D#TextLine"]();
+										line.setDeleted(false);
+										line.setInserted(true);
+										line.setEdited(false);
+										newArr.push(line);
+									}
+									for (var k=j; k<arr.length; k++) {
+										var line = arr[k];
+										line.setDeleted(false);
+										line.setInserted(false);
+										line.setEdited(false);
+										newArr.push(line);
+									}
+									c.setTextLine(arr);
+								}
+								
+								
+								/*for (var q=0; q<arr.length; q++) {
+        							arr[q].setDeleted(true);
+        							arr[q].setInserted(false);
+        							arr[q].setEdited(false);
+        						}
+        						arr = val.split("\n");
+        						for (var q=0; q<arr.length; q++) {
+        							var tl = new tda.model["D#TextLine"]();
+        							tl.setText(arr[q]);
+        							tl.setInserted(true);
+        							c.linkTextLine(tl);
+        						}*/
+
+        						positionToRepo(c,this);
+        					}
+        					callEventHandler(c, "Change");
+        				});
+				} // if not in refresh...
+			}
+			else
+			if (c.isKindOf("D#InputField")) {
+				var pane = new ContentPane({ 
+				  id: "dojopane"+rComponent,
+				  style: "resize:none;display:inline-block;",//none;margin:0; padding:0;width:100%;",
+				});
+				var input = new TextBox({ 
+				  id: "dojo"+rComponent,
+//				  rows: 4,
+				  cols: 20,
+				  style: "resize:none;display:inline-block;",//none;margin:0; padding:0;width:100%;",
+				});
+				input.set("value", c.text);
+				pane.addChild(input);
+				
+				var readOnly = isReadOnly(rComponent);
+				var nonEditable = (typeof c.editable != 'undefined') && ((c.editable==false)||(c.editable=="false"));
+				if (/*readOnly ||*/nonEditable)
+					input.set("disabled", true);
+				
+				window["r"+rComponent] = pane;
+				input.on("focus", function(){
+					callEventHandler(c, "FocusGained");
+				});
+				input.on("blur", function(){
+					var val = this.get("value");
+					c.setText(val);
+					callEventHandler(c, "FocusLost");
+				});
+				input.on("change", function(){
+					var val = this.get("value");
+					c.setText(val);
+					// calling event handler...
+					callEventHandler(c, "Change");
+				});
+
+			}
+			else
+			if (c.isKindOf("D#Button")) {
+			    if (!inRefresh) {
+				var button = new Button({ 
+				  id: "dojo"+rComponent,
+				  label: c.caption?c.caption:"???",
+				  onClick: function() {
+//					console.log("button "+c.caption+" clicked");
+                                        callEventHandler(c, "Click");
+				  },
+				  style: "margin:0; background-color:transparent;",
+				});
+				window["r"+rComponent] = button;
+				window["r"+rComponent].on("focus", function(){
+					callEventHandler(c, "FocusGained");
+				});
+				window["r"+rComponent].on("blur", function(){
+					callEventHandler(c, "FocusLost");
+				});
+			   }	
+			}
+			else
+			if (c.isKindOf("D#CheckBox")) {
+				if (inRefresh) {
+console.log("CB  REFRESH");
+        				var cb = window["dojo"+rComponent];
+        				var label = window["dojolabel"+rComponent];
+					cb.set("checked", c.checked);
+					label.set("content", "&nbsp;"+(c.caption?c.caption:""));
+				}
+				else {
+console.log("CB LOAD "+rComponent+" "+c.checked);
+        				var pane = new ContentPane({ 
+        				  id: "dojopane"+rComponent,
+        				  style: "resize:none;display:inline-block;overflow:hidden;",//none;margin:0; padding:0;width:100%;",
+        				});
+					var invval = (typeof c.checked === "undefined") || (c.checked==false) || (c.checked=="false");
+
+        				var cb = new CheckBox({ 
+        				  id: "dojo"+rComponent,
+        //				  label: c.caption,
+        				  checked: !invval,
+//					  value: invval?"off":"on",
+        				  onClick: function() {
+        				        c.setChecked(cb.checked);
+        					console.log("checkbox clicked",cb.checked);
+                                                callEventHandler(c, "Change");
+        				  },
+                                          style: "resize:none;display:inline-block;"
+        				});
+
+if (invval) {
+console.log("set OFF");
+  cb.set("checked", false);
+//  cb.set("value", "off");
+//  cb.domNode.classes = cb.domNode.classes.split("dijitCheckBoxChecked").join("").split("dijitChecked").join("");
+
+}
+console.log(c.checked,invval);
+console.log("CB LOAD2 "+cb+" "+cb.checked+" "+c.checked,cb);
+        				var label = new ContentPane({ 
+        		                  content: "&nbsp;"+(c.caption?c.caption:""),
+        				  id: "dojolabel"+rComponent,
+        				  style: "padding:0"
+        				});
+
+        				pane.addChild(cb);
+        				pane.addChild(label);
+
+cb.startup();
+pane.startup();
+        				
+        				window["r"+rComponent] = pane;
+        				window["dojo"+rComponent] = cb;
+        				window["dojolabel"+rComponent] = label;
+
+
+        				window["dojo"+rComponent].on("focus", function(){
+        					callEventHandler(c, "FocusGained");
+        				});
+        				window["dojo"+rComponent].on("blur", function(){
+        					callEventHandler(c, "FocusLost");
+        				});
+				}
+			}
+			else
+			if (c.isKindOf("D#RadioButton")) {
+				var pane = new ContentPane({ 
+				  id: "dojopane"+rComponent,
+				  style: "resize:none;display:inline-block;overflow:hidden;",//none;margin:0; padding:0;width:100%;",
+				});
+				var rb = new RadioButton({ 
+				  id: "dojo"+rComponent,
+//				  label: c.caption,
+				  checked: c.selected?true:false,
+				  onChange: function(val) {
+				        c.setSelected(val);
+					console.log("radiobutton change ",val);
+                                        callEventHandler(c, "Change");
+				  },
+                                  style: "resize:none;display:inline-block;"
+				});
+				var label = new ContentPane({ 
+		                  content: "&nbsp;"+c.caption,
+				  id: "dojolabel"+rComponent,
+				  style: "padding:0"
+				});
+
+				pane.addChild(rb);
+				pane.addChild(label);
+				
+				window["r"+rComponent] = pane;
+				window["dojo"+rComponent] = rb;
+				window["dojolabel"+rComponent] = label;
+
+
+				window["dojo"+rComponent].on("focus", function(){
+					callEventHandler(c, "FocusGained");
+				});
+				window["dojo"+rComponent].on("blur", function(){
+					callEventHandler(c, "FocusLost");
+				});
+			}
+			else { // other (non-implemented) components as red labels
+				window["r"+rComponent] = new ContentPane({ 
+		                  content: "<font color='red'>"+c.getClassName()+"</font>",
+				  id: "dojo"+rComponent,
+				});
+			}
+
+			if (!inRefresh) {
+				// if in refresh, do not re-add the child (children have been already added during the first load)
+                           attachDojoChild(c);
+	  		}
+			
+			
+			if (c.isKindOf("D#Form")) {
+				console.log("loadStarted", rComponent);
+				window.dialogLayout.loadStarted(rComponent);
+				
+				var fComponent = function(rComponent) {
+					require(["dojo/domReady!"], function() {
+						window.dialogLayout.loadFinished(rComponent);
+						console.log("loadFinished",rComponent);
+					});
+				};
+				
+				window["r"+rComponent].startup();
+//				setTimeout(fComponent, 1000, rComponent);
+                                fComponent(rComponent);
+			}
+			
+//		console.log("done "+rComponent+" "+c.getClassName());
+	},
+	
+	getChildren: function(rComponent) {
+		var c = tda.model[rComponent];
+		var arr = c.component;
+		if (!arr)
+			return null;
+		var retVal = [];
+		for (var i=0; i<arr.length; i++) {
+			retVal.push(arr[i].reference);
+		}
+		return retVal;
+	},
+	
+	getBounds: function(rComponent) {
+		var c = tda.model[rComponent];
+		
+		var retval = null;
+		
+		if (c.isKindOf("D#Form")) {
+					
+			retVal = {};
+		        if (iframe) {
+				var formBody = $(iframe).parent();
+				var title = $(iframe).parent().parent().children().find(":first-child");
+				retVal.topPadding = /*parseInt(title.css("padding-top"),10)*/8+parseInt(title.css("height"),10)+/*parseInt(title.css("padding-bottom"),10)*/8 + parseInt(formBody.css("padding-top"),10);
+				retVal.leftPadding = parseInt(formBody.css("padding-left"),10); 
+				retVal.rightPadding = parseInt(formBody.css("padding-right"),10);
+				retVal.bottomPadding = parseInt(formBody.css("padding-bottom"),10);
+			}
+			else {
+				retVal.topPadding = 0;
+				retVal.leftPadding = 0;
+				retVal.rightPadding = 0;
+				retVal.bottomPadding = 0;
+			}
+			
+			retVal.minimumWidth = retVal.leftPadding+retVal.rightPadding+100;
+			retVal.minimumHeight = retVal.topPadding+retVal.bottomPadding+100;
+			
+			retVal.preferredWidth = 0; // minimize width
+			retVal.preferredHeight = 0; // minimize height
+			
+			retVal.horizontalSpacing = 0;
+			retVal.verticalSpacing = 10;
+			
+			retVal.verticalAlignment = "TOP";
+			
+			window["frameVerticalPadding"] = retVal.topPadding+retVal.bottomPadding;
+			window["frameHorizontalPadding"] = retVal.leftPadding+retVal.rightPadding;
+		}
+		else
+		if (c.isKindOf("D#GroupBox")) {
+			retVal = {};
+			retVal.minimumWidth = 10;
+			retVal.minimumHeight = 10;
+//			retVal.preferredWidth = 10;
+//			retVal.preferredHeight = 10;
+			retVal.horizontalSpacing = 10;
+			retVal.verticalSpacing = 10;
+			retVal.leftPadding=10;
+			retVal.rightPadding=10;
+			retVal.topPadding=10;
+			retVal.bottomPadding=10;
+			if ((!c.horizontalAlignment) || (c.horizontalAlignment<0) || (c.horizontalAlignment=="-1"))
+				retVal.horizontalAlignment = "LEFT";
+			else
+			  if ((c.horizontalAlignment>0)||(c.horizontalAlignment=="+1"))
+				retVal.horizontalAlignment = "RIGHT";
+
+			if ((!c.verticalAlignment) || (c.verticalAlignment<0) || (c.verticalAlignment=="-1"))
+				retVal.verticalAlignment = "TOP";
+			else
+			  if ((c.verticalAlignment>0)||(c.verticalAlignment=="+1"))
+				retVal.verticalAlignment = "BOTTOM";
+		}
+		else
+		if (c.isKindOf("D#Button")) {
+			retVal = {};
+//			retVal.minimumWidth = parseInt(window["r"+rComponent].domNode.clientWidth)+1; //35+getTextWidth(c.caption);//parseInt(window["r"+rComponent].domNode.clientWidth); // 80
+//			if (retVal.minimumWidth < 17+getTextWidth(c.caption))
+                          retVal.minimumWidth = 17+getTextWidth(c.caption);
+			retVal.maximumWidth = retVal.minimumWidth;
+//			retVal.minimumHeight = parseInt(window["r"+rComponent].domNode.clientHeight); // 32
+//			if (retVal.minimumHeight < 32)
+				retVal.minimumHeight = 32;
+			retVal.maximumHeight = retVal.minimumHeight;
+			
+/*			if (c.minimumRelativeWidth)
+				retVal.minimumRelativeWidth = c.minimumRelativeWidth;
+			else
+				retVal.minimumRelativeWidth = 1;
+
+			if (c.preferredRelativeWidth)
+				retVal.preferredRelativeWidth = c.preferredRelativeWidth;
+			else
+				retVal.preferredRelativeWidth = 1;
+				
+			if (c.maximumRelativeWidth)
+				retVal.maximumRelativeWidth = c.maximumRelativeWidth;
+			else
+				retVal.maximumRelativeWidth = 1;*/
+		}
+		else
+		if (c.isKindOf("D#RadioButton")) {
+			retVal = {};
+//			retVal.minimumWidth = parseInt(window["r"+rComponent].domNode.clientWidth)+2;
+//			if (retVal.minimumWidth < 20)
+                          retVal.minimumWidth=20;
+
+                        var tw = getTextWidth("&nbsp;"+c.caption);
+			retVal.minimumWidth += tw;
+                        retVal.preferredWidth = retVal.minimumWidth;
+
+			retVal.minimumHeight = 18;
+			if (retVal.minimumHeight < 18)
+                          retVal.minimumHeight=18;
+			retVal.maximumHeight = retVal.minimumHeight;
+
+			retVal.verticalAlignment = "CENTER";
+		}
+		else
+		if (c.isKindOf("D#CheckBox")) {
+			retVal = {};
+//			retVal.minimumWidth = parseInt(window["r"+rComponent].domNode.clientWidth)+2;
+//			if (retVal.minimumWidth < 20)
+                          retVal.minimumWidth=20;
+
+                        var tw = getTextWidth("&nbsp;"+(c.caption?c.caption:""));
+			retVal.minimumWidth += tw;
+                        retVal.preferredWidth = retVal.minimumWidth;
+                        retVal.maximumWidth = retVal.minimumWidth;
+
+			retVal.minimumHeight = 18;//parseInt(window["r"+rComponent].domNode.clientHeight)+2;
+			if (retVal.minimumHeight < 18)
+                          retVal.minimumHeight=18;
+			retVal.maximumHeight = retVal.minimumHeight;
+
+
+			retVal.verticalAlignment = "CENTER";
+
+			
+//			if (c.minimumRelativeWidth)
+//				retVal.minimumRelativeWidth = c.minimumRelativeWidth;
+//			else
+//				retVal.minimumRelativeWidth = 1;
+
+//			if (c.preferredRelativeWidth)
+//				retVal.preferredRelativeWidth = c.preferredRelativeWidth;
+//			else
+//				retVal.preferredRelativeWidth = 1;
+				
+//			if (c.maximumRelativeWidth)
+//				retVal.maximumRelativeWidth = c.maximumRelativeWidth;
+//			else
+//				retVal.maximumRelativeWidth = 1;
+		}
+		else
+		if (c.isKindOf("D#Label")) {
+			retVal = {};
+			retVal.minimumWidth = getTextWidth(c.caption);//c.caption.length*10;//parseInt(window["r"+rComponent].domNode.clientWidth); //c.caption.length*10;//100;
+			retVal.preferredWidth = retVal.minimumWidth;
+//			retVal.maximumWidth = retVal.minimumWidth;
+//			retVal.minimumHeight = parseInt(window["r"+rComponent].domNode.clientHeight);//19;
+//			if (retVal.minimumHeight < 19)
+                          retVal.minimumHeight=19;
+			retVal.maximumHeight = retVal.minimumHeight;
+		}
+		else
+		if (c.isKindOf("D#ComboBox")) {
+			retVal = {};
+//			retVal.minimumWidth = parseInt(window["r"+rComponent].domNode.clientWidth); // 200
+//			if (retVal.minimumWidth < 338)
+                          retVal.minimumWidth = 338;
+			//retVal.preferredWidth = retVal.minimumWidth;
+			retVal.minimumHeight = window["r"+rComponent].domNode.clientHeight; // 32
+			if (retVal.minimumHeight < 30)
+                          retVal.minimumHeight=30;
+			retVal.maximumHeight = retVal.minimumHeight;;
+		}
+		else
+		if (c.isKindOf("D#ListBox")) {
+			retVal = {};
+//			retVal.minimumWidth = parseInt(window["r"+rComponent].domNode.clientWidth); // 200
+//			if (retVal.minimumWidth < 338)
+                          retVal.minimumWidth = 338;
+			//retVal.preferredWidth = retVal.minimumWidth;
+			retVal.minimumHeight = window["r"+rComponent].domNode.clientHeight; // 32
+			if (retVal.minimumHeight < 50)
+                          retVal.minimumHeight=50;
+		}
+		else
+		if (c.isKindOf("D#InputField")) {
+			retVal = {};
+			retVal.minimumWidth = parseInt(window["r"+rComponent].domNode.clientWidth); // 200
+			//retVal.preferredWidth = retVal.minimumWidth;
+//			if (retVal.minimumWidth < 218)
+			  retVal.minimumWidth = 218;
+			retVal.minimumHeight = parseInt($(window["r"+rComponent].domNode).css("height"), 10); // 30
+			if (retVal.minimumHeight < 30)
+                          retVal.minimumHeight=30;
+			retVal.maximumHeight = retVal.minimumHeight;;
+		}
+		else
+		if (c.isKindOf("D#TextArea") || c.isKindOf("D#MultiLineTextBox")) {
+			retVal = {};
+			retVal.minimumWidth = 300;//parseInt(window["r"+rComponent].domNode.clientWidth);
+			//retVal.preferredWidth = 100;//retVal.minimumWidth;
+			retVal.minimumHeight = 100;//parseInt(window["r"+rComponent].domNode.clientHeight);
+			//retVal.preferredHeight = retVal.minimumHeight;;
+			
+			if (c.preferredRelativeHeight)
+				retVal.preferredRelativeHeight = c.preferredRelativeHeight;
+			else
+				retVal.preferredRelativeHeight = 1;
+		}
+		else
+		if (c.isKindOf("D#HorizontalBox")) {
+			retVal = {};
+			retVal.minimumWidth = 10;
+			retVal.minimumHeight = 10;
+			retVal.horizontalSpacing = 10;
+			retVal.verticalSpacing = 0;
+
+			if (c.horizontalAlignment)
+			  if ((c.horizontalAlignment<0) || (c.horizontalAlignment=="-1"))
+				retVal.horizontalAlignment = "LEFT";
+			  else
+			    if ((c.horizontalAlignment>0)||(c.horizontalAlignment=="+1"))
+				retVal.horizontalAlignment = "RIGHT";
+
+			if (c.verticalAlignment)
+			  if ((c.verticalAlignment<0) || (c.verticalAlignment=="-1"))
+				retVal.verticalAlignment = "TOP";
+			  else
+			    if ((c.verticalAlignment>0)||(c.verticalAlignment=="+1"))
+				retVal.verticalAlignment = "BOTTOM";
+		}
+		else
+		if (c.isKindOf("D#Row")) {
+			retVal = {};
+			retVal.minimumWidth = 10;
+			retVal.minimumHeight = 10;
+			retVal.horizontalSpacing = 10;
+			retVal.verticalSpacing = 0;
+
+			if (c.horizontalAlignment)
+			  if ((c.horizontalAlignment<0) || (c.horizontalAlignment=="-1"))
+				retVal.horizontalAlignment = "LEFT";
+			  else
+			    if ((c.horizontalAlignment>0)||(c.horizontalAlignment=="+1"))
+				retVal.horizontalAlignment = "RIGHT";
+
+			if (c.verticalAlignment)
+			  if ((c.verticalAlignment<0) || (c.verticalAlignment=="-1"))
+				retVal.verticalAlignment = "TOP";
+			  else
+			    if ((c.verticalAlignment>0)||(c.verticalAlignment=="+1"))
+				retVal.verticalAlignment = "BOTTOM";
+		}
+		else
+		if (c.isKindOf("D#TabContainer")) {
+		// containers...
+			retVal = {};
+			retVal.minimumWidth = 10;
+			retVal.minimumHeight = 10;
+			retVal.preferredWidth = 10;
+			retVal.preferredHeight = 10;
+			retVal.horizontalSpacing = 0;
+			retVal.verticalSpacing = 10;
+			retVal.bottomPadding = 0;
+			retVal.topPadding = 32;//parseInt($(window["dojo"+rComponent]).css("height"), 10); // 32
+
+			if ((!c.horizontalAlignment) || (c.horizontalAlignment<0) || (c.horizontalAlignment=="-1"))
+				retVal.horizontalAlignment = "LEFT";
+			else
+			  if ((c.horizontalAlignment>0)||(c.horizontalAlignment=="+1"))
+				retVal.horizontalAlignment = "RIGHT";
+
+			if ((!c.verticalAlignment) || (c.verticalAlignment<0) || (c.verticalAlignment=="-1"))
+				retVal.verticalAlignment = "TOP";
+			else
+			  if ((c.verticalAlignment>0)||(c.verticalAlignment=="+1"))
+				retVal.verticalAlignment = "BOTTOM";
+
+		}
+		else
+		if (c.isKindOf("D#Tab")) {
+		// containers...
+			retVal = {};
+			retVal.minimumWidth = 10;
+			retVal.minimumHeight = 10;
+			retVal.preferredWidth = 10;
+			retVal.preferredHeight = 10;
+			retVal.horizontalSpacing = 0;
+			retVal.verticalSpacing = 10;
+			retVal.leftPadding = 10;
+			retVal.rightPadding = 10;
+			retVal.topPadding = 10;
+			retVal.bottomPadding = 10;
+
+			if (c.horizontalAlignment)
+			  if ((c.horizontalAlignment<0) || (c.horizontalAlignment=="-1"))
+				retVal.horizontalAlignment = "LEFT";
+			  else
+			    if ((c.horizontalAlignment>0)||(c.horizontalAlignment=="+1"))
+				retVal.horizontalAlignment = "RIGHT";
+
+			retVal.verticalAlignment = "TOP";
+			if (c.verticalAlignment)
+			  if ((c.verticalAlignment<0) || (c.verticalAlignment=="-1"))
+				retVal.verticalAlignment = "TOP";
+			  else
+			    if ((c.verticalAlignment>0)||(c.verticalAlignment=="+1"))
+				retVal.verticalAlignment = "BOTTOM";
+
+			return retVal; // do not adjust
+		}
+		else {
+		// containers or non-implemented...
+			retVal = {};
+			retVal.minimumWidth = 10;
+			retVal.minimumHeight = 10;
+//			retVal.preferredWidth = 10;
+//			retVal.preferredHeight = 10;
+			retVal.horizontalSpacing = 10;
+			retVal.verticalSpacing = 10;
+			if (c.horizontalAlignment)
+			  if ((c.horizontalAlignment<0) || (c.horizontalAlignment=="-1"))
+				retVal.horizontalAlignment = "LEFT";
+			  else
+			    if ((c.horizontalAlignment>0)||(c.horizontalAlignment=="+1"))
+				retVal.horizontalAlignment = "RIGHT";
+
+			if (c.verticalAlignment)
+			  if ((c.verticalAlignment<0) || (c.verticalAlignment=="-1"))
+				retVal.verticalAlignment = "TOP";
+			  else
+			    if ((c.verticalAlignment>0)||(c.verticalAlignment=="+1"))
+				retVal.verticalAlignment = "BOTTOM";
+		}
+		
+		if (retVal) {
+//console.log("retVal of "+c.getClassName()+" is",retVal);
+			// adjust padding to start padded children at relative coordiates (0;0) !!!
+			if (retVal.leftPadding || retVal.rightPadding) {
+				if (!retVal.leftPadding)
+					retVal.leftPadding = 0;
+				if (!retVal.rightPadding)
+					retVal.rightPadding = 0;
+				retVal.rightPadding = retVal.leftPadding+retVal.rightPadding;
+				retVal.leftPadding = 0;
+			}
+			if (retVal.topPadding || retVal.bottomPadding) {
+				if (!retVal.topPadding)
+					retVal.topPadding = 0;
+				if (!retVal.bottomPadding)
+					retVal.bottomPadding = 0;
+				retVal.bottomPadding = retVal.topPadding+retVal.bottomPadding;
+				retVal.topPadding = 0;
+			}
+			return retVal;
+		}
+		else
+			return c; // c will be read only (we hope)
+	},
+	
+	getHorizontalRelativeInfo: function(rComponent) {
+		var c = tda.model[rComponent];
+		return c; // c will be read only (we hope)
+	},
+	
+	getVerticalRelativeInfo: function(rComponent) {
+		var c = tda.model[rComponent];
+		return c; // c will be read only (we hope)
+	},
+	
+	getHorizontalRelativeInfoGroup: function(rComponent) {
+		var c = tda.model[rComponent];
+		if (c.relativeWidthGroup && (c.relativeWidthGroup.length>0))
+			return c.relativeWidthGroup[0].reference;
+		else
+		if (c.container && (c.container.length>0))
+			return c.container[0].reference;
+		else
+			return 0;
+	}, 
+	
+	getVerticalRelativeInfoGroup: function(rComponent) {
+		var c = tda.model[rComponent];
+		if (c.relativeHeightGroup && (c.relativeHeightGroup.length>0))
+			return c.relativeHeightGroup[0].reference;
+		else
+		if (c.container && (c.container.length>0))
+			return c.container[0].reference;
+		else
+			return 0;
+	},
+		
+	getLayoutName: function(rComponent) {
+		var c = tda.model[rComponent];
+		var t = null;
+		if (c.isKindOf("D#Stack") || c.isKindOf("Stack") || c.isKindOf("D#TabContainer") || c.isKindOf("TabContainer") )
+			t = "Stack";
+		if (c.isKindOf("D#Row") || c.isKindOf("Row"))
+			t = "Row";
+		if (c.isKindOf("D#Column") || c.isKindOf("Column"))
+			t = "Column";
+		if (c.isKindOf("D#HorizontalScrollBox") || c.isKindOf("HorizontalScrollBox"))
+			t = "HorizontalScrollBox";
+		if (c.isKindOf("D#VerticalScrollBox") || c.isKindOf("VerticalScrollBox"))
+			t = "VerticalScrollBox";
+		if (c.isKindOf("D#ScrollBox") || c.isKindOf("ScrollBox"))
+			t = "ScrollBox";
+		if (c.isKindOf("D#HorizontalBox") || c.isKindOf("HorizontalBox"))
+			t = "HorizontalBox";
+		if (c.isKindOf("D#VerticalBox") || c.isKindOf("VerticalBox") || c.isKindOf("D#Tab") || c.isKindOf("Tab"))
+			t = "VerticalBox";
+		return t;
+	},
+		
+	layout: function(rComponent, x, y, w, h) {
+		var c = tda.model[rComponent];
+console.log("LAYOUT "+c.getClassName()+" "+c.reference,x,y,w,h);
+		var rParent = 0;
+		if (c.container && (c.container.length>0))
+			rParent = c.container[0].reference;
+		
+			if (c.isKindOf("D#Form")) {
+				$(document.body).css("opacity","1");
+		
+				var frameBorderWidth = window["frameHorizontalPadding"]; //?scrollbar width?
+				var frameHeaderHeight = window["frameVerticalPadding"]; //50;
+			                                             
+				var browserWidth = tda.ee.getScreenWidth();//window.top.document.body.clientWidth;
+				var browserHeight = tda.ee.getScreenHeight();//window.top.document.body.clientHeight;
+				
+				  
+				if (h > browserHeight-30) {
+				  h = browserHeight-30-frameHeaderHeight; // do not count the frame header, but take into a consideration browser height
+				  w += 17; // add vertical scrollbar width
+				}
+				else {
+//				  frameBorderWidth = the same; // do not use scrollbar
+				  h = h-frameHeaderHeight; // do not count the frame header
+				}
+
+				if (w > browserWidth) 
+				  w = browserWidth-frameBorderWidth;
+				else
+				  w = w-frameBorderWidth;
+				if (iframe) {  
+	  				var N = 10;
+  					var curX = parseInt($(iframe).parent().parent().css("left"),10);
+  					var curY = parseInt($(iframe).parent().parent().css("top"), 10);
+  					var curW = parseInt($(iframe).parent().parent().css("width"),10);
+  					var curH = parseInt($(iframe).parent().parent().css("height"),10);
+	  				var dx = ((browserWidth-w-frameBorderWidth)/2 - curX)/N;
+  					var dy = (15+(browserHeight-30-h-frameHeaderHeight)/2 - curY)/N;
+  					var dw = ((w+frameBorderWidth)-curW)/N;
+  					var dh = ((h+frameHeaderHeight)-curH)/N;
+  					for (var i=1; i<=N; i++) {
+	  					setTimeout(function(i) {
+  							$(iframe).parent().parent().css("width", curW+dw*i);
+  							$(iframe).parent().parent().css("height", curH+dh*i);
+  							$(iframe).parent().parent().css("left", curX+dx*i);
+  							$(iframe).parent().parent().css("top", curY+dy*i);
+	  					}, 100, i);
+  					}
+  					
+//  					$(iframe).css("width", w);
+//  					$(iframe).css("height", h);
+				}
+				tda.ee.resizeFrame(frameRef, w, h);
+			}
+			else
+		/*if (c.isKindOf("D#TabContainer")) {
+			var cmpn = window["dojo"+rComponent];
+			$(cmpn).css("width", $(iframe).parent().parent().css("width")
+			$(iframe).parent().parent().css("height");
+		}
+		else*/ {
+			setTimeout(function() {
+				
+				if (c.isKindOf("D#Label")) {
+					dojo.style("dojo"+rComponent,"overflow","hidden");
+					dojo.style("dojo"+rComponent,"position","relative");
+					dojo.style("dojo"+rComponent,"width",w+"px");
+					dojo.style("dojo"+rComponent,"height",h+"px");
+					dojo.style("dojo"+rComponent,"display","inline-block");
+					
+					dojo.style("dojo"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojo"+rComponent,"margin-top",y+"px"); // relative to prev. child
+				}
+				else
+				if (c.isKindOf("D#ComboBox")) {
+					dojo.style("dojopane"+rComponent,"position","relative");
+					dojo.style("dojopane"+rComponent,"width",w+"px");
+					dojo.style("dojopane"+rComponent,"height",h+"px");
+					dojo.style("dojopane"+rComponent,"display","inline-block");
+					dojo.style("dojopane"+rComponent,"border","0px");
+					dojo.style("dojopane"+rComponent,"padding","0px");
+					dojo.style("dojopane"+rComponent,"border-spacing","0px");
+					dojo.style("widget_dojo"+rComponent,"width",(w-4)+"px");
+					dojo.style("widget_dojo"+rComponent,"height",(h-2)+"px");
+					
+					dojo.style("dojopane"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojopane"+rComponent,"margin-top",y+"px"); // relative to prev. child
+				}
+				else
+				if (c.isKindOf("D#ListBox")) {
+					dojo.style("dojo"+rComponent,"overflow","hidden");
+					dojo.style("dojo"+rComponent,"position","relative");
+					dojo.style("dojo"+rComponent,"width",w+"px");
+					dojo.style("dojo"+rComponent,"height",h+"px");
+					dojo.style("dojo"+rComponent,"display","inline-block");
+					
+					dojo.style("dojo"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojo"+rComponent,"margin-top",y+"px"); // relative to prev. child
+				}
+				else
+				if (c.isKindOf("D#InputField")) {
+					dojo.style("dojopane"+rComponent,"position","relative");
+					dojo.style("dojopane"+rComponent,"width",w+"px");
+					dojo.style("dojopane"+rComponent,"height",h+"px");
+					dojo.style("dojopane"+rComponent,"display","inline-block");
+					dojo.style("dojopane"+rComponent,"border","0px");
+					dojo.style("dojopane"+rComponent,"padding","0px");
+					dojo.style("dojopane"+rComponent,"border-spacing","0px");
+					dojo.style("widget_dojo"+rComponent,"width",(w-4)+"px");
+					dojo.style("widget_dojo"+rComponent,"height",(h-4)+"px");
+					
+					dojo.style("dojopane"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojopane"+rComponent,"margin-top",y+"px"); // relative to prev. child
+				}
+				else
+				if (c.isKindOf("D#TextArea") || c.isKindOf("D#MultiLineTextBox")) {
+					var cmpn = window["widget_dojo"+rComponent];
+					dojo.style("dojopane"+rComponent,"position","relative");
+					dojo.style("dojopane"+rComponent,"width",w+"px");
+					dojo.style("dojopane"+rComponent,"height",h+"px");
+					dojo.style("dojopane"+rComponent,"display","inline-block");
+					dojo.style("dojopane"+rComponent,"border","0px");
+					dojo.style("dojopane"+rComponent,"padding","0px");
+					dojo.style("dojopane"+rComponent,"border-spacing","0px");
+
+					dojo.style("dojopane"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojopane"+rComponent,"margin-top",y+"px"); // relative to prev. child
+					//cmpn.parentNode.parentNode.style["margin-left"] = x+"px";
+					//cmpn.parentNode.parentNode.style["margin-top"] = y+"px";
+				}
+				else
+				if (c.isKindOf("D#Button")) {
+					var cmpn = window["dojo"+rComponent];
+					cmpn.parentNode.parentNode.style.padding = 0;
+					cmpn.parentNode.parentNode.style.position = "relative";
+					cmpn.parentNode.parentNode.style.width = w+"px";
+					cmpn.parentNode.parentNode.style.height = h+"px";
+					cmpn.parentNode.parentNode.style.display = "inline-block";
+					
+					cmpn.parentNode.parentNode.style["margin-left"] = x+"px";
+					cmpn.parentNode.parentNode.style["margin-top"] = y+"px";
+				}
+				else
+				if (c.isKindOf("D#CheckBox")) {
+					dojo.style("dojo"+rComponent,"overflow","hidden");
+					dojo.style("dojo"+rComponent,"position","relative");
+					dojo.style("dojo"+rComponent,"width",18+"px");
+					dojo.style("dojo"+rComponent,"height",h+"px");
+					dojo.style("dojo"+rComponent,"display","inline-block");
+					
+					dojo.style("dojo"+rComponent,"margin-left",0+"px");
+					//dojo.style("dojo"+rComponent,"margin-top","-10px");
+                                        $("#dojo"+rComponent).parent().css("margin-top", "-10px");
+
+					dojo.style("dojolabel"+rComponent,"overflow","hidden");
+					dojo.style("dojolabel"+rComponent,"position","relative");
+					dojo.style("dojolabel"+rComponent,"width",(w-20)+"px");
+					dojo.style("dojolabel"+rComponent,"height",h+"px");
+					dojo.style("dojolabel"+rComponent,"display","inline-block");
+					
+					dojo.style("dojolabel"+rComponent,"margin-left",0+"px");
+					dojo.style("dojolabel"+rComponent,"margin-top",0+"px");
+
+
+					dojo.style("dojopane"+rComponent,"position","relative");
+					dojo.style("dojopane"+rComponent,"width",w+"px");
+					dojo.style("dojopane"+rComponent,"height",h+"px");
+					dojo.style("dojopane"+rComponent,"display","inline-block");
+					dojo.style("dojopane"+rComponent,"border","0px");
+					dojo.style("dojopane"+rComponent,"padding","0px");
+					dojo.style("dojopane"+rComponent,"border-spacing","0px");					
+					dojo.style("dojopane"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojopane"+rComponent,"margin-top",y+"px"); // relative to prev. child
+
+				}
+				else
+				if (c.isKindOf("D#RadioButton")) {
+
+					dojo.style("dojo"+rComponent,"overflow","hidden");
+					dojo.style("dojo"+rComponent,"position","relative");
+					dojo.style("dojo"+rComponent,"width",18+"px");
+					dojo.style("dojo"+rComponent,"height",h+"px");
+					dojo.style("dojo"+rComponent,"display","inline-block");
+					
+					dojo.style("dojo"+rComponent,"margin-left",0+"px");
+					//dojo.style("dojo"+rComponent,"margin-top","-10px");
+                                        $("#dojo"+rComponent).parent().css("margin-top", "-10px");
+
+					dojo.style("dojolabel"+rComponent,"overflow","hidden");
+					dojo.style("dojolabel"+rComponent,"position","relative");
+					dojo.style("dojolabel"+rComponent,"width",(w-20)+"px");
+					dojo.style("dojolabel"+rComponent,"height",h+"px");
+					dojo.style("dojolabel"+rComponent,"display","inline-block");
+					
+					dojo.style("dojolabel"+rComponent,"margin-left",0+"px");
+					dojo.style("dojolabel"+rComponent,"margin-top",0+"px");
+
+
+					dojo.style("dojopane"+rComponent,"position","relative");
+					dojo.style("dojopane"+rComponent,"width",w+"px");
+					dojo.style("dojopane"+rComponent,"height",h+"px");
+					dojo.style("dojopane"+rComponent,"display","inline-block");
+					dojo.style("dojopane"+rComponent,"border","0px");
+					dojo.style("dojopane"+rComponent,"padding","0px");
+					dojo.style("dojopane"+rComponent,"border-spacing","0px");					
+					dojo.style("dojopane"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojopane"+rComponent,"margin-top",y+"px"); // relative to prev. child
+
+				}
+				else
+				if (c.isKindOf("D#HorizontalBox") || c.isKindOf("D#Row")) {
+					dojo.style("dojo"+rComponent,"position","relative");
+					dojo.style("dojo"+rComponent,"width",w+"px");
+					dojo.style("dojo"+rComponent,"height",h+"px");
+
+
+            					if (c.component && (c.component.length>1))
+							dojo.style("dojo"+rComponent,"display","block");
+						else
+							dojo.style("dojo"+rComponent,"display","inline-block");
+
+//                                        if (c.isKindOf("D#Row"))
+//						dojo.style("dojo"+rComponent,"display","block");
+//					else
+//						dojo.style("dojo"+rComponent,"display","inline-block");
+					dojo.style("dojo"+rComponent,"border","0px");
+					dojo.style("dojo"+rComponent,"padding","0px");
+					dojo.style("dojo"+rComponent,"border-spacing","0px");
+					
+					dojo.style("dojo"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojo"+rComponent,"margin-top",y+"px"); // relative to prev. child
+					dojo.style(window["r"+rComponent].id, "width",w+"px");
+					dojo.style(window["r"+rComponent].id, "height",h+"px");
+				}
+				else
+				if (c.isKindOf("D#VerticalBox") || c.isKindOf("D#Column")) {
+					dojo.style("dojo"+rComponent,"position","relative");
+					dojo.style("dojo"+rComponent,"display","inline-block");
+					if (c.isKindOf("D#GroupBox")) {
+						dojo.style("dojo"+rComponent,"width",(w-20)+"px");
+						dojo.style("dojo"+rComponent,"height",(h-20)+"px");
+					}
+                                        else {
+						dojo.style("dojo"+rComponent,"width",w+"px");
+						dojo.style("dojo"+rComponent,"height",h+"px");
+						dojo.style("dojo"+rComponent,"border","0px");
+						dojo.style("dojo"+rComponent,"padding","0px");
+					}
+					dojo.style("dojo"+rComponent,"border-spacing","0px");
+					
+					dojo.style("dojo"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojo"+rComponent,"margin-top",y+"px"); // relative to prev. child
+                                        $(".dijitTabPaneWrapper").css("height",""); // for tab border to be visible
+				}
+				else {
+					dojo.style("dojo"+rComponent,"position","relative");
+					dojo.style("dojo"+rComponent,"width",w+"px");
+					dojo.style("dojo"+rComponent,"height",h+"px");
+					dojo.style("dojo"+rComponent,"display","inline-block");
+					dojo.style("dojo"+rComponent,"border","0px");
+					dojo.style("dojo"+rComponent,"padding","0px");
+				
+					dojo.style("dojo"+rComponent,"margin-left",x+"px"); // relative to prev. child
+					dojo.style("dojo"+rComponent,"margin-top",y+"px"); // relative to prev. child
+				
+				/*var cmpn = window["dojo"+rComponent];
+				cmpn.style.position = "relative";
+				cmpn.style.width = w+"px";
+				cmpn.style.height = h+"px";*/
+				}
+				
+				
+			}, 0);
+		}
+	},
+	
+	destroy: function(rComponent) {
+	  if (!window["r"+rComponent])
+		return;
+	  console.log("DESTROY "+rComponent);
+          if (tda.model[rComponent])
+            console.log(tda.model[rComponent].getClassName());
+          detachDojoChild(window["r"+rComponent]);
+          window["r"+rComponent].destroy();
+          delete window["r"+rComponent];
+	  if (window["dojopane"+rComponent]) {
+            window["dojopane"+rComponent].destroy();
+            delete window["dojopane"+rComponent];
+	  }	
+	  if (window["dojolabel"+rComponent]) {
+            window["dojolabel"+rComponent].destroy();
+            delete window["dojolabel"+rComponent];
+	  }	
+	  if (window["dojo"+rComponent]) {
+	    console.log("DESTROY "+window["dojo"+rComponent]);
+            window["dojo"+rComponent].destroy();
+            delete window["dojo"+rComponent];
+	  }	
+	}
+};
+
+});
+
+function executeAfterConfigCmd(cmd) {
+  console.log("AFTERCONFIG CMD");
+  if (cmd)
+    cmd.delete();
+}
+
+function executeD_Command(cmd)
+{
+  console.log("executeD_Command "+cmd.info);
+  if (!window.callback) {
+    setTimeout(function() {
+	  executeD_Command(cmd);
+	}, 100);
+    return;
+  }
+  console.log("D#Command catched!");
+  console.log(cmd);
+  var dForm = cmd.receiver[0];
+
+  if (cmd.info == "Close") {
+    closeCommandGiven = true;
+
+
+    var r = cmd.reference;
+    var arr = cmd.getReceiver();
+    cmd.delete();
+    for (var i=0; i<arr.length; i++) {
+      dForm = arr[i];
+      if (dForm.frame && (dForm.frame.length>0)) {
+	callEventHandler(dForm, "Close");
+
+        console.log("D#CLOSE "+r+" detaching... form "+dForm.reference+" caption="+dForm.caption+"; frame "+dForm.frame[0].reference+" caption="+dForm.frame[0].caption);
+        var cmd2 = new tda.model.DetachFrameCommand();
+        cmd2.setPermanently(true);
+        cmd2.setFrame(dForm.frame[0]);
+        tda.model.submit(cmd2);
+      }
+      dForm.delete();
+    }
+    return;
+  }
+
+
+  if (cmd.info == "Refresh") {
+
+    console.log("REFRESH");
+    var r;
+    if (cmd.receiver && ((cmd.receiver.length>1) || (cmd.receiver.length==0))) {
+      var arr = cmd.getReceiver();
+      for (var i=0; i<arr.length; i++) {
+        console.log("RECV["+i+"]="+arr[i].reference+" "+arr[i].getClassName());
+        if (!window["r"+arr[i].reference]) {
+          console.log("DELETE");
+	  arr[i].delete();
+	}
+	else
+	  r = arr[i].reference;
+      }	
+      if (!r)
+        r = window.formObject.reference;
+    }
+    else {
+      var component = cmd.receiver[0];
+      r = component.reference;
+    }
+    cmd.delete();
+
+    require(["dojo"], function(dojo) {
+       console.log("REFRESH2");
+       var w = dojo.style("dojo"+r, "width");
+       var h = dojo.style("dojo"+r, "height");
+       console.log("FORM W, H", w, h);
+
+       window.dialogLayout.refreshAndLayout(r, 0,0);//w, h);
+    });
+    return;
+  }
+
+  window.formObject = dForm;
+  
+  window.dialogLayout = new IMCSDialogLayout(callback);
+  var d = new Date();
+  console.log("before loadAndLayout "+d.getTime());
+  window.dialogLayout.loadAndLayout(dForm.reference);
+  var d = new Date();
+  console.log("after loadAndLayout "+d.getTime());
+  
+  
+  
+/*	setTimeout(function() {
+	require(["dojo/domReady!"],function() {
+		window.mainLayout.startup(); // already correct coos
+	});
+	}, 500);*/
+  
+  /*topContainer = new TabContainer({
+          region: "top",
+          id: "topContainer",
+          tabPosition: "top",
+          "class": "edgePanel",
+          splitter: true
+        });*/
+
+  //recurseComponents("",dForm);
+//check editable
+}
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,452 @@
+MMDefStart;
+// Automatically generated.;
+
+// Classes;
+class D#Group;
+
+class D#EventSource;
+
+class D#Component;
+	attr D#Component.id:String;
+	attr D#Component.enabled:Boolean;
+	attr D#Component.minimumWidth:Integer;
+	attr D#Component.minimumHeight:Integer;
+	attr D#Component.preferredWidth:Integer;
+	attr D#Component.preferredHeight:Integer;
+	attr D#Component.maximumWidth:Integer;
+	attr D#Component.maximumHeight:Integer;
+	attr D#Component.leftMargin:Integer;
+	attr D#Component.rightMargin:Integer;
+	attr D#Component.topMargin:Integer;
+	attr D#Component.bottomMargin:Integer;
+	attr D#Component.minimumRelativeWidth:Real;
+	attr D#Component.minimumRelativeHeight:Real;
+	attr D#Component.preferredRelativeWidth:Real;
+	attr D#Component.preferredRelativeHeight:Real;
+	attr D#Component.maximumRelativeWidth:Real;
+	attr D#Component.maximumRelativeHeight:Real;
+	attr D#Component.horizontalSpan:Integer;
+	attr D#Component.verticalSpan:Integer;
+	attr D#Component.minimumHorizontalShrinkFactor:Real;
+	attr D#Component.maximumHorizontalGrowFactor:Real;
+	attr D#Component.minimumVerticalShrinkFactor:Real;
+	attr D#Component.maximumVerticalGrowFactor:Real;
+	attr D#Component.visible:Boolean;
+	attr D#Component.hint:String;
+	attr D#Component.readOnly:Boolean;
+
+class D#Container;
+	attr D#Container.horizontalAlignment:Integer;
+	attr D#Container.verticalAlignment:Integer;
+	attr D#Container.horizontalSpacing:Integer;
+	attr D#Container.verticalSpacing:Integer;
+	attr D#Container.leftBorder:Integer;
+	attr D#Container.rightBorder:Integer;
+	attr D#Container.topBorder:Integer;
+	attr D#Container.bottomBorder:Integer;
+	attr D#Container.leftPadding:Integer;
+	attr D#Container.rightPadding:Integer;
+	attr D#Container.topPadding:Integer;
+	attr D#Container.bottomPadding:Integer;
+
+class D#Row;
+
+class D#Column;
+
+class D#VerticalBox;
+
+class D#GroupBox;
+	attr D#GroupBox.caption:String;
+
+class D#Form;
+	attr D#Form.caption:String;
+	attr D#Form.buttonClickOnClose:Boolean;
+	attr D#Form.hasMinimizeButton:Boolean;
+	attr D#Form.hasMaximizeButton:Boolean;
+	attr D#Form.isCloseButtonEnabled:Boolean;
+	attr D#Form.left:Integer;
+	attr D#Form.top:Integer;
+	attr D#Form.width:Integer;
+	attr D#Form.height:Integer;
+	attr D#Form.editable:Boolean;
+
+class D#TableDiagram;
+
+class D#HorizontalBox;
+
+class D#HorizontalScrollBox;
+
+class D#VerticalScrollBox;
+
+class D#ScrollBox;
+
+class D#Tab;
+	attr D#Tab.caption:String;
+
+class D#Stack;
+
+class D#TabContainer;
+
+class D#VerticalScrollBoxWrapper;
+
+class D#HorizontalScrollBoxWrapper;
+
+class D#VerticalSplitBox;
+
+class D#HorizontalSplitBox;
+
+class D#Label;
+	attr D#Label.caption:String;
+
+class D#RadioButton;
+	attr D#RadioButton.caption:String;
+	attr D#RadioButton.selected:Boolean;
+
+class D#ListBox;
+	attr D#ListBox.multiSelect:Boolean;
+
+class D#VTableType;
+	attr D#VTableType.editable:Boolean;
+	attr D#VTableType.movableRows:Boolean;
+	attr D#VTableType.movableColumns:Boolean;
+	attr D#VTableType.verticalAlignment:Integer;
+	attr D#VTableType.insertButtonCaption:String;
+	attr D#VTableType.deleteButtonCaption:String;
+	attr D#VTableType.rowHeight:Integer;
+	attr D#VTableType.autoOrderRows:Boolean;
+	attr D#VTableType.autoOrderColumns:Boolean;
+
+class D#VTable;
+
+class D#VTableRow;
+	attr D#VTableRow.edited:Boolean;
+	attr D#VTableRow.inserted:Boolean;
+	attr D#VTableRow.deleted:Boolean;
+	attr D#VTableRow.verticalAlignment:Integer;
+
+class D#TableComponent;
+	attr D#TableComponent.outlineColor:Integer;
+
+class D#Button;
+	attr D#Button.caption:String;
+	attr D#Button.closeOnClick:Boolean;
+	attr D#Button.deleteOnClick:Boolean;
+
+class D#CheckBox;
+	attr D#CheckBox.caption:String;
+	attr D#CheckBox.checked:Boolean;
+	attr D#CheckBox.editable:Boolean;
+
+class D#ComboBox;
+	attr D#ComboBox.text:String;
+	attr D#ComboBox.editable:Boolean;
+
+class D#Item;
+	attr D#Item.value:String;
+
+class D#Image;
+	attr D#Image.fileName:String;
+	attr D#Image.editable:Boolean;
+
+class D#TextBox;
+	attr D#TextBox.text:String;
+	attr D#TextBox.multiLine:Boolean;
+	attr D#TextBox.editable:Boolean;
+
+class D#InputField;
+
+class D#TextArea;
+
+class D#Tree;
+	attr D#Tree.draggableNodes:Boolean;
+
+class D#MultiLineTextBox;
+
+class D#RichTextArea;
+	attr D#RichTextArea.fileName:String;
+	attr D#RichTextArea.encodedContent:String;
+
+class D#ProgressBar;
+	attr D#ProgressBar.position:Integer;
+	attr D#ProgressBar.minimumValue:Integer;
+	attr D#ProgressBar.maximumValue:Integer;
+
+class D#ImageButton;
+	attr D#ImageButton.fileName:String;
+	attr D#ImageButton.cardinalPoint:String;
+
+class D#VTableColumnType;
+	attr D#VTableColumnType.caption:String;
+	attr D#VTableColumnType.defaultValue:String;
+	attr D#VTableColumnType.editable:Boolean;
+	attr D#VTableColumnType.width:Integer;
+	attr D#VTableColumnType.preferredRelativeWidth:Real;
+	attr D#VTableColumnType.horizontalAlignment:Integer;
+
+class D#VTableCell;
+	attr D#VTableCell.value:String;
+
+class D#EventHandler;
+	attr D#EventHandler.eventName:String;
+	attr D#EventHandler.transformationName:String;
+	attr D#EventHandler.procedureName:String;
+
+class D#Command;
+	attr D#Command.info:String;
+
+
+class D#Event;
+	attr D#Event.eventName:String;
+	attr D#Event.info:String;
+
+class D#RowMovedEvent;
+
+class D#ColumnMovedEvent;
+
+class D#MultiLineTextBoxChangeEvent;
+
+class D#TextLine;
+	attr D#TextLine.text:String;
+	attr D#TextLine.inserted:Boolean;
+	attr D#TextLine.deleted:Boolean;
+	attr D#TextLine.edited:Boolean;
+
+class D#TreeNodeSelectEvent;
+
+class D#AddTreeNodeCmd;
+
+class D#DeleteTreeNodeCmd;
+
+class D#SelectTreeNodeCmd;
+
+class D#ExpandTreeNodeCmd;
+
+class D#CollapseTreeNodeCmd;
+
+class D#TreeNode;
+	attr D#TreeNode.text:String;
+	attr D#TreeNode.expanded:Boolean;
+	attr D#TreeNode.id:String;
+
+class D#ListBoxChangeEvent;
+
+class D#TabChangeEvent;
+
+class D#TreeNodeMoveEvent;
+
+class D#CopyToClipboardCmd;
+
+class D#KeyDownEvent;
+	attr D#KeyDownEvent.keyName:String;
+
+class D#TreeNodeExpandedEvent;
+
+class D#TreeNodeCollapsedEvent;
+
+
+// Generalizations, associations and compositions;
+
+
+
+compos D#EventSource.[0..1]eventSource/eventHandler[*].D#EventHandler;
+
+rel D#Component.subClassOf.D#EventSource;
+assoc D#Component.[*]componentWidths/relativeWidthGroup[0..1].D#Group;
+assoc D#Component.[*]componentHeights/relativeHeightGroup[0..1].D#Group;
+assoc D#Component.[*]focus/focusContainer[0..1].D#Container;
+assoc D#Component.[1]receiver/command[*].D#Command;
+compos D#Component.[0..1]owner/ownedGroup[*].D#Group;
+
+rel D#Container.subClassOf.D#Component;
+compos D#Container.[0..1]container/component[*].D#Component;
+
+rel D#Row.subClassOf.D#Container;
+
+rel D#Column.subClassOf.D#Container;
+
+rel D#VerticalBox.subClassOf.D#Container;
+
+rel D#GroupBox.subClassOf.D#VerticalBox;
+
+rel D#Form.subClassOf.D#VerticalBox;
+assoc D#Form.[0..1]defaultButtonForm/defaultButton[0..1].D#Button;
+assoc D#Form.[0..1]cancelButtonForm/cancelButton[0..1].D#Button;
+compos D#Form.[1]form/ownedEvent[0..1].D#Event;
+assoc D#Form.[0..1]form/focused[0..1].D#Component;
+assoc D#Form.[0..1]constantFormOnClick/constantFormCallingButton[0..1].D#Button;
+assoc D#Form.[0..1]foForm/focusOrder[*].D#Component;
+
+rel D#TableDiagram.subClassOf.D#Form;
+
+rel D#HorizontalBox.subClassOf.D#Container;
+
+rel D#HorizontalScrollBox.subClassOf.D#Container;
+
+rel D#VerticalScrollBox.subClassOf.D#Container;
+
+rel D#ScrollBox.subClassOf.D#Container;
+
+rel D#Tab.subClassOf.D#VerticalBox;
+assoc D#Tab.[0..1]tab/tabChangeEvent[0..1].D#TabChangeEvent;
+
+rel D#Stack.subClassOf.D#Container;
+
+rel D#TabContainer.subClassOf.D#Stack;
+assoc D#TabContainer.[0..1]tabContainer/activeTab[0..1].D#Tab;
+
+rel D#VerticalScrollBoxWrapper.subClassOf.D#VerticalScrollBox;
+
+rel D#HorizontalScrollBoxWrapper.subClassOf.D#HorizontalScrollBox;
+
+rel D#VerticalSplitBox.subClassOf.D#VerticalBox;
+
+rel D#HorizontalSplitBox.subClassOf.D#HorizontalBox;
+
+rel D#Label.subClassOf.D#Component;
+
+rel D#RadioButton.subClassOf.D#Component;
+
+rel D#ListBox.subClassOf.D#Component;
+compos D#ListBox.[1]listBox/item[*].D#Item;
+
+rel D#VTableType.subClassOf.D#Component;
+assoc D#VTableType.[0..1]type/vTable[*].D#VTable;
+assoc D#VTableType.[*]vTableType/columnType[*].D#VTableColumnType;
+compos D#VTableType.[0..1]vTableTypeOwner/column[*].D#VTableColumnType;
+compos D#VTableType.[0..1]vTableType/button[*].D#Button;
+assoc D#VTableType.[1]column/columnMovedEvent[0..1].D#ColumnMovedEvent;
+assoc D#VTableType.[0..1]before/beforeColumnMovedEvent[0..1].D#ColumnMovedEvent;
+assoc D#VTableType.[0..1]after/afterColumnMovedEvent[0..1].D#ColumnMovedEvent;
+
+rel D#VTable.subClassOf.D#VTableType;
+compos D#VTable.[0..1]vTable/vTableRow[*].D#VTableRow;
+assoc D#VTable.[0..1]vTable/copyToClipboard[0..1].D#CopyToClipboardCmd;
+
+compos D#VTableRow.[0..1]vTableRow/vTableCell[*].D#VTableCell;
+assoc D#VTableRow.[0..1]parentRow/activeCell[0..1].D#VTableCell;
+assoc D#VTableRow.[0..1]selectedRow/parentTable[1].D#VTable;
+assoc D#VTableRow.[1]row/rowMovedEvent[0..1].D#RowMovedEvent;
+assoc D#VTableRow.[0..1]before/beforeRowMovedEvent[0..1].D#RowMovedEvent;
+assoc D#VTableRow.[0..1]after/afterRowMovedEvent[0..1].D#RowMovedEvent;
+
+rel D#TableComponent.subClassOf.D#Component;
+
+rel D#Button.subClassOf.D#TableComponent;
+compos D#Button.[0..1]callingButton/formOnClick[0..1].D#Form;
+
+rel D#CheckBox.subClassOf.D#TableComponent;
+
+rel D#ComboBox.subClassOf.D#TableComponent;
+compos D#ComboBox.[1]comboBox/item[*].D#Item;
+assoc D#ComboBox.[0..1]parentComboBox/selected[0..1].D#Item;
+
+assoc D#Item.[*]selected/parentListBox[0..1].D#ListBox;
+assoc D#Item.[0..1]selectedItem/vTableCell[0..1].D#VTableCell;
+assoc D#Item.[0..1]selected/sListBoxChangeEvent[*].D#ListBoxChangeEvent;
+assoc D#Item.[0..1]deselected/dListBoxChangeEvent[*].D#ListBoxChangeEvent;
+
+rel D#Image.subClassOf.D#TableComponent;
+
+rel D#TextBox.subClassOf.D#TableComponent;
+
+rel D#InputField.subClassOf.D#TextBox;
+
+rel D#TextArea.subClassOf.D#TextBox;
+
+rel D#Tree.subClassOf.D#Component;
+compos D#Tree.[0..1]tree/treeNode[*].D#TreeNode;
+assoc D#Tree.[0..1]parentTree/selected[*].D#TreeNode;
+
+rel D#MultiLineTextBox.subClassOf.D#TextArea;
+compos D#MultiLineTextBox.[0..1]multiLineTextBox/textLine[*].D#TextLine;
+assoc D#MultiLineTextBox.[0..1]parentMultiLineTextBox/current[*].D#TextLine;
+
+rel D#RichTextArea.subClassOf.D#TextArea;
+
+rel D#ProgressBar.subClassOf.D#Component;
+
+rel D#ImageButton.subClassOf.D#Button;
+
+assoc D#VTableColumnType.[0..1]vTableColumnType/vTableCell[*].D#VTableCell;
+assoc D#VTableColumnType.[*]vTableColumnType/defaultComponentType[0..1].D#TableComponent;
+compos D#VTableColumnType.[0..1]vTableColumnTypeOwner/defaultComponent[0..1].D#TableComponent;
+
+assoc D#VTableCell.[*]vTableCell/componentType[0..1].D#TableComponent;
+compos D#VTableCell.[0..1]vTableCellOwner/component[0..1].D#TableComponent;
+
+
+rel D#Command.subClassOf.TDAKernel::Command;
+
+rel D#Event.subClassOf.TDAKernel::Event;
+assoc D#Event.[0..1]event/source[1].D#EventSource;
+assoc D#Event.[0..1]event/vTableCell[0..1].D#VTableCell;
+
+rel D#RowMovedEvent.subClassOf.D#Event;
+
+rel D#ColumnMovedEvent.subClassOf.D#Event;
+
+rel D#MultiLineTextBoxChangeEvent.subClassOf.D#Event;
+
+assoc D#TextLine.[*]inserted/iMultiLineTextBoxChangeEvent[0..1].D#MultiLineTextBoxChangeEvent;
+assoc D#TextLine.[*]deleted/dMultiLineTextBoxChangeEvent[0..1].D#MultiLineTextBoxChangeEvent;
+assoc D#TextLine.[*]edited/eMultiLineTextBoxChangeEvent[0..1].D#MultiLineTextBoxChangeEvent;
+
+rel D#TreeNodeSelectEvent.subClassOf.D#Event;
+
+rel D#AddTreeNodeCmd.subClassOf.D#Command;
+
+rel D#DeleteTreeNodeCmd.subClassOf.D#Command;
+
+rel D#SelectTreeNodeCmd.subClassOf.D#Command;
+
+rel D#ExpandTreeNodeCmd.subClassOf.D#Command;
+
+rel D#CollapseTreeNodeCmd.subClassOf.D#Command;
+
+compos D#TreeNode.[0..1]parentNode/childNode[*].D#TreeNode;
+assoc D#TreeNode.[0..1]treeNode/treeNodeSelectEvent[0..1].D#TreeNodeSelectEvent;
+assoc D#TreeNode.[0..1]previous/pTreeNodeSelectEvent[0..1].D#TreeNodeSelectEvent;
+assoc D#TreeNode.[0..1]treeNode/tAddTreeNodeCmd[0..1].D#AddTreeNodeCmd;
+assoc D#TreeNode.[0..1]parent/pAddTreeNodeCmd[0..1].D#AddTreeNodeCmd;
+assoc D#TreeNode.[0..1]before/bAddTreeNodeCmd[0..1].D#AddTreeNodeCmd;
+assoc D#TreeNode.[1..*]treeNode/deleteTreeNodeCmd[0..1].D#DeleteTreeNodeCmd;
+assoc D#TreeNode.[0..1]treeNode/selectTreeNodeCmd[0..1].D#SelectTreeNodeCmd;
+assoc D#TreeNode.[1..*]treeNode/expandNodeCmd[0..1].D#ExpandTreeNodeCmd;
+assoc D#TreeNode.[1..*]treeNode/collapseTreeNodeCmd[0..1].D#CollapseTreeNodeCmd;
+assoc D#TreeNode.[1]treeNode/tTreeNodeMoveEvent[0..1].D#TreeNodeMoveEvent;
+assoc D#TreeNode.[0..1]wasBefore/bTreeNodeMoveEvent[0..1].D#TreeNodeMoveEvent;
+assoc D#TreeNode.[0..1]wasAfter/aTreeNodeMoveEvent[0..1].D#TreeNodeMoveEvent;
+assoc D#TreeNode.[0..1]previousParent/pTreeNodeMoveEvent[0..1].D#TreeNodeMoveEvent;
+assoc D#TreeNode.[0..1]treeNode/treeNodeExpandedEvent[0..1].D#TreeNodeExpandedEvent;
+assoc D#TreeNode.[0..1]treeNode/treeNodeCollapsedEvent[0..1].D#TreeNodeCollapsedEvent;
+
+rel D#ListBoxChangeEvent.subClassOf.D#Event;
+
+rel D#TabChangeEvent.subClassOf.D#Event;
+
+rel D#TreeNodeMoveEvent.subClassOf.D#Event;
+
+rel D#CopyToClipboardCmd.subClassOf.D#Command;
+
+rel D#KeyDownEvent.subClassOf.D#Event;
+
+rel D#TreeNodeExpandedEvent.subClassOf.D#Event;
+
+rel D#TreeNodeCollapsedEvent.subClassOf.D#Event;
+
+  // Frame is from EE metamodel
+  class Frame; 
+    attr Frame.caption:string;
+    attr Frame.contentURI:String;
+    attr Frame.location:String;
+    attr Frame.isResizeable:boolean;
+    attr Frame.isClosable:boolean;
+    attr Frame.onFrameActivatedEvent:String;
+    attr Frame.onFrameDeactivatingEvent:String;
+    attr Frame.onFrameResizedEvent:String;
+    attr Frame.onCloseFrameRequestedEvent:String;
+
+  assoc D#Form.[0..1]form/frame[0..1].Frame;
+
+
+MMDefEnd;
