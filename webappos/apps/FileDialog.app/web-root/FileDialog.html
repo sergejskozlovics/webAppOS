@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<title>Remote File Explorer (rfe)</title>
+<link rel="stylesheet" type="text/css" href="/webappos.css"/>
+<script src="/webappos.js"></script>
+
+</head>
+<body style="border:0;padding:0;margin:0;overflow: hidden; font-family:webAppOS;font-size:11pt;">
+
+<script>
+function onOK(fileName) {
+  if (window.onFileDialog) {
+    window.onFileDialog(fileName);
+  }
+  else
+  if (window.parent) {
+    window.parent.postMessage({protocol:"file_dialog_result", browse_id:webappos.js_util.get_query_value("browse_id"), result: fileName}, "*");
+  }
+}
+function onCancel() {
+  if (window.onFileDialog)
+    window.onFileDialog(null);
+  else
+  if (window.parent)
+    window.parent.postMessage({protocol:"file_dialog_result", browse_id:webappos.js_util.get_query_value("browse_id"), result: ""}, "*");
+}
+
+var dialogType = webappos.js_util.get_query_value("type"); // open, save, dir
+var currentDir = "/home";
+var filterStr = webappos.js_util.get_query_value("filter");
+if ((!filterStr) || (dialogType=="dir"))
+  filterStr = "All files(*.*)";
+  // e.g. Word%20document%20(*.doc,*.rtf)%0AC%2B%2B%20file(*.cpp,*.h,*.hpp)
+  // formats delimited by \n (%0A), extensions delimited by ","; "C++ file" => "C%2B%2B%20file"
+
+var filters = filterStr.split("\n");
+console.log(filterStr, filters.length);
+var extensions = [];
+for (var i=0; i<filters.length; i++) {
+  var j=filters[i].lastIndexOf("(");
+  var k=filters[i].lastIndexOf(")");
+  if ((j>=0) && (k>j))
+    extensions.push( filters[i].substring(j+1, k) );
+  else
+    extensions.push( "*" );
+}
+
+console.log(extensions);
+
+window.receiveMessage = function(event)
+{
+  var s = event.data+"";
+  if (s.indexOf("filebrowser:file:")==0) {
+    if (dialogType!="dir") {
+      var i=s.lastIndexOf("/");
+      if (i>=0)
+        theFileName.value = s.substring(i+1);
+      else
+        theFileName.value = s;
+    }
+  }
+  else
+  if (s.indexOf("filebrowser:dir:")==0) {  
+     currentDir = s.substring("filebrowser:dir:".length);
+     if (dialogType=="dir")
+       theFileName.value = currentDir;
+     else
+       theFileName.value = "";
+  }
+  else
+  if (s.indexOf("filebrowser:choose:")==0) {  
+     if (dialogType!="dir")
+       onOK(s.substring("filebrowser:choose:".length));
+  }
+  console.log(event.data);
+}
+
+window.addEventListener("message", window.receiveMessage, false);
+</script>
+
+<style>
+.formLine {
+    overflow: hidden;
+    margin-bottom: 5px;
+    vertical-align: middle;
+}
+.formLine input {
+    width: 100%;
+}
+.formLine label {
+    float: left;
+}
+.formLine span {
+    display: block;
+    overflow: hidden;
+    padding: 0 5px;
+}
+.formLine button {
+    float: right;
+}
+.formLine select {
+    float: right;
+}
+.formLine input, .formLine button {
+    box-sizing: border-box;
+}
+</style>
+
+<iframe id="theIFrame" frameborder="0" scrolling="no"  style="padding:0;margin:0;width:100%;"></iframe>
+
+<div id="theFooter" style="background:#afafaf;padding:5px;">
+  <div class="formLine">
+    <select id="theSelect" onchange="onSelectChange(event);">
+    </select>
+    <label id="theLabel">File name:</label>
+    <span><input id="theFileName" type="text" /></span>
+  </div>
+  <div align="right">
+    <input id="OK" type="button" style="min-width:10%" value="Open" onclick="if (!theFileName.value) return; if (dialogType=='dir') onOK(theFileName.value); else onOK(currentDir+'/'+theFileName.value);"></input>
+    <input type="button" style="min-width:10%" value="Cancel" onclick="onCancel();"></input>
+  </div>
+</div>
+
+
+<script>
+if (dialogType=="save")
+  OK.value="Save";
+else
+if (dialogType=="dir") {
+  OK.value="Choose";
+  theLabel.innerHTML = "Directory:";
+  theFileName.disabled = true;
+  theSelect.style.display="none";
+}
+else
+  OK.value="Open";
+
+for (var i=0; i<filters.length; i++) {
+  theSelect.innerHTML += "<option "+(i==0?"selected ":"")+"value='"+i+"'>"+filters[i]+"</option>";
+}
+
+
+var f = function() {
+  theIFrame.style.height=(window.innerHeight-theFooter.clientHeight-5)+"px";
+}
+theIFrame.src="/apps/filebrowser?path=/home/templates&embedded=true&mask="+extensions[0];
+f();
+function onSelectChange(event) {
+  theIFrame.src="/apps/filebrowser?path="+currentDir+"&embedded=true&mask="+extensions[event.target.selectedIndex];
+}
+
+//document.onload = f;
+window.addEventListener('resize', f, true);
+window.addEventListener('load', f, true);
+</script>           
+</body>
+</html>

@@ -1,0 +1,295 @@
+document: Login Service API
+
+group: Introduction
+
+The "login" service is responsible for registering and authenticating users as well as for
+password recovery. The service is mainly used by the "login" app. Links sent during
+e-mail verification (as a part of the sign up or password recovery process) will also
+point to the login service.
+
+All character encodings must be UTF-8.
+
+group: Access URL
+
+The login service is accessible via the following URL:
+---code---
+http://<domain_or_ip>/services/login/
+----------
+
+group: Methods
+
+method: signup_allowed
+---prototype---
+GET http://<domain_or_ip>/services/login/signup_allowed
+---------------
+
+Used to find out whether to display the "Register Now" or similar option for new users.
+
+Returns:
+
+  whether the <signup_policy> setting in service.properties is not equal to "deny"
+
+method: recaptcha_site_key
+---prototype---
+GET http://<domain_or_ip>/services/login/recaptcha_site_key
+---------------
+
+Used by client-side code (in the login app) to initialize reCAPTCHA.
+
+Returns:
+  
+  the value of the *recaptcha_site_key* property (see <CAPTCHA-specific properties>);
+  if empty, then no captcha required
+
+method: verify
+---prototype---
+GET http://<domain_or_ip>/services/login/verify/<login>/<emailed_token>
+---------------
+
+Used to verify the token e-mailed during the sign up process
+(if <signup_policy> equals to "email").
+
+Returns:
+
+  a redirect to a HTML displaying the verification status.  
+
+method: signup
+
+---prototype---
+POST http://<domain_or_ip>/services/login/signup/
+---------------
+---code---
+Content-Type: application/x-www-form-urlencoded
+---------------
+
+Registers a new user. Depending on <signup_policy>, can send an e-mail to verify the e-mail address.
+
+Data fields:
+
+* g-recaptcha-response - reCAPTCHA response
+* password - user's password
+* email - user's email
+* desired_login - desired login (can be changed automatically by the login service);
+                  the desired_login will be checked for allowed symbols;
+                  in addition, the login "standalone" cannot be registered (some symbols will be appended)
+
+Returns:
+  a redirect to a HTML displaying the result.  
+
+method: signin
+
+---prototype---
+POST http://<domain_or_ip>/services/login/signin/?<redirect>
+---code---
+Content-Type: application/x-www-form-urlencoded
+---------------
+
+Signs in the given user and redirects to certain page on success.
+
+Data fields:
+
+* login - user name or alias
+* password - user's password
+* remember (optional) - whether ws_token should expire after 1 year (default is 1 hour)
+
+The <redirect> query string value is optional. It can contain any URL (having symbols ":" and "?"),
+where the login service should redirect to on successful sign in. If not specified,
+the URL for the default desktop app will be used.
+
+Returns:
+  a redirect response to the given <redirect> URL (or the desktop app URL)
+  with the appended query values "login" and "ws_token".
+
+  On error, redirects to a page with the error message.
+
+  If the password has expired, redirects to the password recovery page.
+
+method: signin_token
+
+---prototype---
+POST http://<domain_or_ip>/services/login/signin_token/
+---------------
+---code---
+Content-Type: application/x-www-form-urlencoded
+----------
+
+Signs in the given user and returns a JSON with the ws_token, which can be used
+to access other webAppOS functionality.
+
+Data fields are the same as for the <signin> method.
+
+Returns:
+
+A JSON in the format:
+---code---
+{
+  "login": "<login>",
+  "ws_token": "<ws_token>",
+  "expires": "<stringified-UTC-date>",
+  "redirect": "<the redirect URL" // the same URL as in the <signin> method
+}
+----------
+or 
+---code---
+{
+  "error": "<message>"
+}
+----------
+in case of error.
+
+If an empty string is returned, or a stringified JSON contains the "error" attribute, then an error occurred. The caller script can display an error message or vibrate the login/password field.
+If the  password has expired, only redirect attribute is returned.
+
+method: check_ws_token
+
+---prototype---
+POST http://<domain_or_ip>/services/login/check_ws_token/
+---------------
+---code---
+Content-Type: application/x-www-form-urlencoded
+----------
+
+Validates the given login+ws_token. Checks whether the given ws_token is valid and not expired.
+Used by webappos_scopes driver to automatically sign in users, for whom the login+ws_token
+is found in browser localStorage.
+
+Data fields:
+
+* login - user login
+* ws_token - user's ws_token
+
+Returns:
+
+a JSON
+---code---
+{
+  "result": "true"
+}
+----------
+on success, or 
+---code---
+{
+  "result": "false",
+  "error": "<message>"
+}
+----------
+on error
+
+method: signout
+
+---prototype---
+POST http://<domain_or_ip>/services/login/signout/
+---------------
+---code---
+Content-Type: application/x-www-form-urlencoded
+---------------
+
+Signs out the given user (destroys the given server-side ws_token).
+
+Data fields:
+
+* login - user login
+* ws_token - user's ws_token
+
+Returns:
+
+  nothing
+
+method: password_reset_request
+
+---prototype---
+POST http://<domain_or_ip>/services/login/password_reset_request/
+---------------
+---code---
+Content-Type: application/x-www-form-urlencoded
+---------------
+
+Sends an e-mail with a password reset link (if the provided e-mail address is
+associated with some user).
+
+Data fields:
+
+* email - user's e-mail, where to send the reset link
+* g-recaptcha-response - reCAPTCHA response
+
+Returns:
+  a redirect to a HTML page with the result.
+
+method: change_password
+
+---prototype---
+POST http://<domain_or_ip>/services/login/change_password/
+---------------
+---code---
+Content-Type: application/x-www-form-urlencoded
+---------------
+
+Changes the user's password, given the old and new passwords.
+
+Data fields:
+
+* login - user's login
+* g-recaptcha-response - reCAPTCHA response
+* old_password - old password
+* new_password - new password
+
+Returns:
+
+  a redirect to a HTML page with the result.
+
+group: service.properties for the login service
+
+enumeration: signup_policy
+
+---code---
+signup_policy=email
+----------
+
+Supported values:
+
+* deny - signup not allowed (but the admin can add users manually)
+* manual - signup is allowed, but the admin has to approve the user manually
+* email - signup is allowed, but the e-mail has to be validated by sending a secret link to the user
+* allow - signup is always allowed (do not use this option, unless you use CAPTCHA, see <CAPTCHA-specific properties>)
+* jsoncall:<actionName> - signup is allowed, but the given web call (jsoncall calling conventions)
+  will hadle the signup request; the function must "convert" the signup request to
+  one of the previous 4 values by returning a stringified JSON with the "result" attribute with one of the following values: "deny"|"manual"|"email"|"allow".
+In addition, the function can add the "error" attribute
+e.g.
+---code---
+	{
+		"result": "deny",
+		"error": "Password too short"
+	}
+----------
+
+
+enumeration: password_expire_days
+
+---code---
+password_expire_days=401500
+----------
+  
+Specifies the password expire time in days (1100 years by default).
+
+enumeration: signup_inverval_minutes
+
+---code---
+signup_inverval_minutes=10
+----------
+Specifies how long the user has to wait before attempting to sign up once again.
+
+enumeration: CAPTCHA-specific properties
+
+---code---
+recaptcha_site_key=6LdFsj...
+recaptcha_secret_key=6LdFsj...
+recaptcha_verify_url=https://www.google.com/recaptcha/api/siteverify
+----------
+If the recaptcha_site_key and recaptcha_secret_key properties are specified,
+the login app and the login service will use reCAPTCHA to protect against robots that could register users automatically.
+Values for these two properties can be obtained from Google at <https://www.google.com/recaptcha/admin>.
+Please, specify the correct domain there.
+
+The last property (recaptcha_verify_url) specifies the URL used by
+the service to verify the solved captcha. This URL should remain constant (unless Google changes it).

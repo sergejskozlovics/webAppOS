@@ -1,0 +1,22 @@
+document: WebDAV Service API
+
+group: Introduction
+
+The WebDAV service implements WebDAV protocol to access
+user's home folder at webAppOS server (including mounted remote folders).
+
+group: Access URL
+
+The WebDAV service is accessible via the following URLs:
+---code---
+http://<domain_or_ip>/services/webdav/relative/path
+http://webdav_service.<domain>/relative/path
+----------
+
+
+group: Authentication
+
+All requests must provide valid user credentials. Use "Basic" autorization with Base64 encoding:
+---code---
+Authorization: Basic <login:password in Base64 encoding>
+----------

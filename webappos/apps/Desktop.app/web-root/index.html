@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>webAppOS Desktop app</title>
+
+  <!--///// Ventus desktop prerequisites /////-->
+
+  <link href='desktop/ventus/css/normalize.css' rel='stylesheet' type='text/css' />
+  <link href='desktop/ventus/css/desktop.css' rel='stylesheet' type='text/css' />
+  <link href='desktop/ventus/ventus.css' rel='stylesheet' type='text/css' />
+
+
+<!--
+  Modernizr will be loaded AFTER the apps have been added to the dock.
+    // <script type="text/javascript" src="desktop/ventus/vendor/modernizr.js"></script> 
+-->
+  <script type="text/javascript" src="desktop/ventus/vendor/jquery.js"></script>
+  <script type="text/javascript" src="dock/jquery-ui.min.js"></script>
+
+  <!--///// dock prerequisites (the previous two scripts are also required for the dock) /////-->
+
+<!--
+  fix-and-clock will be loaded AFTER the apps have been added to the dock.
+    // <script type="text/javascript" src="dock/fix-and-clock.js"></script>
+-->
+
+  <link href="dock/dock.css" rel="stylesheet" type="text/css" media="screen" />
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      padding: 0;
+    }
+    .claro .dijitMenuBar .dijitMenuItem {
+      padding:2px 4px 3px; /* by SK*/
+      margin: -1px;
+    }
+    .claro .dijitMenuBar .dijitMenuItemHover,
+    .claro .dijitMenuBar .dijitMenuItemSelected {
+      border: solid 1px #759dc0;
+      padding:1px 3px 2px; /* by SK*/
+    }
+
+    .claro .dijitMenu .dijitMenuItem td,
+    .claro .dijitComboBoxMenu .dijitMenuItem {
+      padding-top:0.5px;
+      padding-bottom:0.5px;
+      padding-left:2px;
+    }
+
+    .startIcon {
+      background-image:  url(desktop/rocket.svg);
+      background-size: 100% auto;
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      vertical-align:middle;
+    }
+
+    .signOutIcon {
+      background-image:  url(/icons/sign_out.png);
+      background-size: 100% auto;
+      width: 20px;
+      height: 20px;
+      text-align: center;
+      vertical-align:middle;
+    }
+
+  </style>
+
+  <link rel="stylesheet" href="dijit/themes/claro/claro.css" media="screen">
+
+  <script type="text/javascript" src="desktop/ventus/vendor/handlebars.js"></script>
+  <script type="text/javascript" src="desktop/ventus/ventus.js"></script>
+  <script src="dojo/dojo.js" data-dojo-config="async:1"></script>
+  <script src="webappos.js"></script>
+
+
+  <style>
+  .dijitPopup {
+    z-index: 1000000000 !important;
+  }
+
+  .dijitMenuPopup {
+    z-index: 1000000000 !important;
+  }
+
+  </style>
+
+
+</head>
+
+<body unselectable="off" class="claro" style="font-family:webAppOS;">
+
+  <script>
+
+  require(["dijit/Dialog", "dojox/widget/DialogSimple", "dojo/domReady!"], function(Dialog, DialogSimple){
+    window.webappos.desktop.show_dialog = function(title, content, fOnClose, w, h, nearElement) {
+      if (!w)
+        w=window.innerWidth/2;
+      if (!h)
+        h=window.innerHeight/2;
+      if (w<600)
+        w=600;
+      if (h<400)
+        h=400;
+
+      let xy = "";
+      if (nearElement) {
+        var q = $(nearElement);
+
+        var x = q.position().left + (q.width()-w)/2;
+        if (x<0)
+          x=0;
+        var y = q.position().top;
+      }
+
+      myDialog = new DialogSimple({
+        title: title,
+        content: content,
+        executeScripts: true,
+        class: "always_on_top",
+        style: "width: "+w+"; height:"+h+";",
+        onShow: function() { setTimeout(function(){$(myDialog.domNode).css("left", x+"px"); $(myDialog.domNode).css("top", y+"px");},0); },
+        onHide: function() { if (fOnClose) fOnClose(); myDialog.destroy();  },
+      });
+      myDialog.show();
+      return myDialog;
+    };
+
+    window.webappos.desktop.close_dialog = function(handle) {
+      if (window.webappos.parent_desktop)
+        window.parent.postMessage({ protocol: "webappos_desktop", method: "close_dialog", handle: handle, caller_id:webappos.caller_id }, "*");
+      else {
+        handle.hide();
+        handle.destroy();
+      }
+    };
+  }); // require
+
+    var savedSource;
+    webappos.desktop.event_caller_id_map = {};
+    webappos.desktop.dialog_handles_map = {};
+    window.receiveMessage = function (event) {
+        if (event.data.protocol == "webappos_desktop") {
+          if (event.data.method == "are_you_desktop?") {
+            if (!webappos.desktop.event_caller_id_map[event.data.caller_id]) {
+              if (webappos.desktop.last_opened_window) {
+                let right_source = webappos.desktop.last_opened_window.el[0].childNodes[1].childNodes[3].childNodes[0].childNodes[0].contentWindow == event.source;
+                if (right_source) {
+                  webappos.desktop.event_caller_id_map[event.data.caller_id] = webappos.desktop.last_opened_window;
+                  webappos.desktop.last_opened_window.event_caller_id = event.data.caller_id;
+                }
+              }
+            }
+            event.source.postMessage({ protocol: "webappos_desktop", method: "i_am_desktop!" }, event.origin);
+          }
+          else
+          if (event.data.method == "launch_in_desktop")
+            webappos.desktop.launch_in_desktop(event.data.url, event.data.app_url_name);
+          else
+          if (event.data.method == "get_shared_value")
+            event.source.postMessage({protocol:"webappos_desktop", method:"callback", callback_id:event.data.callback_id, value:webappos.desktop.shared_values[event.data.key]}, event.origin);
+          else
+          if (event.data.method == "set_shared_value")
+            webappos.desktop.shared_values[event.data.key] = event.data.value;
+          else
+          if (event.data.method == "show_dialog") {
+            let nearElement = null;
+            if (webappos.desktop.event_caller_id_map[event.data.caller_id]) {
+              $(webappos.desktop.event_caller_id_map[event.data.caller_id].el[0]).addClass("indialog");
+              //$(webappos.desktop.event_caller_id_map[event.data.caller_id].el[0]).addClass("disabled");
+              //$(webappos.desktop.event_caller_id_map[event.data.caller_id].el[0]).find(".wm-window-overlay").css("opacity", "0.3");
+              nearElement = webappos.desktop.event_caller_id_map[event.data.caller_id].el[0];
+            }
+            if (event.data.callback_id) {
+              let h = webappos.desktop.show_dialog(event.data.title, event.data.content, function(){
+                event.source.postMessage({protocol:"webappos_desktop", method:"callback", callback_id:event.data.callback_id, value:null}, event.origin);
+                if (webappos.desktop.event_caller_id_map[event.data.caller_id]) {
+                  $(webappos.desktop.event_caller_id_map[event.data.caller_id].el[0]).removeClass("indialog");
+                  //$(webappos.desktop.event_caller_id_map[event.data.caller_id].el[0]).find(".wm-window-overlay").css("opacity", "0");
+                  //$(webappos.desktop.event_caller_id_map[event.data.caller_id].el[0]).removeClass("disabled");
+                }
+              }, event.data.width, event.data.height, nearElement);
+              webappos.desktop.dialog_handles_map[event.data.handle] = h;
+            }
+            else {
+              let h = webappos.desktop.show_dialog(event.data.title, event.data.content, null, event.data.width, event.data.height, nearElement);
+              webappos.desktop.dialog_handles_map[event.data.handle] = h;
+            }
+
+            if (webappos.desktop.event_caller_id_map[event.data.caller_id])
+              webappos.desktop.event_caller_id_map[event.data.caller_id].open_dialog = h;
+
+          }
+          else
+          if (event.data.method == "close_dialog") {
+            let h = webappos.desktop.dialog_handles_map[event.data.handle];
+            delete webappos.desktop.dialog_handles_map[event.data.handle];
+            if (h) {
+              if (webappos.desktop.event_caller_id_map[event.data.caller_id]) {
+                delete webappos.desktop.event_caller_id_map[event.data.caller_id].open_dialog;
+                $(webappos.desktop.event_caller_id_map[event.data.caller_id].el[0]).removeClass("indialog");
+                //$(webappos.desktop.event_caller_id_map[event.data.caller_id].el[0]).find(".wm-window-overlay").css("opacity", "0");
+                //$(webappos.desktop.event_caller_id_map[event.data.caller_id].el[0]).removeClass("disabled");
+              }
+              webappos.desktop.close_dialog(h);
+            }
+          }
+        }
+    };
+    window.addEventListener("message", window.receiveMessage, false);
+  </script>
+
+  <div id="theTopBar" class="claro virtual_on_top" style="opacity:0.9; position:absolute; top:0; left:0; margin-top:0; width:100%; height:20px; background-image: linear-gradient(45deg, #0070c0, /*#6363A3,*/ #ca7db3)/*linear-gradient(45deg, #6363A3, #ca7db3)*//*url('bkg1.jpg')*/; background-repeat:no-repeat; background-size:100% 100%; border-top: dotted 1px; border-bottom: dotted 1px;">
+  </div>
+  <!-- Ventus Loader Screen -->
+
+  <div id="loading-screen" unselectable="on">
+    <section>
+      <div class="content">
+        <header>
+
+          <h1><img src="desktop/boot-logo.svg" width=30%/> Desktop</h1>
+        </header>
+        <p><img src="desktop/ventus/img/loader.gif" /> Loading...</p>
+      </div>
+    </section>
+  </div>
+
+
+  <!-- a div for app windows -->
+  <div id="apps">
+   </div>
+      
+
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var wm = new Ventus.WindowManager();
+
+      window.wm = wm; // For debugging reasons
+      var loader = $("#loading-screen");
+
+      function init() {
+        loader.addClass('hide');
+        loader.on(Ventus.browser.animationEventName(), function () {
+          loader.hide();
+
+// 	background: url(/services/filedownload/sk/Desktop/img.jpg) no-repeat center center fixed;
+
+        });
+      }
+
+      setTimeout(function () {
+        init();
+      }, 300);
+
+    });
+
+  </script>
+
+  <!-- DOCK -->
+  <div class="dock virtual_on_top" id="theDock"></div>
+  <script>
+    // redefining Desktop functions...
+
+
+    webappos.in_desktop = true;
+    webappos.desktop.window_counter = 0;
+
+    webappos.desktop.app2win_map = {}; // maps app_url_name to an array of windows
+
+    webappos.desktop.launch_in_desktop = function (url, app_url_name) {
+      if (!url)
+        return;
+
+      webappos.webcall("webappos.getAppPropertiesByUrlName", app_url_name).then( function(props) {
+        if (props && props.singleton) {
+          if ((webappos.desktop.app2win_map[app_url_name] && webappos.desktop.app2win_map[app_url_name].length>=1)) {
+            webappos.desktop.app2win_map[app_url_name][0].el.show();
+            webappos.desktop.app2win_map[app_url_name][0].active = true;
+            return;
+          }
+        }
+
+        // creating a new window...
+        var e = document.createElement('div');
+        e.setAttribute('id', "the_window_" + webappos.desktop.window_counter);
+        e.className = "webappos_app";
+        e.setAttribute("style", "border:0;width:100%;height:98%;padding:0;margin:0;overflow:none;");
+        e.innerHTML = "<iframe width=100% height=100% style=\"padding:0;margin:0;border:0;overflow:none;\" src=\"" + url + "\"></iframe>";
+        document.getElementById("apps").appendChild(e);
+
+        var win = wm.createWindow.fromQuery('#the_window_' + webappos.desktop.window_counter, {
+          title: app_url_name,
+          width: 700,
+          height: 400,
+          x: 100 + 50 * (webappos.desktop.window_counter % 10),
+          y: 100 + 30 * (webappos.desktop.window_counter % 10)
+        });
+        webappos.desktop.window_counter++;
+
+        if (!webappos.desktop.app2win_map[app_url_name])
+          webappos.desktop.app2win_map[app_url_name] = [];
+
+        webappos.desktop.app2win_map[app_url_name].push(win);
+
+        console.log("CREATE WIN:",win);
+
+        $("#docked_"+app_url_name).addClass("launched");
+
+        if (webappos.desktop.app2win_map[app_url_name].length>1)
+          $("#docked_"+app_url_name).attr("count", webappos.desktop.app2win_map[app_url_name].length);
+
+        win.signals.on("closed", function () {
+          if (win.event_caller_id) 
+            delete webappos.desktop.event_caller_id_map[win.event_caller_id];
+          if (win.el[0].parentNode)
+            win.el[0].parentNode.removeChild(win.el[0]);
+          var index = webappos.desktop.app2win_map[app_url_name].indexOf(win);
+          if (index > -1) {
+            webappos.desktop.app2win_map[app_url_name].splice(index, 1);
+            if (webappos.desktop.app2win_map[app_url_name].length<=1) {
+              $("#docked_"+app_url_name).removeAttr("count")
+            }
+            else
+              $("#docked_"+app_url_name).attr("count", webappos.desktop.app2win_map[app_url_name].length);
+
+            if (webappos.desktop.app2win_map[app_url_name].length==0) {
+              delete webappos.desktop.app2win_map[app_url_name];
+              $("#docked_"+app_url_name).removeClass("launched");
+            }
+
+          }
+        });
+
+        win.onDragStarted = function() {
+          $(".wm-window").addClass("disabled");
+          $(".virtual_on_top").addClass("disabled");
+          $(".virtual_on_top").css("pointer-events", "none");
+          $(".wm-overlay").css("opacity", "0.5");
+        };
+        win.onDragFinished = function() {
+          $(".wm-window").removeClass("disabled");
+          $(".virtual_on_top").removeClass("disabled");
+          $(".virtual_on_top").css("pointer-events", "auto");
+          $(".wm-overlay").css("opacity", "0");
+        };
+        win.onResizeStarted = function() {
+          win.onDragStarted();
+        };
+        win.onResizeFinished = function() {
+          win.onDragFinished();
+        };
+        webappos.desktop.last_opened_window = win;
+        win.app_url_name = app_url_name;
+        win.open();
+
+      });      
+
+    };
+
+    function expose_app(app_url_name) {
+      if (!webappos.desktop.app2win_map[app_url_name] || !webappos.desktop.app2win_map[app_url_name].length)
+        return;
+
+      var selector = $(".wm-window:visible");
+
+      selector.hide();
+
+      setTimeout(function() {
+        for (var i=0; i<webappos.desktop.app2win_map[app_url_name].length; i++) {
+          let win = webappos.desktop.app2win_map[app_url_name][i];
+          $(win.el[0]).show();        
+        }
+
+        expose();
+
+        var fshow = function() {
+          if (window.wm.mode == 'expose')
+            setTimeout(fshow, 100);
+          else
+            selector.show();
+        }; 
+        setTimeout(fshow, 100);
+
+      }, 0);
+
+    }
+
+    function dock_click(app_url_name) {
+
+      if (!webappos.desktop.app2win_map[app_url_name] || !webappos.desktop.app2win_map[app_url_name].length) {
+        // launching the first app window (since no window is launched yet)...
+        webappos.desktop.launch_in_desktop("/apps/"+app_url_name, app_url_name);
+        return;
+      }
+
+      if (webappos.desktop.app2win_map[app_url_name].length==1) {
+        // activating the only app window...
+        console.log("WIN",webappos.desktop.app2win_map[app_url_name]);
+        webappos.desktop.app2win_map[app_url_name][0].el.show();
+        webappos.desktop.app2win_map[app_url_name][0].active = true;
+        return;
+      }
+
+      // multiple windows: calling expose for windows of the given app...
+
+      expose_app(app_url_name);
+
+    }
+
+    function show_dock_menu(app_url_name) {
+      // docked_<name> - get x,y
+      //TODO: from launcher menu + check how many apps are running
+      // test expose after launching two; add count="2" for two apps
+
+      webappos.webcall("webappos.getAppPropertiesByUrlName", app_url_name).then( function(props) {
+
+        require(["dojo", "dojo/dom", "dijit/popup", "dijit/DialogUnderlay", "dijit/form/DropDownButton", "dijit/TooltipDialog",
+          "dijit/MenuItem",
+          "dijit/DropDownMenu",
+          "dijit/MenuSeparator"
+        ],
+          function(dojo, dom, popup, DialogUnderlay, DropDownButton, TooltipDialog, MenuItem, DropDownMenu, MenuSeparator) {
+
+              var launcherDialog = new TooltipDialog({
+                style: "z-index:20001; opacity:0.99;",
+                content: "",
+                onClick: function(){
+                  popup.close(launcherDialog);
+                  launcherDialog.destroy();
+                }
+              });
+
+              var dij = null;
+              if(dijit._underlay) {
+                dijit._underlay.destroy();
+              }
+              dijit._underlay = new DialogUnderlay({
+                style: "opacity:0.1;"
+              });
+              dijit._underlay.show();
+              dij = dijit._underlay.domNode;
+              dojo.connect(dij, "onclick", function(e) { 
+                  if (dijit._underlay)
+                    dijit._underlay.destroy();
+                  delete dijit._underlay;
+                  popup.close(launcherDialog);
+                  if (launcherDialog)
+                    launcherDialog.destroy();
+              });
+
+              var pSubMenu = new DropDownMenu({style:"z-index:20001;"});
+
+              var count = 0;
+              if (webappos.desktop.app2win_map[app_url_name])
+                count = webappos.desktop.app2win_map[app_url_name].length;
+
+              var closeLauncherStr = "webappos.js_util.fire_event(dijit._underlay.domNode, 'click');";
+              if (count==0) {
+                pSubMenu.addChild(new MenuItem({
+                  label: "Launch",
+                  //iconClass: "signOutIcon",
+                  onclick: closeLauncherStr+"webappos.desktop.launch_in_desktop('/apps/"+app_url_name+"', '"+app_url_name+"');"
+                }));
+
+                if (!props.singleton) {
+                  pSubMenu.addChild(new MenuItem({
+                    label: "Launch in new tab",
+                    //iconClass: "signOutIcon",
+                    onclick: closeLauncherStr+"window.open('/apps/"+app_url_name+"', '_blank');"
+                  }));
+                }
+              }
+
+              if (!props.singleton && (count>0)) {
+                pSubMenu.addChild(new MenuItem({
+                  label: "Launch new window",
+                  //iconClass: "signOutIcon",
+                  onclick: closeLauncherStr+"webappos.desktop.launch_in_desktop('/apps/"+app_url_name+"', '"+app_url_name+"');"
+                }));
+                pSubMenu.addChild(new MenuItem({
+                  label: "Launch new window in new tab",
+                  //iconClass: "signOutIcon",
+                  onclick: closeLauncherStr+"window.open('/apps/"+app_url_name+"', '_blank');"
+                }));
+              }
+
+              if ((count>=1) && (!props.singleton))
+                pSubMenu.addChild(new MenuSeparator());
+
+              if (count>1) {
+                pSubMenu.addChild(new MenuItem({
+                  label: "Exposé",
+                  onclick: closeLauncherStr+"expose_app('"+app_url_name+"');"
+                }));
+              }
+
+              if (count==1) {
+                pSubMenu.addChild(new MenuItem({
+                  label: "Minimize window",
+                  onclick: closeLauncherStr+"webappos.desktop.app2win_map['"+app_url_name+"'][0].minimize();"
+                }));
+                pSubMenu.addChild(new MenuItem({
+                  label: "Close window",
+                  onclick: closeLauncherStr+"let w=webappos.desktop.app2win_map['"+app_url_name+"'][0]; w.el.show(); w.close();"
+                }));
+              }
+              else
+              if (count>1) {
+                pSubMenu.addChild(new MenuItem({
+                  label: "Minimize all windows",
+                  onclick: closeLauncherStr+"let a=webappos.desktop.app2win_map['"+app_url_name+"'];for(var i=0;i<a.length;i++)a[i].minimize();"
+                }));
+                pSubMenu.addChild(new MenuItem({
+                  label: "Close all windows",
+                  onclick: closeLauncherStr+"let a=webappos.js_util.slice(webappos.desktop.app2win_map['"+app_url_name+"']);for(var i=0;i<a.length;i++){ a[i].el.show(); a[i].close(); }"
+                }));
+              }
+
+              launcherDialog.addChild(pSubMenu);
+              pSubMenu.startup();
+
+              popup.open({
+                  popup: launcherDialog,
+                  around: dom.byId("docked_"+app_url_name),                
+              });
+
+          } // function
+        ); // require
+      }); // webcall -> then
+    }
+
+    function expose() {
+      if (window.wm.windows.length == 0)
+        return;
+
+      window.wm.mode = 'expose';
+      $(".virtual_on_top").hide();
+      _.throttle(function () {
+        return false;
+      }, 1000);
+
+
+      var q = $(".dijitDialog:visible");
+      q.hide()
+
+      $(".virtual_on_top").hide();
+      var fshow = function() {
+        if (window.wm.mode == 'expose')
+          setTimeout(fshow, 100);
+        else {
+          $(".virtual_on_top").show();
+          q.show();
+        }
+      }; 
+      setTimeout(fshow, 100);
+
+
+    }
+
+
+    
+    window.webappos.request_scopes("webappos_scopes", "login").then(
+    function(){
+      // Adding apps to the dock...
+      webappos.webcall("webappos.fileExists", webappos.login+"/Desktop/bkg.jpg").then(function(json) {
+        if (json && json.result) {
+          let ss = "/services/filedownload/"+webappos.login+"/Desktop/bkg.jpg?login="+webappos.login+"&ws_token="+webappos.ws_token;
+  	let el = document.getElementsByClassName("wm-space");
+          if (el.length>0) {
+            el[0].style = "background: url("+ss+") no-repeat center center fixed; background-size: 100% auto;";
+
+          }
+        }
+      });
+      
+      var apps = window.webappos.webcall_and_wait("webappos.getAvailableApps", "");
+      if (apps.error) {
+        console.log("webAppOS.getAvailableApps error: " + apps.error);
+        return;
+      }
+
+
+      var s = "<ul>";
+      for (var i = 0; i < apps.length; i++) {
+
+        s += "<li id='docked_" + apps[i].urlName + "' oncontextmenu='event.preventDefault();show_dock_menu(\""+apps[i].urlName+"\")'>" +
+          "<a href='javascript:dock_click(\"" + apps[i].urlName + "\");'>" +
+          "<em><span>" + apps[i].displayedName + "</span></em>" +
+          "<img src='" + apps[i].iconURL + "' alt='" + apps[i].displayedName + " icon'/>" +
+          "</a></li>";
+      }
+
+      s += "<li id='Exposé...'>" +
+        "<a href='javascript:expose();'>" +
+        "<em><span>Exposé</span></em>" +
+        "<img src='icons/expose-icon.svg' alt='Exposé'/></a>" +
+        "</li>";
+
+      // TODO: add trash
+
+      s += "</ul>";
+      theDock.innerHTML = s;
+
+      webappos.js_util.load_script("desktop/ventus/vendor/modernizr.js").then( ()=>
+        webappos.js_util.load_script("dock/fix-and-clock.js"));
+
+      // Adding top menu...
+      require([
+        "dijit/MenuBar",
+        "dijit/PopupMenuBarItem",
+        "dijit/PopupMenuItem",
+        "dijit/Menu",
+        "dijit/MenuItem",
+        "dijit/DropDownMenu",
+        "dijit/MenuSeparator",
+        "dijit/form/Button",
+        "dojo/domReady!"
+      ], function (MenuBar, PopupMenuBarItem, PopupMenuItem, Menu, MenuItem, DropDownMenu, MenuSeparator, Button) {
+        var pMenuBar = new MenuBar({ style: "z-index:100000;" });
+
+        var pSubMenu3 = new Menu({
+          style: "z-index:100000;"
+        });
+
+
+        for (var i = 0; i < apps.length; i++) {
+          pSubMenu3.addChild(new MenuItem({
+            label: "<img src='" + apps[i].iconURL + "' width='15px' height='auto'></img>&nbsp;<span style='vertical-align:top;'>" + apps[i].displayedName + "</span>",
+            onclick: "webappos.desktop.launch_app('" + apps[i].urlName + "');"
+          }));
+        };
+
+        var pSubMenu = new DropDownMenu({});
+        /*    pSubMenu.addChild(new MenuItem({
+                label: "About"
+            }));*/
+        pSubMenu.addChild(new PopupMenuItem({
+          label: "Applications",
+          popup: pSubMenu3
+        }));
+        /*    pSubMenu.addChild(new MenuItem({
+                label: "Settings"
+            }));*/
+        pSubMenu.addChild(new MenuSeparator());
+        pSubMenu.addChild(new MenuItem({
+          label: "Sign out",
+          iconClass: "signOutIcon",
+          onclick: "webappos.sign_out();"
+        }));
+        pMenuBar.addChild(new PopupMenuBarItem({
+          //        label: "<img src='desktop/start.svg' width=100 height=16 style='position:relative; left:-3;top:-3;'></img>",
+          label: "<b><font color='#00b0f0'>web</font><font color='#ffaa01'>App</font><font color='#0070c0'>OS</font></b>",
+          popup: pSubMenu
+        }));
+
+        /*    var pSubMenu2 = new DropDownMenu({});
+            pSubMenu2.addChild(new MenuItem({
+                label: "Cut",
+                iconClass: "dijitEditorIcon dijitEditorIconCut"
+            }));
+            pSubMenu2.addChild(new MenuItem({
+                label: "Copy",
+                iconClass: "dijitEditorIcon dijitEditorIconCopy"
+            }));
+            pSubMenu2.addChild(new MenuItem({
+                label: "Paste",
+                iconClass: "dijitEditorIcon dijitEditorIconPaste"
+            }));
+            pMenuBar.addChild(new PopupMenuBarItem({
+                label: "Edit",
+                popup: pSubMenu2
+            }));*/
+
+        pMenuBar.placeAt("theTopBar");
+        pMenuBar.startup();
+
+
+      });
+
+
+    });
+
+
+
+  </script>
+</body>
+
+</html>

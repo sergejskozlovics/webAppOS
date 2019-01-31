@@ -1,0 +1,186 @@
+/*-----------------------------------------------------------------------------------*/
+/*	01.	Dock
+/*-----------------------------------------------------------------------------------*/
+
+.dock {
+	position: absolute;
+	bottom: 0;
+	height:85px; /* by SK*/
+	width: 100%;
+	text-align: center;
+}
+.dock ul {
+	position: relative;
+	display: inline-block;
+	padding: 0 5px;
+	margin: 0;
+
+/*	background:url(../dock/dock-bg.png) repeat-x bottom;*/
+	height:85px;
+	bottom: 0;
+
+        border-top: 1px solid lightblue;
+        background-color: #705b5e;
+}
+
+
+.dock ul:before, .dock ul:after {
+	content: "";
+	position: absolute;
+	width: 38px;
+	bottom:0px;
+	height:85px;
+}
+.dock ul:before {
+	left: -38px;
+/*	background: url(../dock/dock-bg-left.png) no-repeat left bottom;*/
+        border-top: 1px solid lightblue;
+        border-left: 1px solid lightblue;
+        border-radius: 5px 0 0 0;
+        background-color: #705b5e;
+}
+.dock ul:after {
+	right: -38px;
+/*	background: url(../dock/dock-bg-right.png) no-repeat right bottom;*/
+        border-top: 1px solid lightblue;
+        border-right: 1px solid lightblue;
+        border-radius: 0 5px 0 0;
+        background-color: #705b5e;
+}
+.dock li {
+	display: inline-block;
+	position: relative;
+	margin: 10px 0 15px 0;
+	-webkit-box-reflect: below -16px -webkit-gradient(linear, left top, left bottom, from(transparent), color-stop(91%, rgba(255, 255, 255, .1)), color-stop(91.01%, transparent), to(transparent));
+}
+
+
+.dock li img {
+	display: inline-block;
+	position: relative;
+	margin: 0;
+	-webkit-box-reflect: below -16px -webkit-gradient(linear, left top, left bottom, from(transparent), color-stop(91%, rgba(255, 255, 255, .1)), color-stop(91.01%, transparent), to(transparent));
+}
+
+.dock a {
+	display: block;
+	cursor: default;
+	outline: none;
+}
+.dock em {
+	position: absolute;
+	top: -34px;
+	left: 50%;
+	display: none;
+	width: 150px;
+	margin-left: -75px;
+	text-align: center;
+}
+.dock em:after {
+	content: " ";
+	position: absolute;
+	bottom: -6px;
+	left: 50%;
+	margin-left: -6px;
+	width: 0;
+	height: 0;
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-top: 6px solid rgba(0, 0, 0, 0.6);
+	border-bottom: none;
+}
+.dock em span {
+	display: inline-block;
+	padding: 5px 12px;
+	background: rgba(0, 0, 0, 0.6);
+	font-style:normal;
+	font-size:12px;
+	color:#fff;
+	text-shadow:0 1px 1px #000;
+	border-radius: 10px;
+}
+.dock li:hover em {
+	top:-105px; /* by SK*/
+	display: block;
+}
+.dock li img {
+/*	width: 48px;
+	height: auto;*/
+	width: auto;
+	height: 48px;
+	border: none;
+	-webkit-transition:all 0.1s linear;
+	-moz-transition:all 0.1s linear;
+}
+
+
+.dock li.ok:hover img {
+        transform: translate(0px, -30px) scale(2.6);
+	-webkit-transition:all 0.15s linear;
+	-moz-transition:all 0.15s linear;
+}
+
+.dock li.ok:hover {
+	width:128px;
+}
+
+.dock li.prev img, .dock li.next img {
+        transform: translate(0px, -20px) scale(2);
+	-webkit-transition:all 0.15s linear;
+	-moz-transition:all 0.15s linear;
+}
+
+.dock li.prev, .dock li.next{
+	width:96px;
+}
+
+
+.dock li.prev-ancor img, .dock li.next-ancor img {
+        transform: translate(0px, -10px) scale(1.5);
+	-webkit-transition:all 0.15s linear;
+	-moz-transition:all 0.15s linear;
+}
+
+.dock li.prev-ancor, .dock li.next-ancor {
+	width:72px;
+}
+/*
+.dock li a .fresh {
+	content: " ";
+	position: absolute;
+	bottom: -8px;
+	left: 50%;
+	width: 8px;
+	height: 6px;
+	opacity:1;
+	background-color: rgba(255, 255, 255, .8);
+	margin-left: -2px;
+	border-radius:100%;
+	box-shadow: inset 0 1px 3px rgba(75, 255, 255, .4), 0 0 4px rgba(75, 255, 255, .5), 0 -1px 7px rgb(75, 255, 255);
+	-webkit-box-reflect: below 5px -webkit-gradient(linear, left top, left bottom, from(transparent), color-stop(91%, rgba(255, 255, 255, 0.5)), color-stop(91.01%, transparent), to(transparent));
+}*/
+
+.launched:after {
+  border-bottom: 2px solid lightblue;
+  position: absolute;
+  font-size: 8pt;
+  content: attr(count);
+  width: 70%;
+  transform: translateX(-50%);
+  bottom:-10px;
+  left: 50%;
+}
+
+.bounce {
+	-webkit-animation: bounce 0.4s 4 alternate ease-out;
+	-moz-animation: bounce 0.4s 4 alternate ease-out;
+}
+@-webkit-keyframes bounce {
+	  0% { -webkit-transform: translateY(0); }
+	100% { -webkit-transform: translateY(-20px); }
+}
+
+@-moz-keyframes bounce {
+	  0% { -moz-transform: translateY(0); }
+	100% { -moz-transform: translateY(-20px); }
+}

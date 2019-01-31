@@ -1,0 +1,59 @@
+document: FileBrowser App Embedded API
+
+group: Introduction
+
+The FileBrowser app is a fully-fledged webAppOS app for browsing user's home directory.
+
+When launched from index.html without the query string, the browser was as ordinary file explorer
+However, when the query string contains the "embedded=true" argument, FileBrowser will
+switch to the embedded mode. In this mode, FileBrowser assumes it is running inside an iframe, thus:
+* it will not display the menu,
+* it will try to inform the parent frame about certain events (see below).
+                                                                                         
+Usually, there is no need for developers to use embedded mode. Developers can rely on
+function <webappos.desktop.browse_for_file> (from webappos.js) or on the underlying FileDialog app
+(see <FileDialog API>).
+
+The FileBrowser embedded mode is used by webAppOS FileDialog app, which adds the "Open" and "Cancel"
+buttons as well as a file name field and a combobox for choosing a file mask.
+
+group: Embedded Mode URL
+
+The FileBrowser service is accessible via the following URL:
+---code---
+http://<domain_or_ip>/apps/filebrowser/index.html?embedded=true&mask=<masks>&path=</home/path/to/start>
+----------
+
+Parameters:
+
+mask - a comma separated set of file masks. Only files matching one of the masks will be shown.
+       Example: "*.png,*.jpg".
+path - a path relative to the user's home directory (must start with "/home").
+
+group: Authentication
+
+FileBrowser requests the webAppOS "login" scope automatically.
+
+group: Messages Sent to the Parent Frame
+
+enumeration: On Directory Changed
+
+The following HTML5 message is sent to the parent frame, when directory has changed:
+---code---
+filebrowser:dir:/home/path/to/dir
+----------
+
+enumeration: On File Highlighted
+
+The following HTML5 message is sent to the parent frame, when some file has been highlighted,
+but not chosen yet:
+---code---
+filebrowser:file:/home/path/to/file
+----------
+
+enumeration: On File Chosen
+
+The following HTML5 message is sent to the parent frame, when the file has been chosen (e.g., via a double click):
+---code---
+filebrowser:choose:/home/path/to/file
+----------

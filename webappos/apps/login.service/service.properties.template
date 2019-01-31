@@ -1,0 +1,31 @@
+# General properties
+# ==================
+service_adapter=javaservlet
+
+# Properties specific to services implemented as Java servlets (via javaservlet adapter)
+# ======================================================================================
+servlet_class=org.webappos.service.login.LoginServlet
+http_auth_required=false
+
+# login.service specific properties
+# =================================
+
+# signup_policy is one of the following:
+# * deny - signup not allowed (the admin has to add users manually)
+# * manual - signup is allowed, but the admin has to approve the user manually
+# * email - signup is allowed, but the e-mail has to be approved by sending a secret link to the user
+# * allow - signup is always allowed
+# * jsonsubmit:functionName - signup is allowed, but the given function
+#   will hadle the signup request; the function "converts" the signup request to
+#   one of the previous 4 values "deny"|"manual"|"email"|"allow"
+signup_policy=email
+
+# password expire time in days (1100 years by default)
+password_expire_days=401500
+
+# obtain reCAPTCHA keys for your domain from Google at https://www.google.com/recaptcha/admin
+# if recaptcha_site_key is empty then no CAPTCHA will be required
+recaptcha_site_key=RECAPTCHA_SITE_KEY_PLACEHOLDER
+recaptcha_secret_key=RECAPTCHA_SECRET_KEY_PLACEHOLDER
+
+recaptcha_verify_url=https://www.google.com/recaptcha/api/siteverify
