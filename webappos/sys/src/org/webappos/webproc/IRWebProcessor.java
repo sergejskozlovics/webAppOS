@@ -5,12 +5,21 @@ import java.rmi.RemoteException;
 
 import org.webappos.webcaller.IWebCaller;
 
+/**
+ * IRWebProcessor API has to be implemented by webAppOS web processors.
+ * The webAppOS server-side bridge will use IRWebProcessor to delegate
+ * web calls to web processors. The communication channel is called Web Processor Bus.
+ * 
+ * @author Sergejs Kozlovics
+ *
+ */
 public interface IRWebProcessor extends Remote {
 	/**
 	 * Asks the web processor whether it supports the given instruction set.
+	 *
 	 * @param name the name of the instruction set
 	 * @return whether the given web processor supports the given instruction set
-	 * @throws RemoteException
+	 * @throws RemoteException on Web Processor Bus error
 	 */
 	public boolean hasInstructionSet(String name) throws RemoteException;
 	
@@ -22,7 +31,7 @@ public interface IRWebProcessor extends Remote {
 	 * about the completion by calling webProcessorIdle. 
 	 * @param seed the call seed containing the information about the call (action name, calling conventions, etc.)
 	 * @param declaration the webcall declaration (instructions set, resolved code location, etc.)
-	 * @throws RemoteException
+	 * @throws RemoteException on Web Processor Bus error
 	 */
 	public void startWebCall(IWebCaller.WebCallSeed seed, IWebCaller.WebCallDeclaration declaration) throws RemoteException;
 	
@@ -33,7 +42,7 @@ public interface IRWebProcessor extends Remote {
 	 * This function is intended to be called from the web processor adapter, which was used to connect to this web processor.
 	 * Since the connection will be lost, disconnect() is expected to throw an exception.
 	 * 
-	 * @throws RemoteException
+	 * @throws RemoteException on Web Processor Bus error
 	 */
 	public void disconnect() throws RemoteException; 
 }
