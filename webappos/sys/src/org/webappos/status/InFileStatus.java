@@ -1,4 +1,4 @@
-package org.webappos.registry;
+package org.webappos.status;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -1,4 +1,4 @@
-package org.webappos.registry;
+package org.webappos.status;
 
 public interface IStatus {
 	public void setStatus(String key, String value);		

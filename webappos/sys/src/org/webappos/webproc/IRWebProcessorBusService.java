@@ -6,8 +6,8 @@ import java.rmi.RemoteException;
 import org.webappos.memory.IRMRAM;
 import org.webappos.properties.IRPropertiesManager;
 import org.webappos.registry.IRRegistry;
-import org.webappos.registry.IRStatus;
 import org.webappos.server.ConfigStatic;
+import org.webappos.status.IRStatus;
 import org.webappos.webcaller.IRWebCaller;
 
 public interface IRWebProcessorBusService extends Remote {

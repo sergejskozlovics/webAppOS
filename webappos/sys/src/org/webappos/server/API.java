@@ -1,6 +1,8 @@
 package org.webappos.server;
 
 import org.webappos.classloader.PropertiesClassLoader;
+import org.webappos.email.IEmailSender;
+import org.webappos.email.TLS_SMTP_EmailSender;
 import org.webappos.fs.HomeFS;
 import org.webappos.fs.IFileSystem;
 import org.webappos.memory.IMRAM;
@@ -13,10 +15,10 @@ import org.webappos.registry.CouchDBRegistry;
 import org.webappos.registry.IRRegistry;
 import org.webappos.registry.IRegistry;
 import org.webappos.registry.IRegistryWrapper;
-import org.webappos.registry.IStatus;
-import org.webappos.registry.IStatusWrapper;
-import org.webappos.registry.InFileStatus;
 import org.webappos.registry.JsonFilesRegistry;
+import org.webappos.status.IStatus;
+import org.webappos.status.IStatusWrapper;
+import org.webappos.status.InFileStatus;
 import org.webappos.util.PID;
 import org.webappos.util.Ports;
 import org.webappos.webcaller.IWebCaller;
@@ -33,12 +35,10 @@ import java.rmi.registry.Registry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 /**
- * The main entry point to access webAppOS Server-Side API. The API class
- * encapsulates the most important server-side APIs accessible via static fields.<br>
- * These fields can be used to access certain
+ * Provides access to webAppOS Server-side API for accessing certain
  * server-side resources (such as MRAM, Registry, etc.), which are shared between
  * the server-side bridge and web processors (which are different processes).
- * This API class, after initialized, ensures synchronized access to the resources.<br>
+ * The API class ensures synchronized access to the resources.
  * 
  * @author Sergejs Kozlovics
  *
@@ -47,12 +47,8 @@ public class API {
 	
 	
 	/**
-	 * Initializes webAppOS Server-Side API for use inside of webAppOS Gate and Bridge.<br>
-	 * As part of the initialization process, starts Web Processor Bus Service to be used 
-	 * by web processors.<br>
-	 * Besides initializing the API class, this function also initializes the internal
-	 * APIForServerBridge class, which provides extended API available to Gate and Bridge,
-	 * but not available to web processors.
+	 * Initializes webAppOS Server-Side API within webAppOS Gate.
+	 * In addition, initializes APIForServerBridge and Java RMI service for web processors.
 	 */
 	public synchronized static void initAPI() { 
 		APIForServerBridge.configForServerBridge = new ConfigEx();
@@ -127,8 +123,7 @@ public class API {
 	}
 	
 	/**
-	 * Initializes webAppOS Server-Side API for use in a web processors.<br>
-	 * Each web processor must call initAPI with the appropriate arguments.
+	 * Initializes webAppOS Server-Side API within a web processor.
 	 * @param webProcessorID the web processor ID passed to it as a command-line argument
 	 * @param webProcBusURL the URL of the Web Processor Bus Service for handling RMI requests
 	 * @param wpAPI web processor RMI API (IRWebProcessor) for this web processor
@@ -161,15 +156,7 @@ public class API {
 	}
 	
 	private static Set<IShutDownListener> listeners = ConcurrentHashMap.newKeySet();
-
 	
-	/**
-	 * Registers a shutdown listener, which will be called when the current Java Virtual Machine
-	 * is terminated.<br>
-	 * Can be used by web processor adapters and Web Processor Bus Service to terminate
-	 * running local web processors, when the server (Gate) is being terminated.
-	 * @param l
-	 */
 	public synchronized static void addShutDownListener(IShutDownListener l) {
 		listeners.add(l);
 	}
@@ -186,19 +173,8 @@ public class API {
 	    }); 		
 	}
 	
-	/**
-	 * Stores loaded webAppOS configuration.
-	 */
-	public static ConfigStatic config = null;	
-	
-	/**
-	 * An entry point to access properties of installed webAppOS apps, engines, and services.
-	 */
+	public static ConfigStatic config = null;
 	public static IPropertiesManager propertiesManager = null;
-	
-	/**
-	 * An entry point to access 
-	 */
 	public static IMRAM memory = null;
 	public static IRegistry registry = null;
 	public static IStatus status = null;

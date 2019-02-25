@@ -1,4 +1,4 @@
-package org.webappos.server;
+package org.webappos.email;
 
 import java.util.Date;
 import java.util.Properties;

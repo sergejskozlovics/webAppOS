@@ -3,7 +3,7 @@ package org.webappos.server;
 import org.webappos.memory.MRAM;
 import org.webappos.properties.PropertiesManager;
 import org.webappos.registry.IRRegistry;
-import org.webappos.registry.InFileStatus;
+import org.webappos.status.InFileStatus;
 import org.webappos.webcaller.WebCaller;
 import org.webappos.webproc.WebProcessorBusService;
 

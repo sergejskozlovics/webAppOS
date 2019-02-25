@@ -12,11 +12,11 @@ import org.slf4j.LoggerFactory;
 import org.webappos.memory.IRMRAM;
 import org.webappos.properties.IRPropertiesManager;
 import org.webappos.registry.IRRegistry;
-import org.webappos.registry.IRStatus;
 import org.webappos.server.API;
 import org.webappos.server.APIForServerBridge;
 import org.webappos.server.ConfigStatic;
 import org.webappos.server.IShutDownListener;
+import org.webappos.status.IRStatus;
 import org.webappos.webcaller.IRWebCaller;
 import org.webappos.webcaller.IWebCaller;
 

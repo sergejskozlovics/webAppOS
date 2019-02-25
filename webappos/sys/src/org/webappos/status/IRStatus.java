@@ -1,4 +1,4 @@
-package org.webappos.registry;
+package org.webappos.status;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
