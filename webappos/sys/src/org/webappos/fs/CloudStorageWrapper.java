@@ -93,6 +93,7 @@ public class CloudStorageWrapper implements IFileSystem {
 			for (CloudMetaData md : list) {
 				PathInfo pi = new PathInfo();
 				pi.isDirectory = md.getFolder();
+				pi.created = md.getModifiedAt();
 				pi.modified = md.getModifiedAt();
 				pi.name = md.getName();
 				pi.size = md.getSize();

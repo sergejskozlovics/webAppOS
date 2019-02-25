@@ -12,7 +12,6 @@ import org.webappos.properties.IPropertiesManager;
 import org.webappos.properties.IPropertiesManagerWrapper;
 import org.webappos.properties.PropertiesManager;
 import org.webappos.registry.CouchDBRegistry;
-import org.webappos.registry.IRRegistry;
 import org.webappos.registry.IRegistry;
 import org.webappos.registry.IRegistryWrapper;
 import org.webappos.registry.JsonFilesRegistry;

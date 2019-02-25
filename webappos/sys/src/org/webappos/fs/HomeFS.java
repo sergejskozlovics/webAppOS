@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -132,7 +134,15 @@ public class HomeFS implements IFileSystem {
 				PathInfo pi = new PathInfo();
 				File f = new File(path+File.separator+s);
 				pi.isDirectory = f.isDirectory();
+				
 				pi.modified = f.lastModified();
+				try {
+					BasicFileAttributes attr = Files.readAttributes(f.toPath(), BasicFileAttributes.class);
+					pi.created = attr.creationTime().toMillis();
+				}
+				catch(Throwable t) {
+					pi.created = pi.modified;
+				}
 				pi.name = s;
 				pi.size = f.length();
 				arr.add(pi);
