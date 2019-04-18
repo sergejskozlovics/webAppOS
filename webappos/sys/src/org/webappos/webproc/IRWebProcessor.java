@@ -24,6 +24,17 @@ public interface IRWebProcessor extends Remote {
 	public boolean hasInstructionSet(String name) throws RemoteException;
 	
 	/**
+	 * Asks the web processor can create some per-project cache for the given instruction set.
+	 * If yes, the web caller will constantly use the same web processor, if web calls for the same
+	 * project_id and instruction set are submitted.
+	 *
+	 * @param name the name of the instruction set
+	 * @return whether the given web processor can create some cache for the given instruction set
+	 * @throws RemoteException on Web Processor Bus error
+	 */
+	public boolean perProjectCachedInstructionSet(String name) throws RemoteException;
+	
+	/**
 	 * Starts (asynchronously) the given webcall corresponding to the given webcall declaration.
 	 * The startWebCall must return immediately, thus, the caller (WebCaller from the web server bridge) can continue
 	 * serving other webcalls.

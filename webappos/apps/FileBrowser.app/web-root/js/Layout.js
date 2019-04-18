@@ -119,7 +119,7 @@ define([
 					'<a href="http://www.dojotoolkit.org" target="_blank">dojotoolkit</a> and <a href="http://www.php.net" target="_blank">PHP</a>. ' +
 					'The code is available on <a href="https://github.com/speich/remoteFileExplorer" target="_blank">github</a></p>' +
 					'<p>Available under the same <a href="http://dojotoolkit.org/license" target="_blank">dual BSD/AFL license</a> as the Dojo Toolkit.</p>' +
-/*by SK*/				'<p style="border-top: 1px dotted;"><img width=100% src="'+require.toUrl('rfe')+'/../webappos_top.png"><br/>Modified by SK for webAppOS</p>'+
+/*by SK*/				'<p style="border-top: 1px dotted;"><img width=100% src="'+require.toUrl('rfe')+'/../webappos/webappos_top.png"><br/>Modified by SK for webAppOS</p>'+
 					'</div>'
 			});
 

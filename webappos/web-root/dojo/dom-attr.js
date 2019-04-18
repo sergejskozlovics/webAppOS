@@ -6,14 +6,14 @@
 
 //>>built
 define("dojo/dom-attr",["exports","./sniff","./_base/lang","./dom","./dom-style","./dom-prop"],function(_1,_2,_3,_4,_5,_6){
-var _7={innerHTML:1,textContent:1,className:1,htmlFor:_2("ie"),value:1},_8={classname:"class",htmlfor:"for",tabindex:"tabIndex",readonly:"readOnly"};
+var _7={innerHTML:1,textContent:1,className:1,htmlFor:_2("ie")?1:0,value:1},_8={classname:"class",htmlfor:"for",tabindex:"tabIndex",readonly:"readOnly"};
 function _9(_a,_b){
 var _c=_a.getAttributeNode&&_a.getAttributeNode(_b);
 return !!_c&&_c.specified;
 };
 _1.has=function hasAttr(_d,_e){
 var lc=_e.toLowerCase();
-return _7[_6.names[lc]||_e]||_9(_4.byId(_d),_8[lc]||_e);
+return !!_7[_6.names[lc]||_e]||_9(_4.byId(_d),_8[lc]||_e);
 };
 _1.get=function getAttr(_f,_10){
 _f=_4.byId(_f);

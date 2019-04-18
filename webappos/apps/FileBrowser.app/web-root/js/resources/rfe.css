@@ -60,6 +60,10 @@ p {
 	padding: 0;
 }
 
+.rfeGridPane {
+	overflow: hidden;
+}
+
 .claro .rfeLogPane {
 	height: 20%;
 }

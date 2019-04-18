@@ -104,7 +104,7 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 	
     private void cleanup() {    
     	if (h!=null)
-    		APIForServerBridge.memoryForServerBridge.disconnectFromMRAM(h);
+    		APIForServerBridge.dataMemoryForServerBridge.disconnectFromMRAM(h);
     	authenticated = false;
     	login = null;
     	h = null;
@@ -290,7 +290,7 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 			this.login = login1;
         	authenticated = true;
         	final String ws_token1 = ws_token;
-   			h = APIForServerBridge.memoryForServerBridge.connectToMRAM(bootstrap, app_url_name, template, project_id, this.login, ws_token, available_action_for_ack, this, new Runnable() {
+   			h = APIForServerBridge.dataMemoryForServerBridge.connectToMRAM(bootstrap, app_url_name, template, project_id, this.login, ws_token, available_action_for_ack, this, new Runnable() {
 
 				@Override
 				public void run() {

@@ -121,8 +121,8 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 		}
 	}
 	
-	@Override
-	synchronized public String getUserLogin(String emailOrLogin) {
+/* replaced by UsersManager.getUserLogin
+ 	synchronized public String getUserLogin(String emailOrLogin) {
 		JsonObject xuser = fileToJson(DIR_XUSERS+File.separator+emailOrLogin);
 		if (xuser == null)
 			return null;
@@ -144,7 +144,7 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 			return null;
 		else
 			return id.getAsString();
-	}
+	}*/
 	
 	@Override
 	synchronized public JsonElement getValue(String key) {
@@ -473,12 +473,6 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 			t.printStackTrace();
 			return false;
 		}				
-	}
-
-
-	@Override
-	public String getUserLogin_R(String emailOrLogin) throws RemoteException {
-		return this.getUserLogin(emailOrLogin);
 	}
 
 

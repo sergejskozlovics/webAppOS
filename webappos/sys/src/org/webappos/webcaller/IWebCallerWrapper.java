@@ -17,7 +17,7 @@ public class IWebCallerWrapper implements IWebCaller {
 	
 	public void enqueue(WebCallSeed seed) {
 		if (seed.project_id!=null) {
-			TDAKernel kernel = API.memory.getTDAKernel(seed.project_id);
+			TDAKernel kernel = API.dataMemory.getTDAKernel(seed.project_id);
 			if (kernel!=null) {
 				RAAPI_Synchronizer s = kernel.getSynchronizer();
 				if (s!=null)

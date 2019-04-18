@@ -14,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Stores webAppOS configuration loaded from webappos/etc/webappos.properties.
+ * Used by the server-side bridge and by server-side web processors.
+ * 
  * @author Sergejs Kozlovics
  *
  */

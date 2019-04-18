@@ -4,24 +4,25 @@ group: Introduction
 
 The FileBrowser app is a fully-fledged webAppOS app for browsing user's home directory.
 
-When launched from index.html without the query string, the browser was as ordinary file explorer
+When launched from index.html without the query string, the FileBrowser app will act as an ordinary file explorer.
+
 However, when the query string contains the "embedded=true" argument, FileBrowser will
 switch to the embedded mode. In this mode, FileBrowser assumes it is running inside an iframe, thus:
 * it will not display the menu,
 * it will try to inform the parent frame about certain events (see below).
                                                                                          
-Usually, there is no need for developers to use embedded mode. Developers can rely on
-function <webappos.desktop.browse_for_file> (from webappos.js) or on the underlying FileDialog app
-(see <FileDialog API>).
+Usually, there is no need for developers to use the embedded mode. Developers can rely on
+the <webappos.desktop.browse_for_file> function from webappos.js or on the underlying FileDialog app
+(see <FileDialog App API>).
 
-The FileBrowser embedded mode is used by webAppOS FileDialog app, which adds the "Open" and "Cancel"
+The embedded mode is used by the webAppOS FileDialog app, which adds the "Open" and "Cancel"
 buttons as well as a file name field and a combobox for choosing a file mask.
 
 group: Embedded Mode URL
 
-The FileBrowser service is accessible via the following URL:
+The FileBrowser embedded mode is accessible via the following URL:
 ---code---
-http://<domain_or_ip>/apps/filebrowser/index.html?embedded=true&mask=<masks>&path=</home/path/to/start>
+http[s]://[domain_or_ip]/apps/filebrowser/index.html?embedded=true&mask=[*.mask]&path=[/home/path/to/start]
 ----------
 
 Parameters:

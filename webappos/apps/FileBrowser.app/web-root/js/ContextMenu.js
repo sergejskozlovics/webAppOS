@@ -76,7 +76,7 @@ define([
 				onClick: lang.hitch(this.rfe, function() {
 		 			var id, selection,
  					store = this.store;
-
+ 					console.log("context",this.context);
 		 			selection = this.context.isOnGrid ? this.grid.selection : this.tree.selectedItems;
  					for (id in selection) {
        					        if (selection[id].id)
@@ -86,6 +86,17 @@ define([
 						}
 						break; // launch only the first...
 		 			}
+		 			// if not launched, try with tree item
+	                                selection = this.tree.selectedItems;
+ 					for (id in selection) {
+       					        if (selection[id].id)
+       					          id = selection[id].id;
+						if (id.substring(0,6)=='/home/') {
+							webappos.desktop.open_path(webappos.login+"/"+id.substring(6), true);
+						}
+						break; // launch only the first...
+		 			}
+
                                 }),
 			});
 			this.addChild(menuItems.open_in_new_tab);

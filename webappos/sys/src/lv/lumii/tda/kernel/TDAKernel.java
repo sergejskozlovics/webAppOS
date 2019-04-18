@@ -606,34 +606,6 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IEventsComma
 		lv.lumii.tda.kernel.mm.Command.deleteAllObjects(KMM);
 		lv.lumii.tda.kernel.mm.Event.deleteAllObjects(KMM);
 		
-		/*
-		
-		if (bootstrap) {
-			// Attaching ourself (EnvironmentEngine)...
-			// This will initialize EEMM (Environment Engine Metamodel).
-			
-			lv.lumii.tda.kernel.mm.AttachEngineCommand attachCmd = KMM.createAttachEngineCommand();
-			attachCmd.setName("EnvironmentEngine");
-			attachCmd.submit();
-			
-			// Issuing ProjectCreatedEvent...
-//			EEMM.createProjectCreatedEvent().submit();
-			
-		}
-		else {
-			
-			lv.lumii.tda.kernel.mm.AttachEngineCommand attachCmd = KMM.createAttachEngineCommand();
-			attachCmd.setName("EnvironmentEngine");
-			attachCmd.submit();
-			
-
-			// storing the project directory in the EnvironmentEngine singleton instance...
-			// Issuing ProjectOpenedEvent...
-			// Engines that have already been attached when bootstrapping will be loaded automatically.
-//					EEMM.createProjectOpenedEvent().submit();			
-		}
-
-*/
 		mode = Mode.OPEN_TDA_MODE;
 		return true;
 	}
@@ -735,8 +707,6 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IEventsComma
 		}		
 
 		if (mode == Mode.OPEN_TDA_MODE) {
-			EEMM.createProjectClosingEvent().submit();
-			
 			KMM.unsetRAAPI();
 			delegate.setKMM(null);
 		}

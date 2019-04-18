@@ -750,6 +750,9 @@ LinkCompartments.prototype = {
 			else
 				tmp_len += tmp_distance;
 		}
+
+		return {point: point, index: index}; // by SK
+
 	},
 
 

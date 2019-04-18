@@ -10,13 +10,6 @@ public class IRegistryWrapper implements IRegistry {
 	public IRegistryWrapper(IRRegistry _delegate) {
 		delegate = _delegate;
 	}
-	public String getUserLogin(String emailOrLogin) {
-		try {
-			return delegate.getUserLogin_R(emailOrLogin);
-		} catch (RemoteException e) {
-			return null;
-		}
-	}
 	public JsonElement getValue(String key) {
 		try {
 			return delegate.getValue_R(key);

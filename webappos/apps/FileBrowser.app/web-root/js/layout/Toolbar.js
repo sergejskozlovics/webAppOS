@@ -97,7 +97,7 @@ define([
 			}));
 
 			// => added by SK
-			let s = "<style type=\"text/css\">#the_files{position:absolute; height:0px; top:0px;}</style>";
+			let s = "<style type=\"text/css\">#the_files{position:absolute; height:0px; top:-100px; opacity:0;}</style>";
 			s += "<form id=\"the_upload_form\"><input type=\"file\" id=\"the_files\" multiple=\"true\"></input></form>";
 
 			var submitFunction = function(event) { // supports input[type=file] events and drop events

@@ -2907,7 +2907,7 @@ define(["../global", "../has", "./config", "require", "module"], function(global
 	dojo.isAsync = ! 1  || require.async;
 	dojo.locale = config.locale;
 
-	var rev = "$Rev: d6e8ff38 $".match(/[0-9a-f]{7,}/);
+	var rev = "$Rev:$".match(/[0-9a-f]{7,}/);
 	dojo.version = {
 		// summary:
 		//		Version number of the Dojo Toolkit
@@ -2920,7 +2920,7 @@ define(["../global", "../has", "./config", "require", "module"], function(global
 		//		- flag: String: Descriptor flag. If total version is "1.2.0beta1", will be "beta1"
 		//		- revision: Number: The Git rev from which dojo was pulled
 
-		major: 1, minor: 14, patch: 2, flag: "",
+		major: 1, minor: 15, patch: 0, flag: "",
 		revision: rev ? rev[0] : NaN,
 		toString: function(){
 			var v = dojo.version;
@@ -5593,6 +5593,7 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 	if( 1 ){
 		// this code path assumes the dojo loader and won't work with a standard AMD loader
 		var amdValue = {},
+			l10nCache = {},
 			evalBundle,
 
 			syncRequire = function(deps, callback, require){
@@ -5715,6 +5716,11 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 		thisModule.getLocalization = function(moduleName, bundleName, locale){
 			var result,
 				l10nName = getBundleName(moduleName, bundleName, locale);
+
+			if (l10nCache[l10nName]) {
+				return l10nCache[l10nName];
+			}
+
 			load(
 				l10nName,
 
@@ -5723,7 +5729,10 @@ define(["./_base/kernel", "require", "./has", "./_base/array", "./_base/config",
 				// dojo/i18n module, which, itself may have been mapped.
 				(!isXd(l10nName, require) ? function(deps, callback){ syncRequire(deps, callback, require); } : require),
 
-				function(result_){ result = result_; }
+				function(result_){
+					l10nCache[l10nName] = result_;
+					result = result_;
+				}
 			);
 			return result;
 		};
@@ -6683,7 +6692,7 @@ define(["./sniff", "./_base/window", "./_base/kernel"],
 	if(has("ie")){
 		dom.byId = function(id, doc){
 			if(typeof id != "string"){
-				return id;
+				return id || null;
 			}
 			var _d = doc || win.doc, te = id && _d.getElementById(id);
 			// attributes.id.value is better than just id in case the
@@ -6703,6 +6712,7 @@ define(["./sniff", "./_base/window", "./_base/kernel"],
 					}
 				}
 			}
+			return null;
 		};
 	}else{
 		dom.byId = function(id, doc){
@@ -9431,12 +9441,42 @@ define([
 	'../promise/Promise',
 	'../has'
 ], function(exports, RequestError, CancelError, Deferred, ioQuery, array, lang, Promise, has){
+
+	function isArrayBuffer(value) {
+		return has('native-arraybuffer') && value instanceof ArrayBuffer
+	}
+
+	function isBlob(value) {
+		return has('native-blob') && value instanceof Blob
+	}
+	
+	function isFormElement(value) {
+		if(typeof HTMLFormElement !== 'undefined') { //all other
+			return value instanceof HTMLFormElement;
+		} else { //IE<=7
+			value.tagName === "FORM"
+		}
+	}
+
+	function isFormData(value) {
+		return has('native-formdata') && value instanceof FormData;
+	}
+
+	function shouldDeepCopy(value) {
+		return value &&
+			typeof value === 'object' &&
+			!isFormData(value) &&
+			!isFormElement(value) &&
+			!isBlob(value) &&
+			!isArrayBuffer(value)
+	}
+
 	exports.deepCopy = function(target, source) {
 		for (var name in source) {
 			var tval = target[name],
   			    sval = source[name];
 			if (tval !== sval) {
-				if (sval && typeof sval === 'object' && !(has('native-formdata') && sval instanceof FormData)) {
+				if (shouldDeepCopy(sval)) {
 					if (Object.prototype.toString.call(sval) === '[object Date]') { // use this date test to handle crossing frame boundaries
 						target[name] = new Date(sval);
 					} else if (lang.isArray(sval)) {
@@ -9458,13 +9498,15 @@ define([
 
 	exports.deepCopyArray = function(source) {
 		var clonedArray = [];
-		source.forEach(function(svalItem) {
+		for (var i = 0, l = source.length; i < l; i++) {
+			var svalItem = source[i];
 			if (typeof svalItem === 'object') {
 				clonedArray.push(exports.deepCopy({}, svalItem));
 			} else {
 				clonedArray.push(svalItem);
 			}
-		});
+		}
+
 		return clonedArray;
 	};
 
@@ -9566,7 +9608,7 @@ define([
 			query = options.query;
 
 		if(data && !skipData){
-			if(typeof data === 'object' && (!(has('native-xhr2')) || !(data instanceof ArrayBuffer || data instanceof Blob ))){
+			if(typeof data === 'object' && (!(has('native-xhr2')) || !(isArrayBuffer(data) || isBlob(data) ))){
 				options.data = ioQuery.objectToQuery(data);
 			}
 		}
@@ -9667,6 +9709,16 @@ define([
 	has.add('native-formdata', function(){
 		// if true, the environment has a native FormData implementation
 		return typeof FormData !== 'undefined';
+	});
+
+	has.add('native-blob', function(){
+		// if true, the environment has a native Blob implementation
+		return typeof Blob !== 'undefined';
+	});
+
+	has.add('native-arraybuffer', function(){
+		// if true, the environment has a native ArrayBuffer implementation
+		return typeof ArrayBuffer !== 'undefined';
 	});
 
 	has.add('native-response-type', function(){
@@ -14114,7 +14166,7 @@ define(["exports", "./sniff", "./_base/lang", "./dom", "./dom-style", "./dom-pro
 			innerHTML:	1,
 			textContent:1,
 			className:	1,
-			htmlFor:	has("ie"),
+			htmlFor:	has("ie") ? 1 : 0,
 			value:		1
 		},
 		attrNames = {
@@ -14149,7 +14201,7 @@ define(["exports", "./sniff", "./_base/lang", "./dom", "./dom-style", "./dom-pro
 		//		given element, and false otherwise
 
 		var lc = name.toLowerCase();
-		return forcePropNames[prop.names[lc] || name] || _hasAttr(dom.byId(node), attrNames[lc] || name);	// Boolean
+		return !!forcePropNames[prop.names[lc] || name] || _hasAttr(dom.byId(node), attrNames[lc] || name);	// Boolean
 	};
 
 	exports.get = function getAttr(/*DOMNode|String*/ node, /*String*/ name){

@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.bouncycastle.jcajce.provider.symmetric.SEED;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webappos.properties.SomeProperties;
@@ -66,7 +67,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		
 		// patches for singleSynchronizer
 		if (!(_seed instanceof IWebCaller.SyncedWebCallSeed) || (((IWebCaller.SyncedWebCallSeed)_seed).singleSynchronizer==null)) {
-			RAAPI_Synchronizer sync = APIForServerBridge.memoryForServerBridge.getSingleSynchronizer(_seed.project_id);
+			RAAPI_Synchronizer sync = APIForServerBridge.dataMemoryForServerBridge.getSingleSynchronizer(_seed.project_id);
 			if (sync!=null) {
 				if (_seed instanceof IWebCaller.SyncedWebCallSeed)
 					((IWebCaller.SyncedWebCallSeed)_seed).singleSynchronizer = sync;
@@ -112,7 +113,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					
 					try {
 						
-						logger.trace("WebCaller dequeue "+seed2.actionName+" ("+seed2.hashCode()+") app="+APIForServerBridge.memoryForServerBridge.getProjectFullAppName(seed2.project_id)+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.memory.getTDAKernel(seed2.project_id)+",arg="+seed2.tdaArgument);
+						logger.trace("WebCaller dequeue "+seed2.actionName+" ("+seed2.hashCode()+") app="+APIForServerBridge.dataMemoryForServerBridge.getProjectFullAppName(seed2.project_id)+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id)+",arg="+seed2.tdaArgument);
 						WebCallDeclaration action = map.get(seed2.actionName);
 						if (action == null) {
 							// Lua patch...
@@ -143,10 +144,10 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 									if (seed2 instanceof IWebCaller.SyncedWebCallSeed)
 										sync = ((IWebCaller.SyncedWebCallSeed) seed2).singleSynchronizer;
 									else
-										sync = APIForServerBridge.memoryForServerBridge.getSingleSynchronizer(seed2.project_id);
+										sync = APIForServerBridge.dataMemoryForServerBridge.getSingleSynchronizer(seed2.project_id);
 								}
 								else
-									sync = APIForServerBridge.memoryForServerBridge.getTDAKernel(seed2.project_id).getSynchronizer();
+									sync = APIForServerBridge.dataMemoryForServerBridge.getTDAKernel(seed2.project_id).getSynchronizer();
 								
 								if (sync != null)						
 									sync.syncRawAction(new double[] {0xC0, clientCallNo}, RAAPI_Synchronizer.sharpenString(seed2.actionName)+"/"+RAAPI_Synchronizer.sharpenString(seed2.jsonArgument));
@@ -179,10 +180,10 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 									if (seed2 instanceof IWebCaller.SyncedWebCallSeed)
 										sync = ((IWebCaller.SyncedWebCallSeed) seed2).singleSynchronizer;
 									else
-										sync = APIForServerBridge.memoryForServerBridge.getSingleSynchronizer(seed2.project_id);
+										sync = APIForServerBridge.dataMemoryForServerBridge.getSingleSynchronizer(seed2.project_id);
 								}
 								else
-									sync = APIForServerBridge.memoryForServerBridge.getTDAKernel(seed2.project_id).getSynchronizer();
+									sync = APIForServerBridge.dataMemoryForServerBridge.getTDAKernel(seed2.project_id).getSynchronizer();
 								
 								if (sync != null)						
 									sync.syncRawAction(new double[] {0xC0, seed2.tdaArgument}, RAAPI_Synchronizer.sharpenString(seed2.actionName));
@@ -205,10 +206,10 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 						if (API.config.inline_webcalls) {
 							// executing webcall here, without web processors
 							
-							TDAKernel kernel = API.memory.getTDAKernel(seed2.project_id);
+							TDAKernel kernel = API.dataMemory.getTDAKernel(seed2.project_id);
 							boolean newSingleSynchronizer = (kernel!=null) && (seed2 instanceof IWebCaller.SyncedWebCallSeed);
 							if (newSingleSynchronizer) {
-								APIForServerBridge.memoryForServerBridge.setSingleSynchronizer(seed2.project_id, ((IWebCaller.SyncedWebCallSeed)seed2).singleSynchronizer);
+								APIForServerBridge.dataMemoryForServerBridge.setSingleSynchronizer(seed2.project_id, ((IWebCaller.SyncedWebCallSeed)seed2).singleSynchronizer);
 							}
 							
 							Class<?> adapterClass = null;
@@ -234,7 +235,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 									kernel.setOwner(owner);
 								}
 								try {
-									String res = ((IJsonWebCallsAdapter)adapter).jsoncall(action.resolvedLocation, seed2.jsonArgument, seed2.project_id, API.memory.getProjectFullAppName(seed2.project_id), seed2.login);
+									String res = ((IJsonWebCallsAdapter)adapter).jsoncall(action.resolvedLocation, seed2.jsonArgument, seed2.project_id, API.dataMemory.getProjectFullAppName(seed2.project_id), seed2.login);
 									if (seed2.jsonResult!=null)
 										seed2.jsonResult.complete(res);
 								}
@@ -256,7 +257,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 									kernel.setOwner(owner);
 								}
 								try {
-									((ITdaWebCallsAdapter)adapter).tdacall(action.resolvedLocation, seed2.tdaArgument, kernel, seed2.project_id, API.memory.getProjectFullAppName(seed2.project_id), seed2.login);
+									((ITdaWebCallsAdapter)adapter).tdacall(action.resolvedLocation, seed2.tdaArgument, kernel, seed2.project_id, API.dataMemory.getProjectFullAppName(seed2.project_id), seed2.login);
 									if (seed2.jsonResult!=null)
 										seed2.jsonResult.complete(null);
 								}
@@ -273,7 +274,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 							
 							// on web proc finish:
 							if (newSingleSynchronizer) {
-								APIForServerBridge.memoryForServerBridge.setSingleSynchronizer(seed2.project_id, null);
+								APIForServerBridge.dataMemoryForServerBridge.setSingleSynchronizer(seed2.project_id, null);
 							}
 							
 						}
@@ -291,10 +292,10 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 								seed2.timeToLive--;
 								if (seed2.timeToLive>0) {
 									tryAgain = true;
-									logger.info("reschedule/enqueue "+seed2.actionName+" ("+seed2.hashCode()+") app="+APIForServerBridge.memoryForServerBridge.getProjectFullAppName(seed2.project_id)+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.memory.getTDAKernel(seed2.project_id)+",ttl="+seed2.timeToLive);					
+									logger.info("reschedule/enqueue "+seed2.actionName+" ("+seed2.hashCode()+") app="+APIForServerBridge.dataMemoryForServerBridge.getProjectFullAppName(seed2.project_id)+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id)+",ttl="+seed2.timeToLive);					
 								}
 								else {
-									logger.info("seed time-to-live expired: "+seed2.actionName+" ("+seed2.hashCode()+") app="+APIForServerBridge.memoryForServerBridge.getProjectFullAppName(seed2.project_id)+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.memory.getTDAKernel(seed2.project_id));
+									logger.info("seed time-to-live expired: "+seed2.actionName+" ("+seed2.hashCode()+") app="+APIForServerBridge.dataMemoryForServerBridge.getProjectFullAppName(seed2.project_id)+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id));
 								}
 							}					
 						}

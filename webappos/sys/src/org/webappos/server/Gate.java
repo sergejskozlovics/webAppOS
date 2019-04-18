@@ -143,15 +143,6 @@ public class Gate {
 		}
 		
 		
-		// adding .webcalls functions provided by this app or service
-		File dir = new File(API.config.APPS_DIR + File.separator +name);
-		if (dir.isDirectory())
-			for (File f : dir.listFiles()) if (f.getName().endsWith(WebCaller.FILE_EXTENSION)) {
-				APIForServerBridge.webCallerForServerBridge.loadWebCalls(dir.getAbsolutePath() + File.separator + f.getName());
-			}
-		
-		
-		
 		if (isApp) {	
 			// app
 			AppProperties appProps = APIForServerBridge.propertiesManagerForServerBridge.loadAppProperties(name, appDir);
@@ -184,23 +175,33 @@ public class Gate {
 				
 				if (appProps.requires_root_url_paths) {
 					// we don't have a domain, only IP, thus we need to launch the app at the specific port...
-					int i=0;
-					while ((i<10) && (Ports.portTaken(APIForServerBridge.configForServerBridge.free_port+i)) && (Ports.portTaken(APIForServerBridge.configForServerBridge.free_port+i+1))) {
-						i++;
-					}
 					
-					if (i>=10) {
+					int port = Gate.getFreePort(APIForServerBridge.configForServerBridge.free_port);
+					int securePort = -1;
+					if (port < 0) {
 						logger.error("Could not find a suitable port "+APIForServerBridge.configForServerBridge.free_port+"+i for "+name);
 						API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
 						return;
 					}
-					APIForServerBridge.configForServerBridge.free_port+=i;
+					else
+						APIForServerBridge.configForServerBridge.free_port = port+1;
+					
 					
 			        Server portServer = new Server();
 			        
 					HttpConfiguration http_config = new HttpConfiguration();
-			        http_config.setSecureScheme("https");
-			        http_config.setSecurePort(APIForServerBridge.configForServerBridge.free_port+1);
+					if (API.config.secure) {
+						securePort = Gate.getFreePort(APIForServerBridge.configForServerBridge.free_port);
+						if (securePort < 0) {
+							logger.error("Could not find a suitable secure port "+APIForServerBridge.configForServerBridge.free_port+"+i for "+name);
+							API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
+							return;
+						}
+						else
+							APIForServerBridge.configForServerBridge.free_port = securePort+1;
+						http_config.setSecureScheme("https");
+						http_config.setSecurePort(securePort);
+					}
 			        http_config.setOutputBufferSize(32768);
 			        http_config.setRequestHeaderSize(8192);
 			        http_config.setResponseHeaderSize(8192);
@@ -209,7 +210,7 @@ public class Gate {
 			        
 			        ServerConnector http = new ServerConnector(portServer,
 			                new HttpConnectionFactory(http_config));
-			        http.setPort(APIForServerBridge.configForServerBridge.free_port);
+			        http.setPort(port);
 			        http.setIdleTimeout(30000);
 			        
 			        portServer.addConnector(http);
@@ -221,7 +222,7 @@ public class Gate {
 						ServerConnector sslConnector = new ServerConnector(portServer,
 					            new SslConnectionFactory(sslContextFactory,HttpVersion.HTTP_1_1.asString()),
 					            new HttpConnectionFactory(https_config));
-					    sslConnector.setPort(APIForServerBridge.configForServerBridge.free_port+1);
+					    sslConnector.setPort(securePort);
 					    portServer.addConnector(sslConnector);			        	
 			        }
 					
@@ -241,9 +242,9 @@ public class Gate {
 					portServer.setHandler(appContextHandler);
 					try {
 						portServer.start();
-						logger.info("Attached "+appProps.app_full_name+" at HTTP port "+APIForServerBridge.configForServerBridge.free_port);
+						logger.info("Attached "+appProps.app_full_name+" at HTTP port "+port);
 						if (API.config.secure) {
-							logger.info("Attached "+appProps.app_full_name+" at HTTPS port "+(APIForServerBridge.configForServerBridge.free_port+1));
+							logger.info("Attached "+appProps.app_full_name+" at HTTPS port "+securePort);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -254,20 +255,16 @@ public class Gate {
 					
 					ServletContextHandler portRedirectHandler =  new ServletContextHandler(handlerColl, "/apps/"+appProps.app_url_name, false, false);
 					ServletHolder holder2 = new ServletHolder();
-					holder2.setServlet(new RedirectServlet(API.config.simple_domain_or_ip, APIForServerBridge.configForServerBridge.free_port, APIForServerBridge.configForServerBridge.free_port+1)); // w/o protocol
+					holder2.setServlet(new RedirectServlet(API.config.simple_domain_or_ip, port, securePort)); // w/o protocol
 			        portRedirectHandler.addServlet(holder2, "/*");
 					try {
 						portRedirectHandler.start();
-						logger.info("Attached "+appProps.app_full_name+" redirect from /apps/"+appProps.app_url_name+" to "+API.config.simple_domain_or_ip+":"+APIForServerBridge.configForServerBridge.free_port+(API.config.secure?"["+(APIForServerBridge.configForServerBridge.free_port+1)+"]":""));
-						API.status.setStatus("apps/"+name,"/apps/"+appProps.app_url_name+" -> "+API.config.simple_domain_or_ip+":"+APIForServerBridge.configForServerBridge.free_port+(API.config.secure?"["+(APIForServerBridge.configForServerBridge.free_port+1)+"]":""));
+						logger.info("Attached "+appProps.app_full_name+" redirect from /apps/"+appProps.app_url_name+" to "+API.config.simple_domain_or_ip+":"+port+(API.config.secure?"["+(securePort)+"]":""));
+						API.status.setStatus("apps/"+name,"/apps/"+appProps.app_url_name+" -> "+API.config.simple_domain_or_ip+":"+port+(API.config.secure?"["+(securePort)+"]":""));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-					
-					APIForServerBridge.configForServerBridge.free_port++;
-					if (API.config.secure)
-						APIForServerBridge.configForServerBridge.free_port++;
-					
+										
 				}			
 				else {
 					// only IP specified, but the app does not require root paths, thus, sub-domain is not necessary...
@@ -363,214 +360,30 @@ public class Gate {
 				return;
 			}
 			
-			if (API.config.hasOnlyIP || svcProps.requires_http_port || svcProps.requires_https_port) {
-				// only IP specified or the service requires a port explicitly
+			// Assigning additional ports...
+			for (int k=0; k<svcProps.requires_additional_ports.length; k++) {
+				if (svcProps.requires_additional_ports[k]<0) {
+					int addPort = Gate.getFreePort( APIForServerBridge.configForServerBridge.free_port );
+					if (addPort >=0 ) {
+						svcProps.requires_additional_ports[k] = addPort;
+						APIForServerBridge.configForServerBridge.free_port = addPort+1;
+					}
+				}
+			}			
+			
+			
+			if (!API.config.hasOnlyIP) {
+				// domain specified
 				
-				if (svcProps.requires_root_url_paths || svcProps.requires_http_port || svcProps.requires_https_port) {
-					// we don't have a domain, only IP, thus we need to launch the service at the specific port...
-					// (or the service requires a port explicitly)
-					int i=0;
-					while ((i<10) && (Ports.portTaken(APIForServerBridge.configForServerBridge.free_port+i)) && (Ports.portTaken(APIForServerBridge.configForServerBridge.free_port+i+1))) {
-						i++;
-					}
-					
-					if (i>=10) {
-						logger.error("Could not find a suitable port "+APIForServerBridge.configForServerBridge.free_port+"+i for "+name);
-						return;
-					}
-					APIForServerBridge.configForServerBridge.free_port+=i;
-					
-					if (svcProps.requires_http_port || svcProps.requires_https_port) {
-						svcProps.properties.setProperty("http_port", APIForServerBridge.configForServerBridge.free_port+"");
-						svcProps.properties.setProperty("https_port", (APIForServerBridge.configForServerBridge.free_port+1)+"");
-					}
-			        
-			        ContextHandler handler = null;
-			        try {
-			        	handler = svcAdapter.attachService(svcProps, "/", getOnStopped(svcProps.service_full_name), getOnHalted(svcProps.service_full_name));
-			        }
-			        catch(Throwable t) {
-						logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
-						return;
-			        }
-
-			        if (handler == null) {
-			        	// svcAdapter launched the server by its own...; it can use free_port and/or free_port+1
-			        }
-			        else {
-						// handler != null; attaching...						
-						Server portServer = null;
-				        portServer = new Server();
-						HttpConfiguration http_config = new HttpConfiguration();
-				        http_config.setSecureScheme("https");
-				        http_config.setSecurePort(APIForServerBridge.configForServerBridge.free_port+1);
-				        http_config.setOutputBufferSize(32768);
-				        http_config.setRequestHeaderSize(8192);
-				        http_config.setResponseHeaderSize(8192);
-				        http_config.setSendServerVersion(true);
-				        http_config.setSendDateHeader(false);
-				        
-				        ServerConnector http = new ServerConnector(portServer,
-				                new HttpConnectionFactory(http_config));
-				        http.setPort(APIForServerBridge.configForServerBridge.free_port);
-				        http.setIdleTimeout(30000);
-				        
-				        portServer.addConnector(http);
-				        
-				        if (API.config.secure) {
-							HttpConfiguration https_config = new HttpConfiguration(http_config);
-						    https_config.addCustomizer(new SecureRequestCustomizer());
-							
-							ServerConnector sslConnector = new ServerConnector(portServer,
-						            new SslConnectionFactory(sslContextFactory,HttpVersion.HTTP_1_1.asString()),
-						            new HttpConnectionFactory(https_config));
-						    sslConnector.setPort(APIForServerBridge.configForServerBridge.free_port+1);
-						    portServer.addConnector(sslConnector);			        	
-				        }
-			        	
-						portServer.setHandler(handler);
-						try {
-							portServer.start();
-							logger.info("Attached "+svcProps.service_full_name+" at HTTP port "+APIForServerBridge.configForServerBridge.free_port);
-							if (API.config.secure) {
-								logger.info("Attached "+svcProps.service_full_name+" at HTTPS port "+(APIForServerBridge.configForServerBridge.free_port+1));
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						
-			        }
-		
-					// redirect to port...
-					boolean securePortExists = svcProps.requires_https_port || API.config.secure;
-							
-					if (!API.config.hasOnlyIP) {
-						// domain specified; attaching subdomain and a proxy from /services/urlName...
-						
-						
-						
-						if (svcProps.requires_root_url_paths) {
-							// create subdomain with proxy servlet...
-							ServletContextHandler subdomainProxyHandler =						
-									new ServletContextHandler(handlerColl, "/", ServletContextHandler.SESSIONS);
-							
-							ServletHolder proxyServlet = new ServletHolder(ProxyServlet.Transparent.class);
-							
-							subdomainProxyHandler.setVirtualHosts(new String[]{svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip, svcProps.service_url_name+"_service.localhost", "*."+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip, "*."+svcProps.service_url_name+"_service.localhost"});
-														
-							if (svcProps.requires_https_port) {
-								proxyServlet.setInitParameter("proxyTo", "https://localhost:"+(APIForServerBridge.configForServerBridge.free_port+1)+"/");
-							//	subdomainProxyHandler.setInitParameter("proxyTo", "https://localhost:"+(APIForServerBridge.configForServerBridge.free_port+1)+"/");
-							}
-							else {
-								proxyServlet.setInitParameter("proxyTo", "http://localhost:"+(APIForServerBridge.configForServerBridge.free_port)+"/");
-							//	subdomainProxyHandler.setInitParameter("proxyTo", "http://localhost:"+(APIForServerBridge.configForServerBridge.free_port)+"/");
-							}
-							proxyServlet.setInitParameter("Prefix", "/");
-					        subdomainProxyHandler.addServlet(proxyServlet, "/*");
-							try {
-								subdomainProxyHandler.start();
-								logger.info("Attached "+svcProps.service_full_name+" proxy redirect from "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" to localhost:"+APIForServerBridge.configForServerBridge.free_port+(API.config.secure?"["+(APIForServerBridge.configForServerBridge.free_port+1)+"]":""));
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							
-							// ...and redirect to that subdomain...							
-							ServletContextHandler svcRedirectHandler = new ServletContextHandler(handlerColl, "/services/"+svcProps.service_url_name, false, false);
-							
-							svcRedirectHandler.setVirtualHosts(new String[] { API.config.simple_domain_or_ip, "localhost", "*."+API.config.simple_domain_or_ip, "*.localhost" });
-								// "*." means that we allow to call this service from all subdomains, e.g., login app from its subdomain login.domain.org can access /services/login
-							
-							ServletHolder holder = new ServletHolder();
-							holder.setServlet(new RedirectServlet(svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip, -1, -1));
-					        svcRedirectHandler.addServlet(holder, "/*");
-							try {
-								svcRedirectHandler.start();
-								logger.info("Attached "+svcProps.service_full_name+" redirect from /services/"+svcProps.service_url_name+" to "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}						
-							
-						}
-						else {
-							ServletContextHandler portProxyHandler =  //new ServletContextHandler(handlerColl, "/services/"+svcProps.service_url_name, true, false);						
-									new ServletContextHandler(handlerColl, "/services/"+svcProps.service_url_name, ServletContextHandler.SESSIONS);
-							
-							ServletHolder proxyServlet = new ServletHolder(ProxyServlet.Transparent.class);
-							
-							if (svcProps.requires_https_port) {
-								proxyServlet.setInitParameter("proxyTo", "https://localhost:"+(APIForServerBridge.configForServerBridge.free_port+1)+"/");
-							//	portProxyHandler.setInitParameter("proxyTo", "https://localhost:"+(APIForServerBridge.configForServerBridge.free_port+1)+"/");
-							}
-							else {
-								proxyServlet.setInitParameter("proxyTo", "http://localhost:"+(APIForServerBridge.configForServerBridge.free_port)+"/");
-							//	portProxyHandler.setInitParameter("proxyTo", "http://localhost:"+(APIForServerBridge.configForServerBridge.free_port)+"/");
-							}
-							proxyServlet.setInitParameter("Prefix", "/");
-					        portProxyHandler.addServlet(proxyServlet, "/*");
-							try {
-								portProxyHandler.start();
-								logger.info("Attached "+svcProps.service_full_name+" proxy redirect from /services/"+svcProps.service_url_name+" to localhost:"+APIForServerBridge.configForServerBridge.free_port+(API.config.secure?"["+(APIForServerBridge.configForServerBridge.free_port+1)+"]":""));
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-						
-						
-					}
-					else {
-					
-						ServletContextHandler portRedirectHandler =  new ServletContextHandler(handlerColl, "/services/"+svcProps.service_url_name, false, false);
-						ServletHolder holder2 = new ServletHolder();
-						if (securePortExists)
-							holder2.setServlet(new RedirectServlet(API.config.simple_domain_or_ip, APIForServerBridge.configForServerBridge.free_port, APIForServerBridge.configForServerBridge.free_port+1));
-						else
-							holder2.setServlet(new RedirectServlet(API.config.simple_domain_or_ip, APIForServerBridge.configForServerBridge.free_port));
-				        portRedirectHandler.addServlet(holder2, "/*");
-						try {
-							portRedirectHandler.start();
-							logger.info("Attached "+svcProps.service_full_name+" simple redirect from /services/"+svcProps.service_url_name+" to "+API.config.simple_domain_or_ip+":"+APIForServerBridge.configForServerBridge.free_port+(API.config.secure?"["+(APIForServerBridge.configForServerBridge.free_port+1)+"]":""));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						
-					}
-					
-					APIForServerBridge.configForServerBridge.free_port++;
-					if (securePortExists)
-						APIForServerBridge.configForServerBridge.free_port++;
-					
-				}			
-				else {
-					// only IP specified, but the service does not require root paths, thus, sub-domain is not needed...
-			        ContextHandler handler;
-			        try {
-			        	handler = svcAdapter.attachService(svcProps, "/services/"+svcProps.service_url_name, getOnStopped(svcProps.service_full_name), getOnHalted(svcProps.service_full_name));
-			        }
-			        catch(Throwable t) {
-						logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
-						return;
-			        }
-					
-					handlerColl.addHandler(handler);
-					try {
-						handler.start();
-						logger.info("Attached "+svcProps.service_full_name+" at /services/"+svcProps.service_url_name);
-					} catch (Exception e) {
-						logger.error("Could not start handler for "+svcProps.service_full_name+". "+e.getMessage());
-					}								
-				}													
-			}
-			else {
-				// domain specified, all OK
-				
+				// attaching subdomain
 		        ContextHandler handler;
 		        try {
 		        	handler = svcAdapter.attachService(svcProps, "/", getOnStopped(svcProps.service_full_name), getOnHalted(svcProps.service_full_name));
+			        if (handler == null)
+			        	handler = new org.webappos.adapters.service.webroot.ServiceAdapter().attachService(svcProps, "/", null, null);
 		        }
 		        catch(Throwable t) {
 					logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
-					t.printStackTrace();
 					return;
 		        }
 				handler.setVirtualHosts(new String[]{"*."+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip, "*."+svcProps.service_url_name+"_service.localhost"});
@@ -582,49 +395,196 @@ public class Gate {
 					e.printStackTrace();
 				}
 		
-		
+						
+				// attaching /apps/urlName
 				
-				if (svcProps.requires_root_url_paths) {
-					// /apps/urlName redirect
-					
-					ServletContextHandler svcRedirectHandler = new ServletContextHandler(handlerColl, "/services/"+svcProps.service_url_name, false, false);
-					
-					svcRedirectHandler.setVirtualHosts(new String[] { "*."+API.config.simple_domain_or_ip, "*.localhost", "*."+API.config.simple_domain_or_ip });
-						// "*." means that we allow to call this service from all subdomains, e.g., login app from its subdomain login.domain.org can access /services/login
-					
-					ServletHolder holder = new ServletHolder();
-					holder.setServlet(new RedirectServlet(svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip, -1, -1));
-			        svcRedirectHandler.addServlet(holder, "/*");
-					try {
-						svcRedirectHandler.start();
-						logger.info("Attached "+svcProps.service_full_name+" redirect from /services/"+svcProps.service_url_name+" to "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip);
-					} catch (Exception e) {
-						e.printStackTrace();
+		        try {
+		        	handler = svcAdapter.attachService(svcProps, "/services/"+svcProps.service_url_name, getOnStopped(svcProps.service_full_name), getOnHalted(svcProps.service_full_name));
+			        if (handler == null)
+			        	handler = new org.webappos.adapters.service.webroot.ServiceAdapter().attachService(svcProps, "/", null, null);
+		        }
+		        catch(Throwable t) {
+					logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
+					return;
+		        }
+				handler.setVirtualHosts(new String[] { "*."+API.config.simple_domain_or_ip, "*.localhost", "*."+API.config.simple_domain_or_ip });
+				handlerColl.addHandler(handler);
+				try {
+					handler.start();
+					logger.info("Attached "+svcProps.service_full_name+" at /services/"+svcProps.service_url_name);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+/*				
+				ServletContextHandler svcRedirectHandler = new ServletContextHandler(handlerColl, "/services/"+svcProps.service_url_name, false, false);
+				
+				svcRedirectHandler.setVirtualHosts(new String[] { "*."+API.config.simple_domain_or_ip, "*.localhost", "*."+API.config.simple_domain_or_ip });
+					// "*." means that we allow to call this service from all subdomains, e.g., login app from its subdomain login.domain.org can access /services/login
+				
+				ServletHolder holder = new ServletHolder();
+				holder.setServlet(new RedirectServlet(svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip, -1, -1));
+		        svcRedirectHandler.addServlet(holder, "/*");
+				try {
+					svcRedirectHandler.start();
+					logger.info("Attached "+svcProps.service_full_name+" redirect from /services/"+svcProps.service_url_name+" to "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}				
+*/
+				
+				return;
+			}
+			
+						
+			// only IP specified (additional HTTP/HTTPS ports MAY be required)								
+							
+			
+			if (!svcProps.requires_root_url_paths) {
+				// only IP specified, but the service does not require root paths
+		        ContextHandler handler;
+		        try {
+		        	handler = svcAdapter.attachService(svcProps, "/services/"+svcProps.service_url_name, getOnStopped(svcProps.service_full_name), getOnHalted(svcProps.service_full_name));
+			        if (handler == null)
+			        	handler = new org.webappos.adapters.service.webroot.ServiceAdapter().attachService(svcProps, "/services/"+svcProps.service_url_name, null, null);
+		        }
+		        catch(Throwable t) {
+					logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
+					return;
+		        }
+				
+				handlerColl.addHandler(handler);
+				try {
+					handler.start();
+					logger.info("Attached "+svcProps.service_full_name+" at /services/"+svcProps.service_url_name);
+				} catch (Exception e) {
+					logger.error("Could not start handler for "+svcProps.service_full_name+". "+e.getMessage());
+				}								
+				return;
+			}					
+			
+			
+			// HTTP ports will be used!
+			
+	        ContextHandler handler = null;
+	        try {
+	        	handler = svcAdapter.attachService(svcProps, "/", getOnStopped(svcProps.service_full_name), getOnHalted(svcProps.service_full_name));
+		        if (handler == null)
+		        	handler = new org.webappos.adapters.service.webroot.ServiceAdapter().attachService(svcProps, "/", null, null);
+	        }
+	        catch(Throwable t) {
+				logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
+				return;
+	        }
+
+		        
+	        if (svcProps.httpPort<0) {
+	        	// the service adapter did not create ports; we need to provide the HTTP (and, perhaps, HTTPS) ports for the handler
+	        						
+	        	// attaching our ports...
+        		svcProps.httpPort = Gate.getFreePort(APIForServerBridge.configForServerBridge.free_port);
+				if (svcProps.httpPort < 0) {
+					logger.error("Could not find a suitable port "+APIForServerBridge.configForServerBridge.free_port+"+i for "+name);
+					API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
+					return;
+				}
+				else
+					APIForServerBridge.configForServerBridge.free_port = svcProps.httpPort+1;
+			
+				Server portServer = null;
+		        portServer = new Server();
+				HttpConfiguration http_config = new HttpConfiguration();
+				if (API.config.secure) {
+					svcProps.httpsPort = Gate.getFreePort(APIForServerBridge.configForServerBridge.free_port);
+					if (svcProps.httpsPort < 0) {
+						logger.error("Could not find a suitable secure port "+APIForServerBridge.configForServerBridge.free_port+"+i for "+name);
+						API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
+						return;
 					}
+					else
+						APIForServerBridge.configForServerBridge.free_port = svcProps.httpsPort+1;
+					http_config.setSecureScheme("https");
+					http_config.setSecurePort(svcProps.httpsPort);
+				}
+		        http_config.setOutputBufferSize(32768);
+		        http_config.setRequestHeaderSize(8192);
+		        http_config.setResponseHeaderSize(8192);
+		        http_config.setSendServerVersion(true);
+		        http_config.setSendDateHeader(false);
+		        
+		        ServerConnector http = new ServerConnector(portServer,
+		                new HttpConnectionFactory(http_config));
+		        http.setPort(svcProps.httpPort);
+		        http.setIdleTimeout(30000);
+		        
+		        portServer.addConnector(http);
+		        
+		        if (API.config.secure) {
+					HttpConfiguration https_config = new HttpConfiguration(http_config);
+				    https_config.addCustomizer(new SecureRequestCustomizer());
+					
+					ServerConnector sslConnector = new ServerConnector(portServer,
+				            new SslConnectionFactory(sslContextFactory,HttpVersion.HTTP_1_1.asString()),
+				            new HttpConnectionFactory(https_config));
+				    sslConnector.setPort(svcProps.httpsPort);
+				    portServer.addConnector(sslConnector);			        	
+		        }
+	        	
+				portServer.setHandler(handler);
+				try {
+					portServer.start();
+					logger.info("Attached "+svcProps.service_full_name+" at HTTP port "+svcProps.httpPort);
+					if (API.config.secure) {
+						logger.info("Attached "+svcProps.service_full_name+" at HTTPS port "+svcProps.httpsPort);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+	        }		        
+		        
+		    // Now we either have the http/https port(s). Configuring redirects and subdomains.
+		        
+			// redirect to these ports...
+			ServletContextHandler portRedirectHandler =  new ServletContextHandler(handlerColl, "/services/"+svcProps.service_url_name, false, false);
+			ServletHolder holder2 = new ServletHolder();
+
+			if (svcProps.httpsPort>0)
+				holder2.setServlet(new RedirectServlet(API.config.simple_domain_or_ip, svcProps.httpPort, svcProps.httpsPort));
+			else
+				holder2.setServlet(new RedirectServlet(API.config.simple_domain_or_ip, svcProps.httpPort));
+	        portRedirectHandler.addServlet(holder2, "/*");
+			try {
+				portRedirectHandler.start();
+				logger.info("Attached "+svcProps.service_full_name+" simple redirect from /services/"+svcProps.service_url_name+" to "+API.config.simple_domain_or_ip+":"+svcProps.httpPort+(API.config.secure?"["+(svcProps.httpsPort)+"]":""));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			// subdomain proxy to port...
+			if (!API.config.hasOnlyIP) {
+				// create subdomain with proxy servlet...
+				ServletContextHandler subdomainProxyHandler =						
+						new ServletContextHandler(handlerColl, "/", ServletContextHandler.SESSIONS);
+				
+				ServletHolder proxyServlet = new ServletHolder(ProxyServlet.Transparent.class);
+				
+				subdomainProxyHandler.setVirtualHosts(new String[]{svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip, svcProps.service_url_name+"_service.localhost", "*."+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip, "*."+svcProps.service_url_name+"_service.localhost"});
+											
+				if (svcProps.httpsPort>=0) {
+					proxyServlet.setInitParameter("proxyTo", "https://localhost:"+svcProps.httpsPort+"/");
 				}
 				else {
-					ContextHandler handler2 = svcAdapter.attachService(svcProps, "/services/"+svcProps.service_url_name, getOnStopped(svcProps.service_full_name), getOnHalted(svcProps.service_full_name));					
-					handler2.setVirtualHosts(new String[] { API.config.simple_domain_or_ip, "localhost", "*."+API.config.simple_domain_or_ip });
-					handlerColl.addHandler(handler2);
-					
-					try {
-						handler2.start();
-						logger.info("Attached non-root "+svcProps.service_full_name+" handler copy at /services/"+svcProps.service_url_name);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-/*
-					try {
-					webServer.stop();
-					webServer.setHandler(handler2);
-					webServer.start();
-					}
-					catch(Throwable t) {
-						t.printStackTrace();
-					}*/
-					
-					
+					proxyServlet.setInitParameter("proxyTo", "http://localhost:"+svcProps.httpPort+"/");
 				}
+				proxyServlet.setInitParameter("Prefix", "/");
+		        subdomainProxyHandler.addServlet(proxyServlet, "/*");
+				try {
+					subdomainProxyHandler.start();
+					logger.info("Attached "+svcProps.service_full_name+" proxy redirect from "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" to localhost:"+svcProps.httpPort+(API.config.secure?"["+svcProps.httpsPort+"]":""));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
 			}
 			
 		}
@@ -633,6 +593,19 @@ public class Gate {
 	synchronized public static void detachWebAppOrService(String name) {
 		
 	}
+	
+	synchronized private static int getFreePort(int startFrom) {
+		int i=0;
+		while ((i<10) && (Ports.portTaken(startFrom+i)) && (Ports.portTaken(startFrom+i+1))) {
+			i++;
+		}
+		
+		if (i>=10) {
+			return -1;
+		}
+		return startFrom+i;
+	}
+	
 
 	public static void main(String[] args) {
 		

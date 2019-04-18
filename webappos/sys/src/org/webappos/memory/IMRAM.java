@@ -2,6 +2,12 @@ package org.webappos.memory;
 
 import lv.lumii.tda.kernel.TDAKernel;
 
+/**
+ * Interface used by the server-side bridge and by server-side web processors to access server-side MRAM slots.
+
+ * @author Sergejs Kozlovics
+ *
+ */
 public interface IMRAM {
 
 	/**
@@ -16,7 +22,6 @@ public interface IMRAM {
 	 * 
 	 * @param project_id the project_id for which to get the cache folder
 	 * @return project cache folder, or null if the project is not active/not found
-	 * @throws RemoteException
 	 */	
 	public String getProjectFolder(String project_id);
 	
@@ -24,7 +29,6 @@ public interface IMRAM {
 	 * Returns the full webAppOS app name used to open the given project.
 	 * @param project_id the project_id for which to get the app using the project
 	 * @return full app name or null, if the project is not active/not found
-	 * @throws RemoteException
 	 */
 	public String getProjectFullAppName(String project_id);
 	

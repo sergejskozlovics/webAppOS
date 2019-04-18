@@ -3,17 +3,19 @@ document: Web Calls Service API
 group: Introduction
 
 The Web Calls Service is used by webAppOS and some apps
-to make <web calls>.
+to invoke web calls.
 
-Static calls (requiring no MRAM connection) are usually executed in the underlying servlet
-right away, without using a server-side web processor. Non-static (MRAM) calls and
+Static calls (requiring no MRAM slot) are usually executed
+right away, without enqueing them into Web Caller. Non-static (MRAM) calls and
 calls requiring specific web processor are enqueued.
 
 group: Access URL
 
 The Web Calls Service is accessible via the following URL:
 ---code---
-POST http://<domain_or_ip>/services/webcalls/<action>
+POST http[s]://[domain_or_ip]/services/webcalls/[action-name]
+POST http[s]://[domain_or_ip]/services/webcalls/[action-name]?login=[login]&ws_token=[ws_token]
+POST http[s]://[domain_or_ip]/services/webcalls/[action-name]?login=[login]&ws_token=[ws_token]&project_id=[project_id]
 Content-Type: application/json
 ----------
 Data must be sent as POST data encoded in UTF-8.
@@ -30,6 +32,6 @@ Non-static calls require also the "project_id" argument.
 Example:
 
 ---code---
-POST http://<domain_or_ip>/services/webcalls/someAction?login=user1&ws_token=123456&project_id=user1/myproject.owlgred
+POST https://example.org/services/webcalls/someAction?login=user1&ws_token=123456&project_id=user1/myproject.owlgred
 ----------
 

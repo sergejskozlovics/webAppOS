@@ -1,7 +1,6 @@
 package org.webappos.adapters.webproc.localjava;
 
 import java.io.File;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -17,11 +16,9 @@ public class WebProcessorAdapter implements IWebProcessorAdapter, IShutDownListe
 	private Process p = null;
 	private String id = null;
 	
-	private IRWebProcessor wpAPI = null;
-
 	private static Logger logger =  LoggerFactory.getLogger(WebProcessorAdapter.class);
 	@Override
-	public void connect(String location, String id) {
+	public void connect(String location, String id, String options) {
 		if (p!=null) {
 			// destroy previously launched process
 			logger.info("Destroying previous localjava web processor "+id+" because a fresh one was requested.");
@@ -53,6 +50,12 @@ public class WebProcessorAdapter implements IWebProcessorAdapter, IShutDownListe
 		args.add(location);
 		args.add(id);
 		args.add("rmi://localhost:"+API.config.web_processor_bus_service_port+"/"+ConfigStatic.WEB_PROCESSOR_BUS_SERVICE_NAME);
+		
+		if (options!=null) {
+			String[] arr = options.split(",");
+			for (String s: arr)
+				args.add(s);
+		}
 		
 		try {
 			ProcessBuilder pb = new ProcessBuilder(args.toArray(new String[]{}));

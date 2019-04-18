@@ -31,7 +31,7 @@ public class SampleApp_webcalls {
 		}
 		
 		lv.lumii.tda.kernel.mm.InsertMetamodelCommand cmd = kmmFactory.createInsertMetamodelCommand();
-		cmd.setUrl(ConfigStatic.APPS_DIR + File.separator+API.memory.getProjectFullAppName(project_id)+"Sample.mmd");
+		cmd.setUrl(ConfigStatic.APPS_DIR + File.separator+API.dataMemory.getProjectFullAppName(project_id)+"Sample.mmd");
 		cmd.submit();
 
 		org.webappos.sample.mm.SampleMetamodelFactory samplemmFactory = new org.webappos.sample.mm.SampleMetamodelFactory();

@@ -198,6 +198,15 @@ define([
 					});
 				}
 				this.childrenCache[id] = children;
+
+				// by SK: removing the expand button (inside onChildrenChange)
+				// for empty directories
+				if (children.length==0) {
+				  if (!object.nochildren) {
+				    object.nochildren=true;
+				    self.onChildrenChange(object,children);
+				  }
+				}
 				return children;
 			}));
 		},
@@ -344,6 +353,8 @@ define([
 		 * @param {object} object
 		 */
 		mayHaveChildren: function(object) {
+			// by SK: forcing to read children to check, whether the directory is without children
+			this.getChildren(object, function(arg){});
 			return object[this.childrenAttr];
 		},
 

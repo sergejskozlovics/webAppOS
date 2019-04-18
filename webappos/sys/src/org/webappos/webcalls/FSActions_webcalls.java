@@ -90,7 +90,7 @@ public class FSActions_webcalls {
 	public static String getFileContentFromCurrentProjectAsUTF8String(String project_id, String fileName, String login, String appFullName) { //  project_id, arg, login, appFullName
 		System.out.println(fileName);
 		
-		String projectDir = API.memory.getProjectFolder(project_id);
+		String projectDir = API.dataMemory.getProjectFolder(project_id);
 		
 		if (projectDir==null)
 			return "{\"error\":\"Unknown project cache directory\"}";
@@ -203,7 +203,7 @@ public class FSActions_webcalls {
 			
 			ValidityChecker.checkRelativePath(fileName, false);
 			
-			String projectDir = API.memory.getProjectFolder(project_id);
+			String projectDir = API.dataMemory.getProjectFolder(project_id);
 			
 			if (projectDir==null)
 				return "{\"error\":\"Unknown project cache directory\"}";
@@ -255,7 +255,7 @@ public class FSActions_webcalls {
 			if (!new_project_id.startsWith(login+"/"))
 				return "{\"error\":\"The new project name must start with your login followed by '/'.\"}";
 						
-		    return "{\"result\": "+API.memory.renameActiveProject(project_id, new_project_id)+" }";
+		    return "{\"result\": "+API.dataMemory.renameActiveProject(project_id, new_project_id)+" }";
 		}
 		catch(Throwable t) {
 			return "{\"error\":\""+t.getMessage()+"\"}";

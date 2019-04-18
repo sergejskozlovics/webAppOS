@@ -9,7 +9,7 @@ group: Access URL
 
 The FileUpload service is accessible via the following URL:
 ---code---
-http://<domain_or_ip>/services/fileupload/<login>/relative/target/directory/path
+http[s]://[domain_or_ip]/services/fileupload/[login]/[relative/target/directory/path]
 ----------
 
 Use the HTTP POST method to upload files.
@@ -23,7 +23,7 @@ by specifying the "login" and "ws_token" arguments.
 Example:
 
 ---code---
-http://<domain_or_ip>/services/fileupload/some/path?login=user1&ws_token=123456
+http[s]://[domain_or_ip]/services/fileupload/[some/path]?login=[your-login]&ws_token=[your-ws_token]
 ----------
 
 group: Methods
@@ -31,9 +31,9 @@ group: Methods
 method: Upload a file to the user's home directory
 
 ---prototype---
-POST http://<domain_or_ip>/services/fileupload/<login>/<path-to-file-or-folder-relative-to-user's-home>?login=<login>&ws_token=<ws_token>
+POST http[s]://[domain_or_ip]/services/fileupload/[login]/[path-to-file-or-folder-relative-to-user's-home]?login=[your-login]&ws_token=[your-ws_token]
 -----code------
-Content-Type: multipart/form-data; boundary=<some-boundary>
+Content-Type: multipart/form-data; boundary=[some-boundary]
 ---------------
 
 Uploads one ore more files encoded as multipart form data.
@@ -71,9 +71,9 @@ the "uploaded" attribute is returned as well.
 method: Upload a file to an active project
 
 ---prototype---
-POST http://<domain_or_ip>/services/fileupload/<project_id>/some/subdirectory?login=<login>&ws_token=<ws_token>&project_id=<project_id>
+POST http[s]://[domain_or_ip]/services/fileupload/[project_id]/[some/subdirectory]?login=[your-login]&ws_token=[your-ws_token]&project_id=[project_id]
 -----code------
-Content-Type: multipart/form-data; boundary=<some-boundary>
+Content-Type: multipart/form-data; boundary=[some-boundary]
 ---------------
 
 All is the same as in <Upload a file to the user's home directory> except that

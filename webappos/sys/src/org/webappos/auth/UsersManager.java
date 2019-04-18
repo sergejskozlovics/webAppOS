@@ -71,7 +71,20 @@ public class UsersManager {
 	}
 	
 	public static String getUserLogin(String emailOrLogin) {
-		return API.registry.getUserLogin(emailOrLogin);
+		// implement via alias_of
+		String alias = emailOrLogin;
+		int level = 5;
+		for (;;) {
+			JsonElement newAlias = API.registry.getValue("xusers/"+alias+"/alias_of");
+			if ((newAlias == null) || (newAlias.getAsString().isEmpty()))
+				return alias;
+			else {
+				alias = newAlias.getAsString();
+				level--;
+			}
+			if (level<=0)
+				return null;
+		}
 	}
 	
 	public static boolean passwordOK(String emailOrLogin, String password, boolean checkIfExpired) {

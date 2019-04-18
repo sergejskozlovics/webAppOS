@@ -34,6 +34,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webappos.antiattack.ValidityChecker;
+import org.webappos.auth.UsersManager;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
 import org.webappos.util.UTCDate;
@@ -276,7 +277,7 @@ public class LoginServlet extends HttpServlet
 			
 			ValidityChecker.checkLogin(login, true); // TODO: only for non-web-mode
 			
-			login = API.registry.getUserLogin(login);
+			login = UsersManager.getUserLogin(login);
 			if (login == null)
 				throw new RuntimeException("Login or password incorrect");
 			

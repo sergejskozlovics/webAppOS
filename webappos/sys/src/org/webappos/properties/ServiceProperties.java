@@ -16,15 +16,18 @@ public class ServiceProperties extends SomeProperties {
 	
 	public boolean hidden = false;
 	
-	enum ServiceType { PERMANENT, ONETIME };
-	public ServiceType service_type = ServiceType.ONETIME;
+/*	enum ServiceType { PERMANENT, ONETIME };
+	public ServiceType service_type = ServiceType.ONETIME;*/
 	public String service_adapter = "javaservlet";	
 	
 	public boolean requires_root_url_paths = false;
-	public boolean requires_http_port = false;
-	public boolean requires_https_port = false;
 	
-	public boolean suid = false;
+	public int httpPort = -1;  // will be assigned either by the service adapter (from requires_additional_ports), or by webAppOS Gate 
+	public int httpsPort = -1; // will be assigned either by the service adapter (from requires_additional_ports), or by webAppOS Gate
+	
+	public int[] requires_additional_ports = new int[0];
+	
+//	public boolean suid = false;
 	
 	public ServiceProperties(String serviceName, String serviceDir) {
 		super(serviceName, serviceDir+File.separator+"service.properties");
@@ -65,9 +68,9 @@ public class ServiceProperties extends SomeProperties {
 			service_url_name = properties.getProperty("service_url_name", _urlName.toString());
 			
 			
-			String s = properties.getProperty("service_type", "ONETIME").trim().toUpperCase();
+/*			String s = properties.getProperty("service_type", "ONETIME").trim().toUpperCase();
 			if (s.equals("PERMANENT"))
-				service_type = ServiceType.PERMANENT;
+				service_type = ServiceType.PERMANENT;*/
 			service_adapter = properties.getProperty("service_adapter", service_adapter);
 			
 			if (properties.getProperty("service_adapter","").trim().equals("")) {
@@ -82,23 +85,29 @@ public class ServiceProperties extends SomeProperties {
 			catch(Throwable t) {				
 			}
 			
-			try {
-				requires_http_port = Boolean.parseBoolean(properties.getProperty("requires_http_port", requires_http_port+""));
-			}
-			catch(Throwable t) {				
+			
+			String additional_ports = properties.getProperty("requires_additional_ports", "").trim();
+			if (!additional_ports.isEmpty()) {
+				String[] arr = additional_ports.split(",");
+				this.requires_additional_ports = new int[arr.length];
+				for (int k=0; k<arr.length; k++) {
+					try {
+						this.requires_additional_ports[k] = Integer.parseInt(arr[k]);
+						if ((this.requires_additional_ports[k]<0) || (this.requires_additional_ports[k]>65535))
+							this.requires_additional_ports[k] = -1;
+					}
+					catch(Throwable t) {
+						this.requires_additional_ports[k] = -1;
+					}
+				}
 			}
 			
-			try {
-				requires_https_port = Boolean.parseBoolean(properties.getProperty("requires_https_port", requires_https_port+""));
-			}
-			catch(Throwable t) {				
-			}
 
-			try {
+/*			try {
 				suid = Boolean.parseBoolean(properties.getProperty("suid", suid+""));
 			}
 			catch(Throwable t) {				
-			}
+			}*/
 			
 			APIForServerBridge.configForServerBridge.addMimes(properties.getProperty("mimes"));
 			

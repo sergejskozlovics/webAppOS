@@ -68,7 +68,7 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 			if (webproctabRow.reconnectMs==0) {
 				API.status.setStatus("webproctab/"+id+"/status", "connecting");
 				API.status.setStatus("webproctab/"+id+"/message", "Disconnected unexpectedly. Reconnecting...");
-				adapter.connect(webproctabRow.location, id);
+				adapter.connect(webproctabRow.location, id, webproctabRow.options);
 			}
 			else {
 				API.status.setStatus("webproctab/"+id+"/status", "connecting");
@@ -83,7 +83,7 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 				        }
 						API.status.setStatus("webproctab/"+id+"/status", "connecting");
 						API.status.setStatus("webproctab/"+id+"/message", "Disconnected unexpectedly. Reconnecting...");
-						adapter.connect(webproctabRow.location, id);
+						adapter.connect(webproctabRow.location, id, webproctabRow.options);
 				    }
 				}.start();
 			}
@@ -134,7 +134,7 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 				wpMap.put(info.id, info);
 				API.status.setStatus("webproctab/"+info.id+"/status", "connecting");
 				API.status.setStatus("webproctab/"+wpRow.name+"/message", "Initial connect request sent.");
-				info.adapter.connect(wpRow.location, info.id);
+				info.adapter.connect(wpRow.location, info.id, info.webproctabRow.options);
 			}
 		}
 		
@@ -170,19 +170,6 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 		h.api = wpAPI;
 		h.faultMRAM = false;
 		API.status.setStatus("webproctab/"+id, "available");
-/*		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-		}
-
-		try {
-		wpAPI.hasInstructionSet("test");
-		wpAPI.disconnect(); // will throw exception always
-		}
-		catch(Throwable t) {
-		//	t.printStackTrace();
-		}
-		*/
 	}
 	
 	@Override
@@ -219,8 +206,8 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 	}
 	
 	@Override
-	public IRMRAM getMemory() throws RemoteException {
-		return APIForServerBridge.memoryForServerBridge;
+	public IRMRAM getDataMemory() throws RemoteException {
+		return APIForServerBridge.dataMemoryForServerBridge;
 	}
 
 	@Override
@@ -240,11 +227,29 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 	
 	///// used only from the server bridge /////
 	public synchronized boolean webCallToWebProcessor(IWebCaller.WebCallSeed seed, IWebCaller.WebCallDeclaration action) {
+		String cached_wp = null;
+		if (seed.project_id!=null)
+			cached_wp = APIForServerBridge.dataMemoryForServerBridge.getCachedInstructionSet(seed.project_id, action.resolvedInstructionSet);
+		
 		for (String wpId : wpMap.keySet()) {
-			// TODO: more efficient web processor chooser
+			if (cached_wp != null) {
+				if (!wpId.equals(cached_wp))
+					continue; // TODO: more efficient check for cached_wp, i.e., w/o the for cycle
+			}
+			
+			// TODO: more efficient web processor chooser; w/o the for cycle?
+			
 			WebProcessorHandle h = wpMap.get(wpId);
-			if ((h==null) || (h.api == null) || (!h.available)/* || (!h.idle)*/) // TODO: IDLE management
+			if ((h==null) || (h.api == null) || (!h.available)/* || (!h.idle)*/) { // TODO: IDLE management
+				
+				if (cached_wp!=null) {
+					// cleanup cache, since the web processor is not available...
+					APIForServerBridge.dataMemoryForServerBridge.setCachedInstructionSet(seed.project_id, action.resolvedInstructionSet, null);
+					cached_wp = null;
+				}
+				
 				continue;
+			}
 			
 			try {
 				if (h.api.hasInstructionSet(action.resolvedInstructionSet)) {
@@ -252,13 +257,21 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 					if (!h.idle)
 						continue; // TODO: IDLE management
 					
-					if (!APIForServerBridge.memoryForServerBridge.lock(seed.project_id))
+					if (cached_wp == null) {
+						if ((seed.project_id!=null) && h.api.perProjectCachedInstructionSet(action.resolvedInstructionSet)) {
+							// associating instruction set of the given project with the current web processor...
+							APIForServerBridge.dataMemoryForServerBridge.setCachedInstructionSet(seed.project_id, action.resolvedInstructionSet, wpId);
+							cached_wp = wpId;
+						}
+					}
+					
+					if (!APIForServerBridge.dataMemoryForServerBridge.lock(seed.project_id))
 						continue;
 					
-					TDAKernel kernel = API.memory.getTDAKernel(seed.project_id);
-					boolean newSingleSynchronizer = (kernel!=null) && (seed instanceof IWebCaller.SyncedWebCallSeed) && (APIForServerBridge.memoryForServerBridge.getSingleSynchronizer(seed.project_id)==null);
+					TDAKernel kernel = API.dataMemory.getTDAKernel(seed.project_id);
+					boolean newSingleSynchronizer = (kernel!=null) && (seed instanceof IWebCaller.SyncedWebCallSeed) && (APIForServerBridge.dataMemoryForServerBridge.getSingleSynchronizer(seed.project_id)==null);
 					if (newSingleSynchronizer) {
-						APIForServerBridge.memoryForServerBridge.setSingleSynchronizer(seed.project_id, ((IWebCaller.SyncedWebCallSeed)seed).singleSynchronizer);
+						APIForServerBridge.dataMemoryForServerBridge.setSingleSynchronizer(seed.project_id, ((IWebCaller.SyncedWebCallSeed)seed).singleSynchronizer);
 						((IWebCaller.SyncedWebCallSeed)seed).singleSynchronizer = null; // do not pass singleSyncrhonizer to the web processor
 					}
 					
@@ -272,11 +285,11 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 						h.onceWebCallFinished = new Runnable() {
 							@Override
 							public void run() {
-								APIForServerBridge.memoryForServerBridge.setSingleSynchronizer(seed.project_id, null);
-								APIForServerBridge.memoryForServerBridge.unlock(seed.project_id);
+								APIForServerBridge.dataMemoryForServerBridge.setSingleSynchronizer(seed.project_id, null);
+								APIForServerBridge.dataMemoryForServerBridge.unlock(seed.project_id);
 								WebProcessorHandle h = wpMap.get(wpId);
 								if (h!=null && h.faultMRAM) {
-									APIForServerBridge.memoryForServerBridge.faultMRAM(seed.project_id);
+									APIForServerBridge.dataMemoryForServerBridge.faultMRAM(seed.project_id);
 								}								
 							}
 						};
@@ -285,20 +298,21 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 						h.onceWebCallFinished = new Runnable() {
 							@Override
 							public void run() {
-								APIForServerBridge.memoryForServerBridge.unlock(seed.project_id);
+								APIForServerBridge.dataMemoryForServerBridge.unlock(seed.project_id);
 								WebProcessorHandle h = wpMap.get(wpId);
 								if (h!=null && h.faultMRAM) {
-									APIForServerBridge.memoryForServerBridge.faultMRAM(seed.project_id);
+									APIForServerBridge.dataMemoryForServerBridge.faultMRAM(seed.project_id);
 								}								
 							}
 						};						
 					}
 					
+					System.out.println("!!!Running ["+action.resolvedInstructionSet+"] web call for "+seed.project_id+" at "+wpId+" for "+seed.actionName+"/"+action.resolvedLocation);
 					h.api.startWebCall(seed, action);
 					return true; // call submitted, all ok
 				}
 			} catch (RemoteException e) {
-				e.printStackTrace();
+				logger.error("Exception during web processor call in `"+h.id+"', faulting ("+e.toString()+"; "+e.getMessage()+")");
 				h.fault();
 			}
 		}

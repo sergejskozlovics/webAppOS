@@ -83,7 +83,7 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 			return null;
 		
 		Method m00=null, m0=null, m1=null, m2=null, m3=null, m4=null;
-		RAAPI raapi = API.memory.getTDAKernel(project_id);
+		RAAPI raapi = API.dataMemory.getTDAKernel(project_id);
 		try {
 			m00 = c.getMethod(location.substring(i+1), String.class, String.class, String.class, String.class); // project_id, arg, login, appFullName
 		} catch (NoSuchMethodException | SecurityException e) {

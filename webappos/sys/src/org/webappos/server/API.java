@@ -60,10 +60,10 @@ public class API {
 		propertiesManager = APIForServerBridge.propertiesManagerForServerBridge;
 		
 		try {
-			APIForServerBridge.memoryForServerBridge = new MRAM();
+			APIForServerBridge.dataMemoryForServerBridge = new MRAM();
 		} catch (RemoteException e) {
 		}
-		memory = APIForServerBridge.memoryForServerBridge;
+		dataMemory = APIForServerBridge.dataMemoryForServerBridge;
 		
 		try {
 			if ((config.registry_url!=null) && (!config.registry_url.trim().isEmpty())) {
@@ -126,8 +126,10 @@ public class API {
 	 * @param webProcessorID the web processor ID passed to it as a command-line argument
 	 * @param webProcBusURL the URL of the Web Processor Bus Service for handling RMI requests
 	 * @param wpAPI web processor RMI API (IRWebProcessor) for this web processor
+	 * @param register whether to register the Web Processor within Web Processor Bus Service;
+	 *                 if false, the web processor must be registered later by calling API.wpbService.registerWebProcessor
 	 */
-	public synchronized static void initAPI(String webProcessorID, String webProcBusURL, IRWebProcessor wpAPI) { // initialize from a web processor
+	public synchronized static void initAPI(String webProcessorID, String webProcBusURL, IRWebProcessor wpAPI, boolean register) { // initialize from a web processor
 		try {
 			wpbService = (IRWebProcessorBusService) Naming.lookup(webProcBusURL);
 
@@ -137,7 +139,7 @@ public class API {
 			
 			propertiesManager = new IPropertiesManagerWrapper(wpbService.getPropertiesManager());
 			
-		    memory = new IMRAMWrapper(wpbService.getMemory());
+		    dataMemory = new IMRAMWrapper(wpbService.getDataMemory());
 		    registry = new IRegistryWrapper(wpbService.getRegistry());
 		    status = new IStatusWrapper(wpbService.getStatus());
 
@@ -173,15 +175,21 @@ public class API {
 	}
 	
 	public static ConfigStatic config = null;
+	
+	// DATA
+	public static IMRAM dataMemory = null;
+	
+	// CODE
+	public static IWebCaller webCaller = null;	
 	public static IPropertiesManager propertiesManager = null;
-	public static IMRAM memory = null;
+	public static PropertiesClassLoader classLoader = new PropertiesClassLoader();
+	
+	// DEVICES
 	public static IRegistry registry = null;
 	public static IStatus status = null;
-	public static IWebCaller webCaller = null;
-	
-	public static PropertiesClassLoader classLoader = new PropertiesClassLoader();
 	public static IFileSystem homeFSRoot = null;
 	public static IEmailSender emailSender = null;
 	
+	// BUS
 	public static IRWebProcessorBusService wpbService = null;	
 }

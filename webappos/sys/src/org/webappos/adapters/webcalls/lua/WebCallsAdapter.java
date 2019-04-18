@@ -1,20 +1,100 @@
 package org.webappos.adapters.webcalls.lua;
 
 import java.io.File;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import lv.lumii.tda.raapi.RAAPI;
 
 import org.luaj.vm2.*;
+import org.luaj.vm2.compiler.LuaC;
+import org.luaj.vm2.lib.*;
 import org.luaj.vm2.lib.jse.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.webappos.properties.PropertiesManager;
 import org.webappos.server.API;
+import org.webappos.server.ConfigStatic;
 import org.webappos.util.StackTrace;
 import org.webappos.webcaller.ITdaWebCallsAdapter;
 
+import java.util.PriorityQueue;
 
 public class WebCallsAdapter implements ITdaWebCallsAdapter {
 	private static Logger logger =  LoggerFactory.getLogger(WebCallsAdapter.class);
+		
+	private static int MAX_CACHE = 10;
+	private class LuaCachedEnvironment {
+		public String project_id;
+		public long lastAccessed;
+		public LuaTable globals;
+		public LuaValue lua_raapi;
+		public LuaValue lua_tda;
+		public LuaValue lua_graphDiagram;
+		public LuaValue lua_java;
+	}
+	private static Module_lfs lfs = new Module_lfs();
+	private static Module_socket socket = new Module_socket();
+	private static Module_lua_tda.console_log console_log = new Module_lua_tda.console_log();
+	private static Module_lua_tda.getenv getenv = new Module_lua_tda.getenv();
+	private static Module_lua_tda.setenv setenv = new Module_lua_tda.setenv();
+	private static Module_lua_tda.retrieve_java_pipe_handle_pointer_address retrieve_java_pipe_handle_pointer_address = new Module_lua_tda.retrieve_java_pipe_handle_pointer_address();
+	private static Module_lua_tda.store_java_pipe_handle_pointer_address store_java_pipe_handle_pointer_address = new Module_lua_tda.store_java_pipe_handle_pointer_address();
+	private static Module_lua_tda.eval eval = new Module_lua_tda.eval();
+	
+	
+	private static PriorityQueue<LuaCachedEnvironment> queue = new PriorityQueue<LuaCachedEnvironment>(11, new Comparator<LuaCachedEnvironment>() {
+
+		@Override
+		public int compare(LuaCachedEnvironment o1, LuaCachedEnvironment o2) {
+			if (o1.lastAccessed == o2.lastAccessed)
+				return 0;
+			if (o1.lastAccessed < o2.lastAccessed)
+				return -1;
+			else
+				return +1;
+		}
+		
+	});
+	private static Map<String, LuaCachedEnvironment> cache = new HashMap<String, LuaCachedEnvironment>();
+
+	static {
+		logger.trace("Lua web calls adapter...");
+		LuaC.install();
+		//LuaJC.install();
+		
+		// Loading lua_classes for all available apps...
+		
+		for (File f : new File(ConfigStatic.APPS_DIR).listFiles()) {
+			if (f.isDirectory() && f.getName().endsWith(".app")) {
+				String dir = API.propertiesManager.getAppDirectory(f.getName());
+				if (dir==null)
+					continue;
+				dir += "/lua_classes";
+				API.classLoader.loadLuaClasses(dir);
+			}
+		}
+        				
+	}
+	
+	private LuaTable newGlobals() {
+			LuaTable _G = new LuaTable();
+			_G.load(new JseBaseLib());
+			_G.load(new PackageLib());
+			_G.load(new TableLib());
+			_G.load(new StringLib());
+			_G.load(new CoroutineLib());
+			_G.load(new JseMathLib());
+			_G.load(new JseIoLib());
+			_G.load(new JseOsLib());
+			_G.load(new LuajavaLib());
+			_G.load(new DebugLib());
+			
+			return _G;				
+	}
+	
+	
 	
 	@Override
 	public void tdacall(String location, long rObject, RAAPI raapi, String project_id, String appFullName,
@@ -23,95 +103,118 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 		 
 		long time1 =System.currentTimeMillis();
 		String specificBin = API.propertiesManager.getAppDirectory(appFullName);
-		String projectDirectory = API.memory.getProjectFolder(project_id);
 		
-		LuaTable globals;
-		
-		try {
+		LuaCachedEnvironment luaCachedEnv = cache.get(project_id);
+		if (luaCachedEnv == null) {
+			
+			while (cache.size() >= MAX_CACHE) {
+				// removing the element that has not accessed for the longest time...
+				LuaCachedEnvironment toRemove = queue.poll();
+				logger.trace("Removing from cache "+toRemove.project_id+"...");
+				cache.remove(toRemove.project_id);
+			}
+			
+			try {
+				luaCachedEnv = new LuaCachedEnvironment();
+				luaCachedEnv.project_id = project_id;
+				luaCachedEnv.globals = newGlobals();
+				LuaThread.setGlobals(luaCachedEnv.globals);
+				cache.put(project_id, luaCachedEnv);
+	
+				luaCachedEnv.lua_raapi = new Module_lua_raapi(raapi);
+				
+				luaCachedEnv.lua_tda = new Module_lua_tda(luaCachedEnv.globals, raapi, project_id, appFullName, login);
+				
+				luaCachedEnv.lua_graphDiagram = new Module_lua_graphDiagram(raapi);
+				
+				luaCachedEnv.lua_java = new Module_lua_java(raapi, appFullName);
+				
 
-			globals = JsePlatform.debugGlobals();//standardGlobals();
-			
-			
-			// adding TDA built-in lua libs (modules)						
-			//globals..package_.loaded.set("mine", mine);
-			
-			LuaValue lua_raapi = globals.load(new Module_lua_raapi(raapi));
-			globals.get("package").get("loaded").set("lua_raapi", lua_raapi);
-			globals.set("lua_raapi", lua_raapi);
-			
-			LuaValue lua_tda = globals.load(new Module_lua_tda(globals, raapi, project_id, appFullName, login));
-			globals.get("package").get("loaded").set("lua_tda", lua_tda);
-			globals.set("lua_tda", lua_tda);
-			
-			LuaValue lua_graphDiagram = globals.load(new Module_lua_graphDiagram(raapi));
-			globals.get("package").get("loaded").set("lua_graphDiagram", lua_graphDiagram);
-			globals.set("lua_graphDiagram", lua_graphDiagram);
-			
-			LuaValue lua_java = globals.load(new Module_lua_java(raapi, appFullName));
-			globals.get("package").get("loaded").set("lua_java", lua_java);
-			globals.set("lua_java", lua_java);
-			
-			LuaValue lfs = globals.load(new Module_lfs());
-			globals.get("package").get("loaded").set("lfs", lfs);
-			globals.set("lfs", lfs);
+				LuaValue lua_raapi1 = luaCachedEnv.globals.load(luaCachedEnv.lua_raapi);
+				luaCachedEnv.globals.get("package").get("loaded").set("lua_raapi", lua_raapi1);
+				luaCachedEnv.globals.set("lua_raapi", lua_raapi1);
 
-			LuaValue socket = globals.load(new Module_socket());
-			globals.get("package").get("loaded").set("socket", socket);
-			globals.set("socket", socket);
+				LuaValue lua_tda1 = luaCachedEnv.globals.load(luaCachedEnv.lua_tda);
+				luaCachedEnv.globals.get("package").get("loaded").set("lua_tda", lua_tda1);
+				luaCachedEnv.globals.set("lua_tda", lua_tda1);
 
-			globals.set("console_log", new Module_lua_tda.console_log());
-			globals.set("getenv", new Module_lua_tda.getenv());
-			globals.set("setenv", new Module_lua_tda.setenv());
-			globals.set("retrieve_java_pipe_handle_pointer_address", new Module_lua_tda.retrieve_java_pipe_handle_pointer_address());
-			globals.set("store_java_pipe_handle_pointer_address", new Module_lua_tda.store_java_pipe_handle_pointer_address());
-			globals.set("eval", new Module_lua_tda.eval());
-			
-			
-			
-			String paths = 
-			    specificBin+"/lua/?.lua;"
-			    +specificBin+"/lua/libs/?.lua;"
-				+specificBin+"/bin/lua/?.lua;"
-				+specificBin+"/bin/lua/libs/?.lua;"
-				+projectDirectory+"/Plugins/?.lua";
-			
-			paths = paths.replace('\\', '/');
-			
-			LuaValue luaLoad = globals.get("loadstring");
-			LuaValue luaCompiledCode = luaLoad.call(LuaValue.valueOf("package.path = package.path .. ';"+paths+"'"));
-			luaCompiledCode.call();			
-						
-			LuaValue luaCompiledCode2 = luaLoad.call(LuaValue.valueOf("string.gfind = string.gmatch"));
-			luaCompiledCode2.call();
-			
-			
-			LuaValue luaCompiledCode3 = luaLoad.call(LuaValue.valueOf(
-					"function table_iter(t)\n"
-					+ "local i = 0\n"
-					+ "local n = table.getn(t)\n"
-					+ "  return function()\n"
-					+ "    i=i+1\n"
-					+ "    if i <= n then return t[i] end\n"
-					+ "  end\n"
-					+ "end\n"
-					+ "lfs.dir = function(s) return table_iter(lfs.dir2(s)) end"));
-			luaCompiledCode3.call();		
-			
-			
-			LuaValue luaCompiledCode4 = luaLoad.call(LuaValue.valueOf( // TODO!!!
-					"function execute_in_new_thread(name)\n"
-					+ "return loadstring('return '..name..'()')"
-					+ "end\n"));
-			luaCompiledCode4.call();		
-			
-			
-		}
-		catch (Throwable t) {
-			logger.error("Lua not loaded. Throwable = "+t+"\n StackTrace="+StackTrace.get(t));
-			return;
-		}
+				LuaValue lua_graphDiagram1 = luaCachedEnv.globals.load(luaCachedEnv.lua_graphDiagram);
+				luaCachedEnv.globals.get("package").get("loaded").set("lua_graphDiagram", lua_graphDiagram1);
+				luaCachedEnv.globals.set("lua_graphDiagram", lua_graphDiagram1);
 
-		
+				LuaValue lua_java1 = luaCachedEnv.globals.load(luaCachedEnv.lua_java);
+				luaCachedEnv.globals.get("package").get("loaded").set("lua_java", lua_java1);
+				luaCachedEnv.globals.set("lua_java", lua_java1);
+
+				LuaValue lfs1 = luaCachedEnv.globals.load(lfs);
+				luaCachedEnv.globals.get("package").get("loaded").set("lfs", lfs1);
+				luaCachedEnv.globals.set("lfs", lfs1);
+	
+				LuaValue socket1 = luaCachedEnv.globals.load(socket);
+				luaCachedEnv.globals.get("package").get("loaded").set("socket", socket1);
+				luaCachedEnv.globals.set("socket", socket1);
+	
+				luaCachedEnv.globals.set("console_log", console_log);
+				luaCachedEnv.globals.set("getenv", getenv);
+				luaCachedEnv.globals.set("setenv", setenv);
+				luaCachedEnv.globals.set("retrieve_java_pipe_handle_pointer_address", retrieve_java_pipe_handle_pointer_address);
+				luaCachedEnv.globals.set("store_java_pipe_handle_pointer_address", store_java_pipe_handle_pointer_address);
+				luaCachedEnv.globals.set("eval", eval);
+				
+				API.classLoader.loadLuaClasses(specificBin+"/lua_classes");
+				
+				LuaValue luaLoad = luaCachedEnv.globals.get("loadstring");
+				
+				String paths = specificBin+"/lua_src/?.lua;"
+								+specificBin+"/lua_classes/?.class;";
+					    /*specificBin+"/lua/?.lua;"
+					    +specificBin+"/lua/libs/?.lua;"
+						+specificBin+"/bin/lua/?.lua;"
+						+specificBin+"/bin/lua/libs/?.lua;"
+						+projectDirectory+"/Plugins/?.lua";*/
+					
+					paths = paths.replace('\\', '/');
+					
+					LuaValue luaCompiledCode = luaLoad.call(LuaValue.valueOf("package.path = package.path .. ';"+paths+"'"));
+					luaCompiledCode.call();			
+								
+					LuaValue luaCompiledCode2 = luaLoad.call(LuaValue.valueOf("string.gfind = string.gmatch"));
+					luaCompiledCode2.call();
+					
+					LuaValue luaCompiledCode3 = luaLoad.call(LuaValue.valueOf(
+							"function table_iter(t)\n"
+							+ "local i = 0\n"
+							+ "local n = table.getn(t)\n"
+							+ "  return function()\n"
+							+ "    i=i+1\n"
+							+ "    if i <= n then return t[i] end\n"
+							+ "  end\n"
+							+ "end\n"
+							+ "lfs.dir = function(s) return table_iter(lfs.dir2(s)) end"));
+					luaCompiledCode3.call();		
+					
+					
+					LuaValue luaCompiledCode4 = luaLoad.call(LuaValue.valueOf( // TODO (or not needed?)
+							"function execute_in_new_thread(name)\n"
+							+ "return loadstring('return '..name..'()')"
+							+ "end\n"));
+					luaCompiledCode4.call();		
+				
+			}
+			catch (Throwable t) {
+				logger.error("Lua not loaded. Throwable = "+t+"\n StackTrace="+StackTrace.get(t));
+				return;
+			}
+		} // if luaCachedEnv == null
+		else
+			LuaThread.setGlobals(luaCachedEnv.globals);
+
+		// change priority
+		queue.remove(luaCachedEnv);
+		luaCachedEnv.lastAccessed = new Date().getTime();
+		logger.trace("Updating Lua cache priority for "+luaCachedEnv.project_id);
+		queue.add(luaCachedEnv);
+
 		
 		
 		if ("main".equals(location)) {
@@ -144,13 +247,16 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 				
 		long time2 =System.currentTimeMillis();
 		
+		
 		long time3 = 0;
-//		String code = moduleName+" = require(\""+className+"\")\nprint(\"BEFORE LUA TR "+moduleName+"."+funcName+"\")\n\nprint(5)\n"+moduleName+"."+funcName+"(lQuery("+rObject+"))\nprint(\"AFTER LUA TR\")";
 		if (!funcName.endsWith("()"))
 			funcName += "(lQuery("+rObject+"))";
+		
 		String code = moduleName+" = require(\""+className+"\")\n"+moduleName+"."+funcName;
+		if (logger.isDebugEnabled())
+			code = moduleName+" = require(\""+className+"\")\nprint(\"BEFORE LUA CODE "+moduleName+"."+funcName+"\")\n\n"+moduleName+"."+funcName+"\nprint(\"AFTER LUA CODE\")";
 		try {
-			LuaValue luaLoad = globals.get("loadstring");
+			LuaValue luaLoad = luaCachedEnv.globals.get("loadstring");
 			LuaValue luaCompiledCode = luaLoad.call(LuaValue.valueOf(code));
 			time3 = System.currentTimeMillis();
 			luaCompiledCode.call();			
@@ -160,8 +266,7 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 		}
 		
 		long time4 =System.currentTimeMillis();
-		// System.out.println("LUA TIMES: INIT="+(time2-time1)+" COMPILE="+(time3-time2)+" RUN="+(time4-time3));
-	
+		logger.debug("LUA TIMES: INIT="+(time2-time1)+" COMPILE="+(time3-time2)+" RUN="+(time4-time3));	
 	}
 
 }

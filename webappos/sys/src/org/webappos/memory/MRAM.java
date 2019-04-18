@@ -59,6 +59,8 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		private long lastUsedPredefinedBits = 0;
 		public AppProperties appProps = null;
 		public boolean locked = false;
+
+		public Map<String, String> cachedInstructionSetToWebProcessor = new HashMap<String, String>();
 		
 		public long newPredefinedBits() { // check for usedPredefinedBitsValues.size() < Config.max_users_per_project BEFORE calling newPredefinedBits() 	 
 			for (;;) {
@@ -188,11 +190,21 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		slot.locked  = false;
 	}
 	
-	synchronized public void setSingleSynchronizer(String project_id, RAAPI_Synchronizer singleSynchronizer) {
+	synchronized public void setCachedInstructionSet(String project_id, String instructionSet, String wpID) {
 		Slot slot = projectIdToSlotMap.get(project_id);
 		if (slot == null)
 			return;
-		slot.singleSynchronizer = singleSynchronizer; 		
+		if (wpID == null)
+			slot.cachedInstructionSetToWebProcessor.remove(instructionSet);
+		else
+			slot.cachedInstructionSetToWebProcessor.put(instructionSet, wpID); 		
+	}
+	
+	synchronized public String getCachedInstructionSet(String project_id, String instructionSet) {
+		Slot slot = projectIdToSlotMap.get(project_id);
+		if (slot == null)
+			return null;
+		return slot.cachedInstructionSetToWebProcessor.get(instructionSet); 		
 	}
 	
 	synchronized public RAAPI_Synchronizer getSingleSynchronizer(String project_id) {
@@ -200,6 +212,13 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		if (slot == null)
 			return null;
 		return slot.singleSynchronizer; 		
+	}
+
+	synchronized public void setSingleSynchronizer(String project_id, RAAPI_Synchronizer singleSynchronizer) {
+		Slot slot = projectIdToSlotMap.get(project_id);
+		if (slot == null)
+			return;
+		slot.singleSynchronizer = singleSynchronizer; 		
 	}
 	
 	synchronized public TDAKernel getTDAKernel(String project_id) {

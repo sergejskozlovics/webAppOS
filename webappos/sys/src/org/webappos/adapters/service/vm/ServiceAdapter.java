@@ -10,6 +10,8 @@ public class ServiceAdapter implements IServiceAdapter {
 	private QEMULauncher qemu = null;
 	@Override
 	public ContextHandler attachService(ServiceProperties svcProps, String path, Runnable onStopped, Runnable onHalted) {
+		if (qemu!=null)
+			return null;
 		qemu = new QEMULauncher(API.config.properties.getProperty("qemu_path"), svcProps);
 		if (qemu.launch(onStopped, onHalted))
 			return null;

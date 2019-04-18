@@ -1,3 +1,6 @@
+function reset_variable() { // by SK
+  return undefined;
+}
 
 Actions = function(editor, action_name) {
 

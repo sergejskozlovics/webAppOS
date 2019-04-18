@@ -100,7 +100,7 @@ public class WebCallsServlet extends HttpServlet
 				}
 				
 				if (project_id!=null) {
-					kernel = API.memory.getTDAKernel(project_id);				
+					kernel = API.dataMemory.getTDAKernel(project_id);				
 					if (kernel == null)
 						throw new RuntimeException("Project not active");
 					

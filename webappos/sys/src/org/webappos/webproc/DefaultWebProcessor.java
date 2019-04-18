@@ -43,6 +43,11 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 		return adapterClass != null;
 	}
 
+	@Override
+	public boolean perProjectCachedInstructionSet(String name) throws RemoteException {
+		return "lua".equals(name);  // TODO: move to webcalls adapters API
+	}
+	
 	private static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	
 	@Override
@@ -67,7 +72,7 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 					if (adapter == null)
 						return;
 					
-					TDAKernel kernel = API.memory.getTDAKernel(seed.project_id);
+					TDAKernel kernel = API.dataMemory.getTDAKernel(seed.project_id);
 					String jsonResult = null;
 													
 					if ((seed.callingConventions == CallingConventions.JSONCALL) && (adapter instanceof IJsonWebCallsAdapter)) {
@@ -80,7 +85,7 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 							kernel.setOwner(owner);
 						}
 						try {
-							jsonResult = ((IJsonWebCallsAdapter)adapter).jsoncall(action.resolvedLocation, seed.jsonArgument, seed.project_id, API.memory.getProjectFullAppName(seed.project_id), seed.login);
+							jsonResult = ((IJsonWebCallsAdapter)adapter).jsoncall(action.resolvedLocation, seed.jsonArgument, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
 						}
 						catch(Throwable t) {
 							jsonResult = "ERROR:"+t.getMessage();
@@ -100,7 +105,7 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 						}
 						
 						try {
-							((ITdaWebCallsAdapter)adapter).tdacall(action.resolvedLocation, seed.tdaArgument, kernel, seed.project_id, API.memory.getProjectFullAppName(seed.project_id), seed.login);
+							((ITdaWebCallsAdapter)adapter).tdacall(action.resolvedLocation, seed.tdaArgument, kernel, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
 						}
 						catch(Throwable t) {
 							jsonResult = "ERROR:"+t.getMessage();
@@ -130,7 +135,8 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 	}
 	
 	/**
-	 * @param args args[0] is the id of the web processor; args[1] is the address of the Web Processor Bus Service (URI syntax, "rmi:" protocol) 
+	 * @param args args[0] is the id of the web processor; args[1] is the address of the Web Processor Bus Service (URI syntax, "rmi:" protocol);
+	 *             there can be optional arguments args[2], args[3], which specify web processor parameters (options from webproctab) 
 	 */
 	public static void main(String[] args) {
 				
@@ -138,6 +144,8 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 			logger.error("DefaultWebProcessor could not start because not all arguments were specified.");
 			return;
 		}
+		
+		System.out.println("WPARGS="+ args.length+" "+args[2]);
 				
 		IRWebProcessor current;
 		try {
@@ -146,9 +154,29 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 			logger.info("Initialization failed for web processor `"+args[0]+"'. Exiting...");
 			return;
 		}
-		logger.info("Web processor `"+args[0]+"' started. Connecting to Web Processor Bus Service at "+args[1]+"...");
-		API.initAPI(args[0], args[1], current);
 		
+		logger.info("Web processor `"+args[0]+"' started. Connecting to Web Processor Bus Service at "+args[1]+"...");
+		API.initAPI(args[0], args[1], current, false); // do not register
+
+		// considering options 
+		for (int i=2; i<args.length; i++) {
+			if (args[i].startsWith("load=")) {				
+				try {
+					Class.forName("org.webappos.adapters.webcalls."+args[i].substring(5)+".WebCallsAdapter");					
+				}
+				catch(Throwable t) {
+					t.printStackTrace();
+				}						
+			}
+		}
+
+		// registering
+		try {
+			API.wpbService.registerWebProcessor(args[0], current);
+		} catch (RemoteException t) {
+			logger.error("Could not register web processor.");
+			System.exit(0);
+		}
 		
 		try {
 			new DataInputStream(System.in).readUTF();
@@ -157,5 +185,6 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 			System.exit(0);
 		} // waiting...
 	}
+
 
 }

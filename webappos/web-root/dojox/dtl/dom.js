@@ -186,9 +186,6 @@ _2f=_24.className||_2f;
 if(key=="for"){
 _2f=_24.htmlFor||_2f;
 }else{
-if(key=="value"&&_24.value==_24.innerHTML){
-continue;
-}else{
 if(_24.getAttribute){
 _2f=_24.getAttribute(key,2)||_2f;
 if(key=="href"||key=="src"){
@@ -212,7 +209,6 @@ key=key.slice(1);
 }else{
 if(this._uppers[key]&&_1.trim(_2f)){
 _2e=this._uppers[key];
-}
 }
 }
 }

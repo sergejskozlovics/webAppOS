@@ -13,9 +13,13 @@ script_label: {
 
     let webappos_script = document.currentScript.src || document.querySelector('script[src*=webappos.js]').src;
 
+/*    document.write('<script src="/dojo/dojo.js" data-dojo-config="async:1"></script>');*/
+
     document.write('<script src="/dojo/dojo.js" data-dojo-config="async:1, packages: [{ name: \'jquery\', location: \'/\', main: \'jquery\' }]"></script>');
+/*    document.write('<script>define.amd.jQuery = true;</script>');*/
+
     document.write('<script src="' + webappos_script + '"></script>');
-    document.write("<link id=\"the_webappos_css\" href=\"" + "/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
+    document.write("<link id=\"the_webappos_css\" href=\"" + "/webappos/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
     console.log(webappos_script + " loaded without dojo; adding the dojo script tag and loading " + webappos_script + " again...");
     break script_label;
     //variant w/o a label: throw new Error(webappos_script+" loaded without dojo; adding the dojo script tag and loading "+webappos_script+" again...");
@@ -24,7 +28,7 @@ script_label: {
 
   ///// adding webAppOS fonts /////
   if (!document.getElementById("the_webappos_css"))
-    document.write("<link id=\"the_webappos_css\" href=\"webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
+    document.write("<link id=\"the_webappos_css\" href=\"webappos/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
 
 
   // Trying to get window.webappos from the parent window
@@ -1767,7 +1771,7 @@ script_label: {
                 tda.model.lastChangeTime = curTime;
                 var arr = new Float64Array(1);
                 arr[0] = 0xBB;
-                tda.websocket.send(arr.buffer);
+                tda.websocket.send(arr.buffer);    
                 tda.model.lastChangeTime = curTime;
               }
               else {

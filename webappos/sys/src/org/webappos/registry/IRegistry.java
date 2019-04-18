@@ -3,7 +3,9 @@ package org.webappos.registry;
 import com.google.gson.JsonElement;
 
 /**
- * webAppOS Registry API
+ * webAppOS Registry API.
+ * Used by webAppOS apps to access Registry. In addition, Registry drivers implement this API to provide
+ * access to a remote registry that can be mounted into the "users/[login]" branch.
  * 
  * @author Sergejs Kozlovics
  *
@@ -18,7 +20,7 @@ public interface IRegistry {
 	 * @param emailOrLogin user's e-mail, true login, or alias 
 	 * @return the true login
 	 */
-	public String getUserLogin(String emailOrLogin);
+	//public String getUserLogin(String emailOrLogin);
 	/**
 	 * Gets the value of the given registry key. If the key is pointing to a final node, 
 	 * a value of some primitive type is returned. Otherwise, a JSON object representing the registry subtree is returned.

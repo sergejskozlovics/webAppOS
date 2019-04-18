@@ -189,12 +189,12 @@ public class AppsActions_webcalls {
 	
 	public static String bootstrapProject(String project_id, String arg, String login, String fullAppName) {
 		
-		System.out.println("in boostrapProject "+APIForServerBridge.memoryForServerBridge.getSingleSynchronizer(project_id));
+		System.out.println("in boostrapProject "+APIForServerBridge.dataMemoryForServerBridge.getSingleSynchronizer(project_id));
 		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(fullAppName);
 		if (props==null)
 			return "{}";
 		
-		TDAKernel kernel = API.memory.getTDAKernel(project_id);
+		TDAKernel kernel = API.dataMemory.getTDAKernel(project_id);
 		if (kernel==null)
 			return "{}";
 		

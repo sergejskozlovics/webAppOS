@@ -9,19 +9,11 @@
 <!--  <script src="/dojo/dojo.js" data-dojo-config="async:0"></script>-->
 
 
-  <script type="text/javascript" src="/jquery.js"></script>
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
+  <script type="text/javascript" src="imcs_diagrameditor/lib/jquery.js"></script>
+  <link rel="stylesheet" href="jquery-ui/jquery-ui.css">
+  <script type="text/javascript" src="jquery-ui/jquery-ui.js"></script>
   <script type="text/javascript" src="/webappos.js"></script>
-
-  <script type="text/javascript" src="imcs_diagrameditor/ajoo_helpers.js"></script>
-  <script type="text/javascript" src="imcs_diagrameditor/ajoo_wrapper.js"></script>
-  <script type="text/javascript" src="imcs_diagrameditor/de_helpers.js"></script>
-  <script type="text/javascript" src="imcs_diagrameditor/imcs_layoutengine.js"></script>
   <script type="text/javascript" src="imcs_diagrameditor/IMCSDiagramEditor.js"></script>
-
-
 
 </head>    
 <body id="theBody">
@@ -32,7 +24,6 @@
      onclick="event.preventDefault(); popUpDiv.innerHTML=''; $('#wrapDiv').hide();"
      oncontextmenu="event.preventDefault(); popUpDiv.innerHTML=''; $('#wrapDiv').hide();"></div>'+
 <script>
-
 
 ///// GLOBAL VARIABLES /////
 
@@ -301,9 +292,14 @@ function smartLayoutAndRefresh(gd, elements, isIncremental, fAfter) {
 // !TODO: select with refresh
 
   var arr = gd.element;
-/*variant (slow, but works always):  if (elements && (elements.length>0)) {
+/*
+  slow variant (slow, but works always):
+
+  if (elements && (elements.length>0)) {
     arr = elements;
-  }*/
+  }
+*/
+
 /*optimized variant:*/
   if (elements) {
     arr = elements;
@@ -764,9 +760,16 @@ function executePopUpCmd(a) {
     s += "<li onclick='_executePopUpTransf(\""+elms[i].procedureName+"\")'><div>"+arr[0]+"</div></li>";
   }
   s += "</ul>";
-
+console.log("1");
   popUpDiv.innerHTML = s;
-  $("#popUpMenu").menu( {
+console.log("1a");
+try{
+  $("#popUpMenu").menu();
+}
+catch(t) {
+  console.log(t);
+}
+/*  $("#popUpMenu").menu( {
     classes: {
       "ui-menu": "highlight"
     },
@@ -775,15 +778,19 @@ function executePopUpCmd(a) {
       of: globalMouseEvent,
       collision: "fit"
     }
-  });
+  });*/
+console.log("2");
   if (globalMouseEvent.pageX+$("#popUpDiv").width() >= document.body.clientWidth)
      globalMouseEvent.pageX = document.body.clientWidth-$("#popUpDiv").width();
   if (globalMouseEvent.pageY+$("#popUpDiv").height() >= document.body.clientHeight)
      globalMouseEvent.pageY = document.body.clientHeight-$("#popUpDiv").height();
+console.log("3");
   $("#popUpDiv").css("left", globalMouseEvent.pageX);
   $("#popUpDiv").css("top", globalMouseEvent.pageY);
 
+console.log("4");
   $("#wrapDiv").show();
+console.log("5");
 
 }
 

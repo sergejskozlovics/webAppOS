@@ -15,9 +15,13 @@ public class ServiceAdapter implements IServiceAdapter {
 	@Override
 	public ContextHandler attachService(ServiceProperties svcProps, String path, Runnable onStopped, Runnable onHalted) {
 		
+		String dirName = svcProps.service_dir+File.separator+"web-root";
+		File f = new File(dirName);
+		if (!f.exists() || !f.isDirectory())
+			throw new RuntimeException("Directory "+dirName+" not found.");
 
 		WebAppContext appContext = new WebAppContext();
-		appContext.setWar(svcProps.service_dir+File.separator+"web-root");
+		appContext.setWar(dirName);
 		appContext.setContextPath(path);		
 		
 /*		ArrayList<String> arr = new ArrayList<String>();

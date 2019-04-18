@@ -16,10 +16,18 @@ import org.webappos.webproc.WebProcessorBusService;
  */
 public class APIForServerBridge {	
 	public static ConfigEx configForServerBridge = null;
-	public static MRAM memoryForServerBridge = null;
+	
+	// DATA
+	public static MRAM dataMemoryForServerBridge = null;
+
+	// CODE
+	public static WebCaller webCallerForServerBridge = null;	
 	public static PropertiesManager propertiesManagerForServerBridge = null;
+	
+	// DEVICES
 	public static IRRegistry registryForServerBridge = null;
 	public static InFileStatus statusForServerBridge = null;
-	public static WebCaller webCallerForServerBridge = null;	
+	
+	// BUS
 	public static WebProcessorBusService wpbServiceForServerBridge = null;
 }

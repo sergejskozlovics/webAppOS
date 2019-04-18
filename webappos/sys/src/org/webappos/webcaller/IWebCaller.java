@@ -5,12 +5,27 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 
-import lv.lumii.tda.kernel.TDAKernel;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 
+/**
+ * Used by the server-side bridge and server-side actions to make web calls. 
+
+ * @author Sergejs Kozlovics
+ *
+ */
 public interface IWebCaller {
 	
+	/**
+	 * Specifies the calling convention for web calls. Currently, jsoncall and tdacall are supported.
+	 * @author Sergejs Kozlovics
+	 *
+	 */
 	public static enum CallingConventions { JSONCALL, TDACALL };
+	/**
+	 * A class for storing all necessary information required to make a web call.
+	 * @author Sergejs Kozlovics
+	 *
+	 */
 	public static class WebCallSeed implements Serializable {
 		private static final long serialVersionUID = 1L; 
 		// action name to call:
@@ -30,6 +45,13 @@ public interface IWebCaller {
   		public int timeToLive = 10;
 	};
 
+	/**
+	 * A class used only by the server-side bridge to store information for web calls
+	 * not originated at the server side. In certain cases, web calls originated at the server side
+	 * can also be repackaged as SyncedWebCallSeed-s for technical reasons. 
+	 * @author Sergejs Kozlovics
+	 *
+	 */
 	public static class SyncedWebCallSeed extends WebCallSeed { // used only from the bridge		
 		private static final long serialVersionUID = 1L;
 		public RAAPI_Synchronizer singleSynchronizer = null; 
@@ -53,6 +75,11 @@ public interface IWebCaller {
 		}
 	}
 	
+	/**
+	 * A class for storing one parsed web call declaration from some .webcalls file. 
+	 * @author Sergejs Kozlovics
+	 *
+	 */
 	public static class WebCallDeclaration implements Serializable {
 		private static final long serialVersionUID = 1L;
 		
@@ -95,8 +122,28 @@ public interface IWebCaller {
 		}
 	}
 	
+	/**
+	 * Enqueues a web call.
+	 * @param seed full information required to make a web call
+	 */
 	public void enqueue(final WebCallSeed seed);
+	/**
+	 * Checks whether the given web call action exists.
+	 * @param actionName web call action name to check
+	 * @return true, if the action was found, or false otherwise (also in case of an error)
+	 */
 	public boolean webCallExists(String actionName);
+	/**
+	 * Obtain a parsed web call declaration loaded from some .webcalls file.
+	 * @param actionName web call action name to consider
+	 * @return a parsed web call declaration
+	 */
 	public WebCallDeclaration getWebCallDeclaration(String actionName);
+	/**
+	 * Obtain all legitimate web calls that can be used within the given webAppOS app.
+	 * Useful for the client side to know what it can call.
+	 * @param fullAppName the full app name (with the .app suffix)
+	 * @return a map: web call action name -&gt; parsed web call declaration
+	 */
 	public Map<String, WebCallDeclaration> getWebCalls(String fullAppName);
 }

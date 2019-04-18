@@ -41,7 +41,7 @@ public class Module_lua_tda extends TwoArgFunction {
 	private long rSubmitterObj = 0;
 	private long rEventCls = 0;
 	private long rCommandCls = 0;
-	
+	 
 	private long rEventSubmitterAssoc = 0;
 	private long rCommandSubmitterAssoc = 0;
 	
@@ -99,7 +99,7 @@ public class Module_lua_tda extends TwoArgFunction {
 
 		@Override
 		public LuaValue call() {
-			String s = API.memory.getProjectFolder(project_id);
+			String s = API.dataMemory.getProjectFolder(project_id);
 			return LuaValue.valueOf(s);
 		}
 
@@ -109,7 +109,7 @@ public class Module_lua_tda extends TwoArgFunction {
 
 		@Override
 		public LuaValue call() {	
-			return LuaValue.valueOf(ConfigStatic.APPS_DIR+File.separator+API.memory.getProjectFullAppName(project_id));
+			return LuaValue.valueOf(ConfigStatic.APPS_DIR+File.separator+API.dataMemory.getProjectFullAppName(project_id));
 		}
 
 	}
@@ -365,8 +365,8 @@ static int tda_BrowseForFile(lua_State *L) {
 				try {
 					
 					if (isSave.toboolean()) {
-						File fi = new File(API.memory.getProjectFolder(project_id)+File.separator+"fordownload.index");
-						File fb = new File(API.memory.getProjectFolder(project_id)+File.separator+"fordownload.browseForFile");
+						File fi = new File(API.dataMemory.getProjectFolder(project_id)+File.separator+"fordownload.index");
+						File fb = new File(API.dataMemory.getProjectFolder(project_id)+File.separator+"fordownload.browseForFile");
 						if (fi.exists() && fb.exists()) {
 							fi.delete();
 							fb.delete();
@@ -413,7 +413,7 @@ static int tda_BrowseForFile(lua_State *L) {
 					  		API.webCaller.enqueue(seed);
 							
 							Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
-									LuaValue.valueOf(API.memory.getProjectFolder(project_id)+File.separator+"fordownload.browseForFile"), LuaValue.valueOf(index)
+									LuaValue.valueOf(API.dataMemory.getProjectFolder(project_id)+File.separator+"fordownload.browseForFile"), LuaValue.valueOf(index)
 						    });			
 							return varargs;
 						}
@@ -440,7 +440,7 @@ static int tda_BrowseForFile(lua_State *L) {
 				  		
 					}
 					else {
-						File fi = new File(API.memory.getProjectFolder(project_id)+File.separator+"uploaded.browseForFile");
+						File fi = new File(API.dataMemory.getProjectFolder(project_id)+File.separator+"uploaded.browseForFile");
 						if (fi.exists()) {
 							Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
 									LuaValue.valueOf(fi.getAbsolutePath()), LuaValue.valueOf(index)

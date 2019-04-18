@@ -423,8 +423,11 @@ static\ webappos.getUserRegistryValue(key)=staticjava:org.webappos.webcalls.Regi
 static\ webappos.setUserRegistryValue(JSON)=staticjava:org.webappos.webcalls.RegistryActions_webcalls#setUserRegistryValue
 
 # Group: Web calls-related functions
+#
+
 ##
 # Function: getAvailableWebCalls
+#
 #   Returns the currently available web calls.
 #   If called statically, only static web calls are returned, otherwise,
 #   static + app-specific web calls are returned.

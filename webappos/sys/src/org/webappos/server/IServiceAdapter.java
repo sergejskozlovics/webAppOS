@@ -11,7 +11,8 @@ public interface IServiceAdapter {
 	 * @param path the URL path to bind with this service
 	 * @param onStopped the function to be called when the service was terminated via stopService call (onStopped can be null)
 	 * @param onHalted the function to be called when the service halted (e.g., the process died); onHalted can be null
-	 * @return a context handler to be embedded within the webAppOS server or null, if the service has been launched by its own;
+	 * @return a context handler to be embedded within the webAppOS server or null, if the service has been launched by its own
+	 * (in this the the web-root directory must contain some description of the service and how to connect to it);
 	 * on error, throws some exception
 	 */
 	public ContextHandler attachService(ServiceProperties svcProps, String path, Runnable onStopped, Runnable onHalted);

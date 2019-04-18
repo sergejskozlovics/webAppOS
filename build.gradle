@@ -95,8 +95,10 @@ else {
     implementation 'org.bouncycastle:bcpkix-jdk15on:1.60'
     implementation 'org.bouncycastle:bcprov-jdk15on:1.60'
 
-// for lua web processor (TODO: v3.0.1)
-    implementation 'org.luaj:luaj-jse:2.0.2'
+// for lua web processor (v3.0.x - for Lua 5.2, we need v2.0.x for Lua 5.1 )
+//    implementation 'org.luaj:luaj-jse:2.0.3'
+//    implementation 'org.apache.bcel:bcel:5.2'
+// currently, we exclude it from packages, since LuaJ 2.0.3 sources are bundled into webAppOS sys
 
 // for ecore repository adapter
     implementation 'org.eclipse.emf:org.eclipse.emf.common:2.15.0.v20181220-0846'

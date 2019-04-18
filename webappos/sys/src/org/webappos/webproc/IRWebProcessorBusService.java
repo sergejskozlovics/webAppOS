@@ -60,7 +60,7 @@ public interface IRWebProcessorBusService extends Remote {
 	 * @return a pointer to MRAM API via RMI
 	 * @throws RemoteException on Web Processor Bus error
 	 */
-    public IRMRAM getMemory() throws RemoteException;
+    public IRMRAM getDataMemory() throws RemoteException;
 	/**
 	 * Called when initializing server-side API inside web processors to obtain a pointer to Registry API.
 	 * @return a pointer to Registry API via RMI

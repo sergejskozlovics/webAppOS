@@ -9,18 +9,20 @@ point to the login service.
 
 All character encodings must be UTF-8.
 
+It is strongly recommended to access the login service via the HTTPS connection.
+
 group: Access URL
 
 The login service is accessible via the following URL:
 ---code---
-http://<domain_or_ip>/services/login/
+https://[domain_or_ip]/services/login/
 ----------
 
 group: Methods
 
 method: signup_allowed
 ---prototype---
-GET http://<domain_or_ip>/services/login/signup_allowed
+GET https://[domain_or_ip]/services/login/signup_allowed
 ---------------
 
 Used to find out whether to display the "Register Now" or similar option for new users.
@@ -31,7 +33,7 @@ Returns:
 
 method: recaptcha_site_key
 ---prototype---
-GET http://<domain_or_ip>/services/login/recaptcha_site_key
+GET https://[domain_or_ip]/services/login/recaptcha_site_key
 ---------------
 
 Used by client-side code (in the login app) to initialize reCAPTCHA.
@@ -43,7 +45,7 @@ Returns:
 
 method: verify
 ---prototype---
-GET http://<domain_or_ip>/services/login/verify/<login>/<emailed_token>
+GET https://[domain_or_ip]/services/login/verify/[login]/[emailed_token]
 ---------------
 
 Used to verify the token e-mailed during the sign up process
@@ -56,7 +58,7 @@ Returns:
 method: signup
 
 ---prototype---
-POST http://<domain_or_ip>/services/login/signup/
+POST https://[domain_or_ip]/services/login/signup/
 ---------------
 ---code---
 Content-Type: application/x-www-form-urlencoded
@@ -79,7 +81,7 @@ Returns:
 method: signin
 
 ---prototype---
-POST http://<domain_or_ip>/services/login/signin/?<redirect>
+POST https://[domain_or_ip]/services/login/signin/?[redirect-URL]
 ---code---
 Content-Type: application/x-www-form-urlencoded
 ---------------
@@ -97,7 +99,7 @@ where the login service should redirect to on successful sign in. If not specifi
 the URL for the default desktop app will be used.
 
 Returns:
-  a redirect response to the given <redirect> URL (or the desktop app URL)
+  a redirect response to the given [redirect-URL] (or the desktop app URL)
   with the appended query values "login" and "ws_token".
 
   On error, redirects to a page with the error message.
@@ -107,7 +109,7 @@ Returns:
 method: signin_token
 
 ---prototype---
-POST http://<domain_or_ip>/services/login/signin_token/
+POST https://[domain_or_ip]/services/login/signin_token/
 ---------------
 ---code---
 Content-Type: application/x-www-form-urlencoded
@@ -123,16 +125,16 @@ Returns:
 A JSON in the format:
 ---code---
 {
-  "login": "<login>",
-  "ws_token": "<ws_token>",
-  "expires": "<stringified-UTC-date>",
-  "redirect": "<the redirect URL" // the same URL as in the <signin> method
+  "login": "{login}",
+  "ws_token": "{ws_token}",
+  "expires": "{stringified-UTC-date}",
+  "redirect": "{the redirect URL}" // the same URL as in the <signin> method
 }
 ----------
 or 
 ---code---
 {
-  "error": "<message>"
+  "error": "{message}"
 }
 ----------
 in case of error.
@@ -143,7 +145,7 @@ If the  password has expired, only redirect attribute is returned.
 method: check_ws_token
 
 ---prototype---
-POST http://<domain_or_ip>/services/login/check_ws_token/
+POST https://[domain_or_ip]/services/login/check_ws_token/
 ---------------
 ---code---
 Content-Type: application/x-www-form-urlencoded
@@ -170,7 +172,7 @@ on success, or
 ---code---
 {
   "result": "false",
-  "error": "<message>"
+  "error": "{message}"
 }
 ----------
 on error
@@ -178,7 +180,7 @@ on error
 method: signout
 
 ---prototype---
-POST http://<domain_or_ip>/services/login/signout/
+POST https://[domain_or_ip]/services/login/signout/
 ---------------
 ---code---
 Content-Type: application/x-www-form-urlencoded
@@ -198,7 +200,7 @@ Returns:
 method: password_reset_request
 
 ---prototype---
-POST http://<domain_or_ip>/services/login/password_reset_request/
+POST https://[domain_or_ip]/services/login/password_reset_request/
 ---------------
 ---code---
 Content-Type: application/x-www-form-urlencoded
@@ -218,7 +220,7 @@ Returns:
 method: change_password
 
 ---prototype---
-POST http://<domain_or_ip>/services/login/change_password/
+POST https://[domain_or_ip]/services/login/change_password/
 ---------------
 ---code---
 Content-Type: application/x-www-form-urlencoded

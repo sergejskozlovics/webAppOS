@@ -32,7 +32,7 @@ public class IMRAMWrapper implements IMRAM {
 		cached_project_id = project_id;
 		cached_kernel = null;
 		
-		String folder = API.memory.getProjectFolder(project_id);
+		String folder = API.dataMemory.getProjectFolder(project_id);
 		if (folder == null)
 			return null;
 		

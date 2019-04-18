@@ -436,6 +436,9 @@ public class DoLock extends AbstractMethod {
             resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
             LOG.error("SAX exception", e);
             return false;
+        } catch (Throwable t) {
+        	t.printStackTrace();
+        	return false; // by SK
         }
 
         return true;

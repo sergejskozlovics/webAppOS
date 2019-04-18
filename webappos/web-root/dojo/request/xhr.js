@@ -22,6 +22,12 @@ return typeof x["addEventListener"]!=="undefined"&&(typeof opera==="undefined"||
 _5.add("native-formdata",function(){
 return typeof FormData!=="undefined";
 });
+_5.add("native-blob",function(){
+return typeof Blob!=="undefined";
+});
+_5.add("native-arraybuffer",function(){
+return typeof ArrayBuffer!=="undefined";
+});
 _5.add("native-response-type",function(){
 return _5("native-xhr")&&typeof new XMLHttpRequest().responseType!=="undefined";
 });

@@ -5,7 +5,10 @@ import java.util.List;
 
 // Path = File or Directory (recursively)
 /**
- * File System API 
+ * File System API.
+ * Used by webAppOS apps and services to access Home File System.
+ * This API is also implemented in file system drivers, which provide access to remote file systems that
+ * can be mounted in the webAppOS user home directory.
  */
 public interface IFileSystem {
 	/**

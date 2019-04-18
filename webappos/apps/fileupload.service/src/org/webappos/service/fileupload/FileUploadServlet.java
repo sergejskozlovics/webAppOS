@@ -180,7 +180,7 @@ public class FileUploadServlet extends HttpServlet
 	        	ValidityChecker.checkRelativePath(project_id, false);
 	        	if (!project_id.startsWith(login+"/"))
 	        		throw new RuntimeException("Project not owned");
-	        	projectFolder = API.memory.getProjectFolder(project_id);
+	        	projectFolder = API.dataMemory.getProjectFolder(project_id);
 	        	if (projectFolder == null)
 	        		throw new RuntimeException("Project not active");
 	        	

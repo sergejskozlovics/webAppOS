@@ -15,11 +15,9 @@ public class QEMULauncher {
 	private ArrayList<String> args = new ArrayList<String>();
 	private Process javaProcess = null;
 	
-	public QEMULauncher(String qemu_path, ServiceProperties svcProps) {		
-    		if ("32".equals(svcProps.properties.getProperty("vm_bits", "32")))
-    			args.add(qemu_path+File.separator+"qemu-system-i386");
-    		else
-    			args.add(qemu_path+File.separator+"qemu-system-x86_64");
+	public QEMULauncher(String qemu_path, ServiceProperties svcProps) {
+			String system = svcProps.properties.getProperty("vm_bits", "i386");
+   			args.add(qemu_path+File.separator+"qemu-system-"+system);
 
     		args.add("-boot");
     		args.add("d");
@@ -34,13 +32,23 @@ public class QEMULauncher {
     		args.add("-netdev");    		
     		String lastArg = "user,id=enp0s3";
     		
-    		if (svcProps.requires_http_port) {
-    			lastArg += ",hostfwd=tcp::"+svcProps.properties.getProperty("http_port")+"-:"+svcProps.properties.getProperty("vm_http_port");
-    		}    		
-    		if (svcProps.requires_https_port) {
-    			lastArg += ",hostfwd=tcp::"+svcProps.properties.getProperty("https_port")+"-:"+svcProps.properties.getProperty("vm_https_port");
+    		String vm_ports = svcProps.properties.getProperty("vm_ports","").trim();
+    		if (!vm_ports.isEmpty()) {
+	    		String[] arr = vm_ports.split(",");
+	    		int n = Math.min(arr.length, svcProps.requires_additional_ports.length);
+				for (int k=0; k<n; k++) {
+					try {
+						int vm_port = Integer.parseInt(arr[k]);
+						int our_port = svcProps.requires_additional_ports[k];
+						lastArg += ",hostfwd=tcp::"+our_port+"-:"+vm_port;
+					}
+					catch(Throwable t) {
+					}
+				}
+	    		
     		}
     		args.add(lastArg);
+    		
     		
     		String gr = svcProps.properties.getProperty("vm_graphics", "false");
     		if ("false".equalsIgnoreCase(gr) || "no".equalsIgnoreCase(gr))

@@ -2,6 +2,12 @@ package org.webappos.properties;
 
 import java.util.List;
 
+/**
+ * A class for accessing properties of installed webAppOS apps, engines, and services.
+ * Used by the server-side bridge and by server-side web processors. 
+ * @author Sergejs Kozlovics
+ *
+ */
 public interface IPropertiesManager {
 	public String getAppDirectory(String appName);
 	public AppProperties[] getAllInstalledApps();

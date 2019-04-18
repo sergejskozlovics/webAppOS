@@ -7,9 +7,11 @@ public interface IWebProcessorAdapter {
 	 * The adapter must register the underlying web processor by calling registerWebProcessor within Web Processor Bus Service.
 	 *  
 	 * @param location the adapter-specific location of the web processor code; for the "local" adapter, contains a Java class name;
-	 * for the "remote" adapter contains a URL
+	 * @param id the web processor ID provided by the server-side bridge; the underlying web processor must use this ID,
+	 *        when communicating with the bridge via Web Processor Bus Service
+	 * @param options additional (optional) options specified in webproctab
 	 */
-	public void connect(String location, String id);	
+	public void connect(String location, String id, String options);	
 	
 	/**
 	 * Disconnects the underlying web processor.

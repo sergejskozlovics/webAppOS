@@ -17,7 +17,7 @@ var _4={};
 if(_1("ie")){
 _4.byId=function(id,_5){
 if(typeof id!="string"){
-return id;
+return id||null;
 }
 var _6=_5||_2.doc,te=id&&_6.getElementById(id);
 if(te&&(te.attributes.id.value==id||te.id==id)){
@@ -34,6 +34,7 @@ return te;
 }
 }
 }
+return null;
 };
 }else{
 _4.byId=function(id,_8){

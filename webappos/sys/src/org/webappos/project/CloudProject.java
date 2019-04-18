@@ -262,7 +262,7 @@ public class CloudProject implements IProject {
 				if (!tdaKernel.upgradeToTDA(bootstrap, login, false)) {
 					String project_id = CloudProject.this.name; 
 					cleanup(true, true);
-					API.memory.faultMRAM(project_id);
+					API.dataMemory.faultMRAM(project_id);
 				}
 				else {
 					if (sync!=null)
@@ -347,8 +347,9 @@ public class CloudProject implements IProject {
 	}
 
 	private void cleanup(boolean close, boolean deleteFolder) {
-		if (close && (tdaKernel!=null))
+		if (close && (tdaKernel!=null)) {
 			tdaKernel.close();
+		}
 		
 		if (deleteFolder && (folder!=null)) {
 			File f = new File(folder);

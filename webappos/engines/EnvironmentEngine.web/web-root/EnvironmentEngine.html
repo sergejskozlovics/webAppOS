@@ -8,27 +8,27 @@
 
   <!-- DOJO LAYOUT PREREQUISITES -->
 <!--  <script src="dojo/dojo.js" data-dojo-config="async:1, packages: [{ name: 'jquery', location: '', main: 'jquery' }]"></script>-->
+
+  <link rel="stylesheet" type="text/css" href="/webappos/djtheme/document.css">
+  <link rel="stylesheet" type="text/css" href="/webappos/djtheme/webappos.css">
+  <link rel="stylesheet" href="EnvironmentEngine.css" media="screen">
   <script src="webappos.js"></script>
 
-  <!--  <link rel="stylesheet" href="/dijit/themes/claro/claro.css" media="screen">-->
-  <link rel="stylesheet" href="dijit/themes/flat/flat.css" media="screen">
-  <link rel="stylesheet" href="EnvironmentEngine.css" media="screen">
-  <link rel="stylesheet" href="webappos.css">
-
-  <!--  <link href="/css/ui-lightness/jquery-ui-1.10.4.css" rel="stylesheet">
-  <script src="/jquery-1.10.2.js"></script>
-  <script src="/jquery-ui-1.10.4.js"></script>-->
   <script src="jquery.js"></script>
 
   <style id="styles">
-    body {
-      font: 10pt "Trebuchet MS", sans-serif;
+/*    body {
       margin: 0;
       padding: 0;
-    }
+    }*/
 
     .nonModal_underlay {
       display: none
+    }
+
+    #eeUserMenuButton_label,
+    #eeCloseButton_label {
+      padding:0px;
     }
 
     .closeIcon {
@@ -47,6 +47,8 @@
       height: 20px;
       text-align: center;
       vertical-align: middle;
+      padding-right: 0;
+      margin-right: 0;
     }
 
     .launcherIcon {
@@ -1526,12 +1528,13 @@
           var project_id_label = new ContentPane({
               id: "project_id_label",
               content: "<div id='project_id_div'>" + webappos.project_id + "</div>",
-              style: "float:right;" + (webappos.project_id ? "display:block;" : "display:none;"),
+              style: "float:right;" + (webappos.project_id ? "display:block;" : "display:none;")
+                     +"margin-top:4px;margin-right:4px;",
               onClick: function () {
                 var new_project_id = webappos.project_id;
                 if (new_project_id.indexOf(webappos.login + "/") != 0)
                   return; // don't allow to change project_id-s of other users;
-                // this will also be checked on the server-side
+                // this will also be checked at the server-side
 
                 for (; ;) {
                   new_project_id = prompt("Enter new project id", new_project_id);
@@ -1739,7 +1742,7 @@
 
 </head>
 
-<body id="body" class="flat" style="font-family:webAppOS;" background="checked_background.png">
+<body id="body" class="webappos" background="checked_background.png">
   <div id="mainLayout" style="padding:0; margin:0; height:100%">
   </div>
 

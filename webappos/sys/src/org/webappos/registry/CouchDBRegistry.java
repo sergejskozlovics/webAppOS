@@ -77,7 +77,8 @@ public class CouchDBRegistry extends UnicastRemoteObject implements IRegistry, I
 //		machines = new CouchDbClient("webappos_machines", true, protocol, host, port, username, password);		
 	}
 	
-	@Override
+	/*
+	replaced by UsersManager.getUserLogin
 	synchronized public String getUserLogin(String emailOrLogin) {
 		JsonObject xuser = null;
 		try {
@@ -106,6 +107,7 @@ public class CouchDBRegistry extends UnicastRemoteObject implements IRegistry, I
 		else
 			return id.getAsString();
 	}
+	*/
 	
 	@Override
 	synchronized public JsonElement getValue(String key) {
@@ -538,11 +540,6 @@ public class CouchDBRegistry extends UnicastRemoteObject implements IRegistry, I
 			t.printStackTrace();
 			return false;
 		}		
-	}
-
-	@Override
-	public String getUserLogin_R(String emailOrLogin) throws RemoteException {
-		return this.getUserLogin(emailOrLogin);
 	}
 
 	@Override

@@ -1,19 +1,14 @@
 <html>
 <head>
 	<script src="/dojo/dojo.js" data-dojo-config="async:1"></script>
-  <link rel="stylesheet" href="/dijit/themes/flat/flat.css" media="screen">
-  <link rel="stylesheet" href="/webappos.css">
-<!--  <link rel="stylesheet" href="/dijit/themes/claro/claro.css" media="screen">-->
+        <link rel="stylesheet" href="/webappos/djtheme/webappos.css">
 	<script type="text/javascript" src="/webappos.js"></script>
 
 	<script src="/jquery.min.js"></script>
 	<script type="text/javascript" src="imcs_layoutengine/imcs_layoutengine.js"></script>
-
-<style>
-</style>
 	
 </head>
-<body id="theBody" class="flat" style="padding:0; margin:0;">
+<body id="theBody" class="webappos" style="padding:0; margin:0;">
 <script>
 if (!tda.model.DialogEngine)
   document.body.innerHTML = "This is Web Dialog Engine; tda.model not found!";
@@ -1073,7 +1068,7 @@ pane.startup();
 		        if (iframe) {
 				var formBody = $(iframe).parent();
 				var title = $(iframe).parent().parent().children().find(":first-child");
-				retVal.topPadding = /*parseInt(title.css("padding-top"),10)*/8+parseInt(title.css("height"),10)+/*parseInt(title.css("padding-bottom"),10)*/8 + parseInt(formBody.css("padding-top"),10);
+				retVal.topPadding = /*parseInt(title.css("padding-top"),10)*/2+parseInt(title.css("height"),10)+/*parseInt(title.css("padding-bottom"),10)*/2 + parseInt(formBody.css("padding-top"),10);
 				retVal.leftPadding = parseInt(formBody.css("padding-left"),10); 
 				retVal.rightPadding = parseInt(formBody.css("padding-right"),10);
 				retVal.bottomPadding = parseInt(formBody.css("padding-bottom"),10);
@@ -1552,7 +1547,7 @@ console.log("LAYOUT "+c.getClassName()+" "+c.reference,x,y,w,h);
 					dojo.style("dojopane"+rComponent,"padding","0px");
 					dojo.style("dojopane"+rComponent,"border-spacing","0px");
 					dojo.style("widget_dojo"+rComponent,"width",(w-4)+"px");
-					dojo.style("widget_dojo"+rComponent,"height",(h-2)+"px");
+					dojo.style("widget_dojo"+rComponent,"height",(h-4)+"px");
 					
 					dojo.style("dojopane"+rComponent,"margin-left",x+"px"); // relative to prev. child
 					dojo.style("dojopane"+rComponent,"margin-top",y+"px"); // relative to prev. child

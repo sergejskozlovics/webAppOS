@@ -23,7 +23,7 @@ group: Access URL
 
 The FileBrowser service is accessible via the following URL:
 ---code---
-http://<domain_or_ip>/services/filebrowser/
+http[s]://[domain_or_ip]/services/filebrowser/
 ----------
 !! The trailing slash is essential because
 of Jetty configuration used by webAppOS. (See https://bugs.eclipse.org/bugs/show_bug.cgi?id=331194#c1 for more info.)
@@ -45,7 +45,7 @@ group: Methods
 method: Get info on the given file or folder
 
 ---prototype---
-GET http://<domain_or_ip>/services/filebrowser/home/<path-to-file-or-folder-relative-to-user's-home>
+GET http[s]://[domain_or_ip]/services/filebrowser/home/[path-to-file-or-folder-relative-to-user's-home]
 ---------------
 
 
@@ -54,13 +54,13 @@ Returns:
   A JSON contating information about the requested file or folder.
 ---code---
 {
-  "id": "/home/<path-to-file-or-folder-relative-to-user's-home>",
+  "id": "/home/{path-to-file-or-folder-relative-to-user's-home}",
   "dir": true|false,
-  "parId": "<parent-folder>",
-  "name": "<name>",
+  "parId": "{parent-folder}",
+  "name": "{name}",
   "size": 0|12345,
-  "cre": <created-timestamp>,
-  "mod": <modified-timestamp>,
+  "cre": {created-timestamp},
+  "mod": {modified-timestamp},
   "mime": "directory/desktop"|some other mime (optional)
 }
 ----------
@@ -70,38 +70,38 @@ On error, returns an empty response.
 method: List files in the given folder
 
 ---prototype---
-GET http://<domain_or_ip>/services/filebrowser/home/<path-to-folder-relative-to-user's-home>/?<masks>
+GET http[s]://[domain_or_ip]/services/filebrowser/home/[path-to-folder-relative-to-user's-home]/?[masks]
 ---------------
 !! The trailing slash is essential.
 
-Parameter:
+Query:
 
-  <masks> - is an optional query parameter contatining comma-separated file masks.
-            If this parameter is specified, the FileBrowser
+  [masks] - is an optional query contatining comma-separated file masks.
+            If the query is specified, the FileBrowser
             service will return only files matching the given masks.
 
 Example:
 ---code---
-GET http://example.org/services/filebrowser/home/ontologies/?*.owl,*.xml
+GET http[s]://example.org/services/filebrowser/home/ontologies/?*.owl,*.xml
 ----------
 
 
 Returns:
 
-  a JSON _array_ of elements in the same format as in <Get info on the given file or folder>.
+a JSON _array_ of elements in the same format as in <Get info on the given file or folder>.
 On error, returns an empty response.
 
 method: Create new file/folder
 
 ---prototype---
-POST http://<domain_or_ip>/services/filebrowser
+POST http[s]://[domain_or_ip]/services/filebrowser
 ---------------
 
 Request body is a JSON in the form:
 ---code---
 {
   "dir":true|false,
-  "parId":"/home/<path-to-parent-folder>",
+  "parId":"/home/[path-to-parent-folder]",
   "size":0,
   "name":"new directory"|"new file.txt"
 }
@@ -121,7 +121,7 @@ Returns:
 method: Delete a file/folder
 
 ---prototype---
-DELETE http://<domain_or_ip>/services/filebrowser/home/<path-to-file-or-folder-relative-to-user's-home>
+DELETE http[s]://[domain_or_ip]/services/filebrowser/home/[path-to-file-or-folder-relative-to-user's-home]
 ---------------
 
 Returns:
@@ -138,16 +138,16 @@ Returns:
 method: Move/Rename file or folder
 
 ---prototype---
-PUT http://<domain_or_ip>/services/filebrowser/home/<path-to-file-or-folder-relative-to-user's-home>
+PUT http[s]://[domain_or_ip]/services/filebrowser/home/[path-to-file-or-folder-relative-to-user's-home]
 ---------------
 
 Request body is a JSON in the form:
 ---code---
 {
-  "id":"/home/<path-to-file-or-folder-relative-to-user's-home>",
+  "id":"/home/[path-to-file-or-folder-relative-to-user's-home]",
   "dir":true|false, 
-  "parId":"/home/<path-to-new-parent-folder>",
-  "name":"<new-name>",
+  "parId":"/home/[path-to-new-parent-folder]",
+  "name":"[new-name]",
   "size":0|13752,
   "cre":1542189355769,
   "mod":1542189355769
@@ -163,7 +163,7 @@ group: FileBrowser service redirect to FileBrowser app
 method: /browse
 
 ---prototype---
-GET http://<domain_or_ip>/services/filebrowser/browse/home/<path-to-file-or-folder-relative-to-user's-home>
+GET http[s]://[domain_or_ip]/services/filebrowser/browse/home/[path-to-file-or-folder-relative-to-user's-home]
 ---------------
 
 When the URL contains a path that starts with "/browse" instead of "/home",
@@ -174,5 +174,5 @@ Returns:
 
   Redirects to
   ---code---
-  http://<domain_or_ip>/apps/filebrowser/path=/home/<path-to-file-or-folder-relative-to-user's-home>
+  http{s}://{domain_or_ip}/apps/filebrowser/path=/home/{path-to-file-or-folder-relative-to-user's-home}
   ----------
