@@ -215,7 +215,6 @@
 
 
     function browseForFileToUpload(filter) {
-      console.log("browseForFileToUpload: filter=" + filter);
       var cmd = new tda.model[tda.model.last_submitted.className]();
       for (var attr in tda.model.last_submitted) {
         if ((attr!="reference") && (attr!="className") && (attr!="classes"))
@@ -642,19 +641,16 @@
                 }
 
                 activeDojoFrame = nval;
-
                 if (nval) {
-                  if (parseInt(nval.id.substring(5) >= 0)) {
+                  if (parseInt(nval.id.substring(5)) >= 0) {
                     var event = new tda.model.FrameActivatedEvent();
                     event.setFrame(tda.model[parseInt(nval.id.substring(5))]);
                     tda.model.submit(event);
 
-
-                    var ee = tda.model.EnvironmentEngine.getFirstObject();
+/*                    var ee = tda.model.EnvironmentEngine.getFirstObject();
                     var rocmd = new tda.model.RefreshOptionsCommand();
                     rocmd.setEnvironmentEngine(ee);
-                    //              executeRefreshOptionsCommand(rocmd);
-                    tda.model.submit(rocmd);
+                    tda.model.submit(rocmd);*/
                   }
                 }
 
@@ -712,7 +708,6 @@
         var frame = tda.model[reference];
         attachFrame(frame.location, frame.contentURI, frame.caption, reference, (frame.isClosable == true) || (frame.isClosable == 'true'));
       }
-
 
       var interval = 10; // ms
       window.setTimeout(function () {
@@ -1075,6 +1070,14 @@
     }
 
     function searchForFrame(cmd) {
+      if (cmd.getClassName()=="RefreshOptionsCommand") {
+        // RefreshOptionsCommand always executed for the active frame
+        if (activeDojoFrame) {
+          var activeFrameRef = parseInt(activeDojoFrame.id.substring(5));
+          return tda.model[activeFrameRef];
+        }
+      }
+
       var retVal = searchForFrameDirect(cmd);
       if (retVal)
         return retVal;
@@ -1160,11 +1163,9 @@
           console.log("Could not find the frame for event", ev);
           return;
         }
-        console.log("found event frame", evFrame.reference);
         funcName="handle" + ev.getClassName();
         if (action && action.resolvedLocation)
           funcName = action.resolvedLocation;
-        console.log("funcName="+funcName);
 
         whenFrameLoaded(evFrame.reference, function () {
           var frame = registry.byId("frame" + evFrame.reference);
@@ -1398,11 +1399,11 @@
                       b.iconClass = "iconClassFor_" + option.id;
 
                       var img = new Image();
-                      img.src = '/images/' + image;
+                      img.src = 'images/' + image;
                       img.onload = function () {
                         styles.innerHTML += "\
                          .iconClassFor_"+ option.id + " {\
-                           background-image:  url(/images/"+ image + ");\
+                           background-image:  url(images/"+ image + ");\
                            background-size: 100% auto;\
                            width: "+ (img.width * 20 / img.height) + "px;\
                            height: 20px;\
@@ -1528,13 +1529,13 @@
                   if (new_project_id == webappos.project_id)
                     return;
 
-                  var ret1 = window.webappos.jsonsubmit("webAppOS.fileExists", new_project_id);
+                  var ret1 = window.webappos.webcall_and_wait("webappos.fileExists", new_project_id);
                   if (ret1 && ret1.result) {
                     if (!confirm("Project " + new_project_id + " exists. Overwrite?"))
                       continue;
                   }
 
-                  var ret2 = window.webappos.jsonsubmit("webAppOS.renameActiveProject", {
+                  var ret2 = window.webappos.webcall_and_wait("webappos.renameActiveProject", {
                     project_id: webappos.project_id,
                     new_project_id: new_project_id
                   });
