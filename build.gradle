@@ -145,6 +145,7 @@ installDist {
         include 'engines/**'
         include 'etc/**'
         include 'home/**'
+        include 'native/**'
         include 'sys/**'
         include 'var/**'
         include 'web-root/**'

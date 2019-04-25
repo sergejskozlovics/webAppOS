@@ -1,6 +1,7 @@
 package org.webappos.webproc;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
@@ -17,8 +18,11 @@ import org.webappos.server.APIForServerBridge;
 import org.webappos.server.ConfigStatic;
 import org.webappos.server.IShutDownListener;
 import org.webappos.status.IRStatus;
+import org.webappos.webcaller.IJsonWebCallsAdapter;
 import org.webappos.webcaller.IRWebCaller;
+import org.webappos.webcaller.ITdaWebCallsAdapter;
 import org.webappos.webcaller.IWebCaller;
+import org.webappos.webcaller.IWebCaller.CallingConventions;
 
 import lv.lumii.tda.kernel.TDAKernel;
 
@@ -231,6 +235,109 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 		if (seed.project_id!=null)
 			cached_wp = APIForServerBridge.dataMemoryForServerBridge.getCachedInstructionSet(seed.project_id, action.resolvedInstructionSet);
 		
+		
+		if (API.config.inline_webcalls || action.isInline) {
+			// executing webcall here, without web processors
+			
+			if (!API.config.inline_webcalls) {
+				if ((cached_wp!=null) && !"inline".equals(cached_wp)) {
+					// clearing cache for the web processor who created it earlier...
+					this.clearCachedInstructionSet(seed.project_id, action.resolvedInstructionSet, cached_wp);
+					APIForServerBridge.dataMemoryForServerBridge.setCachedInstructionSet(seed.project_id, action.resolvedInstructionSet, null);
+					cached_wp = null;
+				}
+				
+			}
+			
+			TDAKernel kernel = API.dataMemory.getTDAKernel(seed.project_id);
+			boolean newSingleSynchronizer = (kernel!=null) && (seed instanceof IWebCaller.SyncedWebCallSeed);
+			if (newSingleSynchronizer) {
+				APIForServerBridge.dataMemoryForServerBridge.setSingleSynchronizer(seed.project_id, ((IWebCaller.SyncedWebCallSeed)seed).singleSynchronizer);
+			}
+			
+			Class<?> adapterClass = null;
+			Object adapter = null;
+			Method m = null;
+					
+			try {
+				adapterClass = Class.forName("org.webappos.adapters.webcalls."+action.resolvedInstructionSet+".WebCallsAdapter");					
+				adapter = adapterClass.getConstructor().newInstance();
+			}
+			catch(Throwable t) {					
+			}
+			try {
+				m = adapterClass.getMethod("clearCache", String.class);
+			}
+			catch(Throwable t) {					
+			}
+			
+			if (adapter == null)
+				return true; // the caller will not try to re-enqueue later
+			
+			if (cached_wp == null) {
+				if ((seed.project_id!=null) && (m!=null)) {
+					// associating instruction set of the given project with the "inline" web processor...
+					APIForServerBridge.dataMemoryForServerBridge.setCachedInstructionSet(seed.project_id, action.resolvedInstructionSet, "inline");
+					cached_wp = "inline";
+				}
+			}
+			
+											
+			if ((seed.callingConventions == CallingConventions.JSONCALL) && (adapter instanceof IJsonWebCallsAdapter)) {
+				boolean newOwner = false;
+				if (kernel!=null && kernel.getOwner()==null) {
+					newOwner = true;
+					TDAKernel.Owner owner = new TDAKernel.Owner();
+					owner.login = seed.login;
+					owner.project_id = seed.project_id;
+					kernel.setOwner(owner);
+				}
+				try {
+					String res = ((IJsonWebCallsAdapter)adapter).jsoncall(action.resolvedLocation, seed.jsonArgument, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
+					if (seed.jsonResult!=null)
+						seed.jsonResult.complete(res);
+				}
+				catch(Throwable t) {
+					if (seed.jsonResult!=null)
+						seed.jsonResult.completeExceptionally(t);
+				}
+				if (newOwner)
+					kernel.setOwner(null);
+			}
+			else
+			if ((seed.callingConventions == CallingConventions.TDACALL) && (adapter instanceof ITdaWebCallsAdapter)) {
+				boolean newOwner = false;
+				if (kernel!=null && kernel.getOwner()==null) {
+					newOwner = true;
+					TDAKernel.Owner owner = new TDAKernel.Owner();
+					owner.login = seed.login;
+					owner.project_id = seed.project_id;
+					kernel.setOwner(owner);
+				}
+				try {
+					((ITdaWebCallsAdapter)adapter).tdacall(action.resolvedLocation, seed.tdaArgument, kernel, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
+					if (seed.jsonResult!=null)
+						seed.jsonResult.complete(null);
+				}
+				catch(Throwable t) {
+					if (seed.jsonResult!=null)
+						seed.jsonResult.completeExceptionally(t);
+				}
+				if (newOwner)
+					kernel.setOwner(null);
+			}
+			else {
+				logger.error("Count not peform server-side web call "+seed.actionName+" since calling conventions do not match. ");
+			}
+			
+			// on web proc finish:
+			if (newSingleSynchronizer) {
+				APIForServerBridge.dataMemoryForServerBridge.setSingleSynchronizer(seed.project_id, null);
+			}
+
+			return true;
+		} // inline
+		
 		for (String wpId : wpMap.keySet()) {
 			if (cached_wp != null) {
 				if (!wpId.equals(cached_wp))
@@ -322,5 +429,32 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 		
 	}
 
+	public synchronized void clearCachedInstructionSet(String project_id, String instructionSet, String wpName) {
+		if (API.config.inline_webcalls || "inline".equals(wpName)) {
+			Class<?> adapterClass = null;
+			try {
+				adapterClass = Class.forName("org.webappos.adapters.webcalls."+instructionSet+".WebCallsAdapter");					
+				Method m = adapterClass.getMethod("clearCache", String.class);
+				if (m!=null)
+					m.invoke(null, project_id);
+			}
+			catch(Throwable t) {
+				t.printStackTrace();
+			}			
+			return;
+		}
+		
+		WebProcessorHandle h = wpMap.get(wpName);
+		if ((h==null) || (h.api == null) || (!h.available)/* || (!h.idle)*/) { // TODO: IDLE management
+			return;
+		}
+		
+		try {
+			h.api.clearCachedInstructionSet(project_id, instructionSet);
+		} catch (RemoteException e) {
+			logger.error("Exception during web processor clear cache in `"+h.id+"', faulting ("+e.toString()+"; "+e.getMessage()+")");
+			h.fault();
+		}
+	}
 
 }

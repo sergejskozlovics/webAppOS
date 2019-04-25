@@ -270,7 +270,6 @@
       delete frames["frame" + reference];
       var frame = tda.model[reference]; // the frame might already be deleted
       if (frame) {
-        console.log("detach in repo");
         frame.setEnvironmentEngine([]);
         if (permanently)
           frame.delete();
@@ -616,7 +615,6 @@
               if (isClosable == true) {
                 frame.set("closable", true);
                 on(frame, "close", function (e) {
-                  console.log("close: ");
                   var event = new tda.model.CloseFrameRequestedEvent();
                   //              event.setPermanently(true);
                   event.setForce(false);
@@ -647,7 +645,6 @@
 
                 if (nval) {
                   if (parseInt(nval.id.substring(5) >= 0)) {
-                    console.log("FRAME ACTIVATED ", nval.id, tda.model[parseInt(nval.id.substring(5))].onFrameActivatedEvent);
                     var event = new tda.model.FrameActivatedEvent();
                     event.setFrame(tda.model[parseInt(nval.id.substring(5))]);
                     tda.model.submit(event);
@@ -750,7 +747,6 @@
           if (typeof frame.isClosable === 'undefined')
             frame.isClosable = true;
 
-          console.log("attaching frame", frame.reference);
           attachFrame(frame.location, frame.contentURI, frame.caption, frame.reference, frame.isClosable);
         });
     }
@@ -832,7 +828,6 @@
               }
               else {
                 // perhaps, this is a framediv...
-                console.log("DETACH FRAMEDIV ", commandJSON.frame[0].location);
                 if (commandJSON.frame[0].location.substr(0, 9) == "framediv:") {
                   var frameDiv = getFrameDiv(commandJSON.frame[0].location.substring(9));
                   if (frameDiv) {
@@ -898,7 +893,6 @@
                             if (frame.getParent())
                               frame.getParent().removeChild(frame);
                             frame.destroy();
-                            console.log("EE DETACH FRAME=", reference);
                             detachFrameInRepository(reference, permanently);
 
                           }, 0);
@@ -970,9 +964,7 @@
     }
 
     function executeDetachFrameCommand(cmd) {
-      console.log("DETACH FRAME COMMAND EE", cmd);
       var f = cmd.frame[0];
-      console.log("FRAME CAPTION IS", f.caption);
 
       // deleting frame-specific options...
       var arr = f.getOption();
@@ -1114,7 +1106,7 @@
           console.log("Could not find the frame for command", cmd);
           return;
         }
-        console.log("found frame", cmdFrame.reference);
+        console.log("EE: found frame " + cmdFrame.reference+" for command "+cmd.getClassName()+" r="+cmd.reference);
 
         whenFrameLoaded(cmdFrame.reference, function () {
           var frame = registry.byId("frame" + cmdFrame.reference);
@@ -1160,16 +1152,19 @@
       });
     }
 
-    function searchForFrameAndHandleEvent(ev) {
+    function searchForFrameAndHandleEvent(ev, action) {
 
       require(["dojox/layout/ContentPane", "dijit/registry", "/webappos.js", "dojo/domReady!"], function (ContentPane, registry) {
-
         var evFrame = searchForFrame(ev);
         if (!evFrame) {
           console.log("Could not find the frame for event", ev);
           return;
         }
         console.log("found event frame", evFrame.reference);
+        funcName="handle" + ev.getClassName();
+        if (action && action.resolvedLocation)
+          funcName = action.resolvedLocation;
+        console.log("funcName="+funcName);
 
         whenFrameLoaded(evFrame.reference, function () {
           var frame = registry.byId("frame" + evFrame.reference);
@@ -1178,10 +1173,10 @@
           var iframe = document.getElementById('iframe' + evFrame.reference);
           if (iframe) {
             if (iframe.contentWindow)
-              iframe.contentWindow["handle" + ev.getClassName()](ev);
+              iframe.contentWindow[funcName](ev);
             else
               if (iframe.frameElement)
-                iframe.frameElement.contentWindow["handle" + ev.getClassName()](ev);
+                iframe.frameElement.contentWindow[funcName](ev);
           }
           else
             alert("error evaluating event");
@@ -1195,7 +1190,6 @@
 
     function fOptionSelectedEvent(opt) {
       return function () {
-        console.log("option selected ", opt);
         opt.setLocation("SELECTED");
         var ev = new tda.model.OptionSelectedEvent();
         ev.setOption([opt]);
@@ -1204,14 +1198,12 @@
     }
 
     function executeRefreshOptionsCommand(cmd) {
-      console.log("REFRESH OPTS");
 
       var ee = cmd.environmentEngine[0];
       cmd.delete();
 
       if (!ee || !(ee.option))
         return;
-      console.log("REFRESH OPTS", ee.option);
 
       var activeFrameRef = 0;
       if (activeDojoFrame)
@@ -1220,18 +1212,14 @@
       require(["dojo", "dijit/registry", "dijit/form/DropDownButton", "dijit/TooltipDialog", "dijit/form/Button", "dijit/form/RadioButton", "dijit/form/Select", "dojox/form/DropDownSelect", "dojo/domReady!"],
         function (dojo, registry, DropDownButton, TooltipDialog, Button, RadioButton, Select, DropDownSelect) {
 
-          console.log("PROCESSING OPTS", ee.option);
           initToolbar();
           //        setTimeout(function() {
           //        setTimeout(function() {
 
           for (var k = 0; k < ee.option.length; k++) {
-            console.log("USING OPTION", ee.option[k].caption);
             if (ee.option[k].frame && (ee.option[k].frame.length > 0) && (ee.option[k].frame[0].reference != activeFrameRef)) {
-              console.log("IGNORE OPTION", ee.option[k].caption);
               continue; // ignore non-active frames...
             }
-            console.log("USING OPTION2", ee.option[k].caption);
             var opt = ee.option[k];
             if (!opt.id)
               opt.setId("option" + opt.reference);
@@ -1253,7 +1241,6 @@
                   var selected = option.child[i].location && (option.child[i].location.toUpperCase() == "SELECTED");
                   if (!selected)
                     selected = false;
-                  console.log("option " + option.child[i].caption + " selected=" + selected);
                   sOptions.push({
                     label: option.child[i].caption, value: option.child[i].id,
                     selected: selected
@@ -1264,7 +1251,6 @@
                   label: option.caption,
                   name: option.caption,
                   onChange: function (id) {
-                    console.log("SELECT CHANGE");
                     for (var i = 0; i < option.child.length; i++) {
                       if (option.child[i].location == "SELECTED")
                         delete option.child[i].location;
@@ -1366,7 +1352,6 @@
                       //                          value: "caption"+i,
                       name: option.id, // group id
                       onChange: function (id) {
-                        console.log("RADIO CHANGE ", id);
                         if (id == true) {
                           setTimeout(function (childi, fchildi) {
                             childi.setLocation("SELECTED");
@@ -1677,7 +1662,6 @@
       });
 
     function executeShowInformationBarCommand(cmd) {
-      console.log("SHOW INFO BAR EE", cmd.message);
 
       require(["dijit/Toolbar", "dijit/form/Button", "dojox/layout/ContentPane", "dojo/domReady!"],
         function (Toolbar, Button, ContentPane) {

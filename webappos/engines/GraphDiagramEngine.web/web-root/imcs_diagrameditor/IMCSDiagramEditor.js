@@ -32,15 +32,14 @@ function addCSS(src) {
   headElement.appendChild(s);
 }
 
-var scriptsAdded = 0;
-var scriptsStarted = false;
-var scriptsFinished = false;
+var imcsdeScriptsAdded = 0;
+var imcsdeScriptsStarted = false;
+var imcsdeScriptsFinished = false;
 
 function getScriptFolder(filename) {
   var scriptElements = document.getElementsByTagName('script');
   for (var i = 0; i < scriptElements.length; i++) {
     var source = scriptElements[i].src;
-console.log("src="+source);
     if (source.indexOf(filename) > -1) {
       var location = source.substring(0, source.indexOf(filename));
       return location;
@@ -59,7 +58,7 @@ function addScript(src) {
   else
     s.src = SCRIPT_FOLDER + src;
   s.onload = function () {
-    scriptsAdded++;
+    imcsdeScriptsAdded++;
   };
   s.onerror = function () {
     console.log("script " + src + " not loaded");
@@ -352,8 +351,7 @@ window.updateScrollBars = function (visibleW, visibleH, totalW, totalH) {
 
   var f = function () {
     if (typeof window.tinyscrollbar==='undefined') {
-      console.log("defer scrollbar");
-      setTimeout(f, 2000);
+      setTimeout(f, 200);
       return;
     }
 
@@ -373,6 +371,9 @@ window.updateScrollBars = function (visibleW, visibleH, totalW, totalH) {
     });*/
 
     window.scrollbar1move = function (ev) {
+      if ($('#scrollbar1').find(".scrollbar").hasClass("disable"))
+        return;
+
       var f = function () { // setTimeout, since the track of the scrollbar has to be repainted
         var h = parseInt($("#scrollbar1").find(".scrollbar").css("height"));
         var th = parseInt($("#scrollbar1").find(".scrollbar").find(".track").find(".thumb").css("height"));
@@ -453,7 +454,6 @@ window.moveScrollWheel = function (ev) {
 
   var scrollbar1 = $("#scrollbar1").data("plugin_tinyscrollbar");
   if (scrollbar1) scrollbar1.thumbPosition = val;
-
   window.scrollbar1move();
 };
 
@@ -771,7 +771,7 @@ var IMCSDiagramEditor = function(settings) { // class
         }
         for (var i = 0; i < layoutRunnables.length; i++) {
           for (var j = 0; j < layoutRunnables[i].length; j++) {
-            console.log("runnable " + i + " " + j + " of " + layoutRunnables[i].length);
+            //console.log("runnable " + i + " " + j + " of " + layoutRunnables[i].length);
             layoutRunnables[i][j]();
           }
         }
@@ -804,7 +804,7 @@ var IMCSDiagramEditor = function(settings) { // class
     // set new ajoo coos
     var arr = [];
 
-    console.log("set coos", JSON.stringify(coos));
+    //console.log("set coos", JSON.stringify(coos));
 
     for (var i in clonedBoxes) {
       var el = clonedBoxes[i];
@@ -957,12 +957,25 @@ var IMCSDiagramEditor = function(settings) { // class
       console.log("CHANGE TIME ", (t2 - t1));
 
     },
+    onSelectionChange: function (ajooDgr, arr) {
+      console.log("ajoo_de callback: onSelectionChange", arr);
+      // TODO: check with previous arr passed to onElementsSelected
+      if (settings.onElementsSelected)
+        settings.onElementsSelected(arr);
+    },
+
     onDiagramClick: function () {
       console.log("ajoo_de callback: onDiagramClick");
       if (settings.onElementsSelected)
         settings.onElementsSelected([]);
     },
-    onDiagramRightClick: settings.onDiagramRightClick,
+    onDiagramRightClick: function() {
+      console.log("ajoo_de callback: onDiagramRightClick");
+      if (settings.onElementsSelected)
+        settings.onElementsSelected([]);
+      if (settings.onDiagramRightClick)
+        settings.onDiagramRightClick();
+    },
     onElementClick: function (r) {
       console.log("ajoo_de callback: onElementClick");
 
@@ -1548,6 +1561,7 @@ var IMCSDiagramEditor = function(settings) { // class
    * @param {function} fAfter a function to be called after the diagram is repainted
    */
   this.refresh = function (fAfter) {
+    console.log("refresh()");
     runInLayoutThread(4, function () { // waiting for all elements to be added to the diagram...
       ajoo_de.whenReady(function () {
         logDiagram();
@@ -1555,12 +1569,13 @@ var IMCSDiagramEditor = function(settings) { // class
           runInLayoutThread(4, function () {
             if (myThis.layout) {
               try {
+                console.log("refresh: arranging incrementally...");
                 var t1 = now();
                 var coos = myThis.layout.arrangeIncrementally();
                 var t2 = now();
                 setCoos(coos);
                 var t3 = now();
-                console.log("arrng incrmt during refresh: arrange incr=" + (t2 - t1) + " setCoos=" + (t3 - t2));
+                console.log("arranged incrementally in " + (t2 - t1) + " ms, setCoos in " + (t3 - t2)+" ms");
               } catch (t) {
                 console.log("Exception occurred during refresh(). Switching to slow-mode...", t);
                 myThis.resetLayout(null, true);

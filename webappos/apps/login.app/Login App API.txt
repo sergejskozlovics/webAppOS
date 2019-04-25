@@ -1,4 +1,4 @@
-document: Login app
+document: Login App API
 
 group: Introduction
 
@@ -14,11 +14,11 @@ On successful login, redirects to the default desktop app or to the provided red
 
 group: Access URL
 
-The login app is accessible via the following URL:
+The login app is accessible via one the following URLs:
 ---code---
-http://<domain_or_ip>/apps/login
-http://<domain_or_ip>/apps/login/?redirect=<redirect URL>
-http://<domain_or_ip>/apps/login/?signout=true
+https://[domain_or_ip]/apps/login
+https://[domain_or_ip]/apps/login/?redirect=[redirect URL]
+https://[domain_or_ip]/apps/login/?signout=true
 ----------
 
 There can be two optional parameters:
@@ -28,3 +28,4 @@ There can be two optional parameters:
 * signout - can be set to true to instruct the login app to call
             <webappos.sign_out>, thus, avoiding automatic logging in.
 
+It is strongly recommended to access the login app via the HTTPS connection.

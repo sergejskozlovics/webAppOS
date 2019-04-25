@@ -203,102 +203,27 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 						}
 						
 						
-						if (API.config.inline_webcalls) {
-							// executing webcall here, without web processors
 							
-							TDAKernel kernel = API.dataMemory.getTDAKernel(seed2.project_id);
-							boolean newSingleSynchronizer = (kernel!=null) && (seed2 instanceof IWebCaller.SyncedWebCallSeed);
-							if (newSingleSynchronizer) {
-								APIForServerBridge.dataMemoryForServerBridge.setSingleSynchronizer(seed2.project_id, ((IWebCaller.SyncedWebCallSeed)seed2).singleSynchronizer);
-							}
-							
-							Class<?> adapterClass = null;
-							Object adapter = null;
-									
-							try {
-								adapterClass = Class.forName("org.webappos.adapters.webcalls."+action.resolvedInstructionSet+".WebCallsAdapter");					
-								adapter = adapterClass.getConstructor().newInstance();
-							}
-							catch(Throwable t) {					
-							}
-							
-							if (adapter == null)
-								return;
-															
-							if ((seed2.callingConventions == CallingConventions.JSONCALL) && (adapter instanceof IJsonWebCallsAdapter)) {
-								boolean newOwner = false;
-								if (kernel!=null && kernel.getOwner()==null) {
-									newOwner = true;
-									TDAKernel.Owner owner = new TDAKernel.Owner();
-									owner.login = seed2.login;
-									owner.project_id = seed2.project_id;
-									kernel.setOwner(owner);
-								}
-								try {
-									String res = ((IJsonWebCallsAdapter)adapter).jsoncall(action.resolvedLocation, seed2.jsonArgument, seed2.project_id, API.dataMemory.getProjectFullAppName(seed2.project_id), seed2.login);
-									if (seed2.jsonResult!=null)
-										seed2.jsonResult.complete(res);
-								}
-								catch(Throwable t) {
-									if (seed2.jsonResult!=null)
-										seed2.jsonResult.completeExceptionally(t);
-								}
-								if (newOwner)
-									kernel.setOwner(null);
-							}
-							else
-							if ((seed2.callingConventions == CallingConventions.TDACALL) && (adapter instanceof ITdaWebCallsAdapter)) {
-								boolean newOwner = false;
-								if (kernel!=null && kernel.getOwner()==null) {
-									newOwner = true;
-									TDAKernel.Owner owner = new TDAKernel.Owner();
-									owner.login = seed2.login;
-									owner.project_id = seed2.project_id;
-									kernel.setOwner(owner);
-								}
-								try {
-									((ITdaWebCallsAdapter)adapter).tdacall(action.resolvedLocation, seed2.tdaArgument, kernel, seed2.project_id, API.dataMemory.getProjectFullAppName(seed2.project_id), seed2.login);
-									if (seed2.jsonResult!=null)
-										seed2.jsonResult.complete(null);
-								}
-								catch(Throwable t) {
-									if (seed2.jsonResult!=null)
-										seed2.jsonResult.completeExceptionally(t);
-								}
-								if (newOwner)
-									kernel.setOwner(null);
+						// execute webcall within some appropriate web processor (or make an inline call)...
+						
+						boolean submitted = false;
+						try {
+							submitted = APIForServerBridge.wpbServiceForServerBridge.webCallToWebProcessor(seed2, action);
+						}
+						catch(Throwable t) {
+						}
+						
+						if (!submitted) {
+							seed2.timeToLive--;
+							if (seed2.timeToLive>0) {
+								tryAgain = true;
+								logger.info("reschedule/enqueue "+seed2.actionName+" ("+seed2.hashCode()+") app="+APIForServerBridge.dataMemoryForServerBridge.getProjectFullAppName(seed2.project_id)+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id)+",ttl="+seed2.timeToLive);					
 							}
 							else {
-								logger.error("Count not peform server-side web call "+seed2.actionName+" since calling conventions do not match. ");
+								logger.info("seed time-to-live expired: "+seed2.actionName+" ("+seed2.hashCode()+") app="+APIForServerBridge.dataMemoryForServerBridge.getProjectFullAppName(seed2.project_id)+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id));
 							}
-							
-							// on web proc finish:
-							if (newSingleSynchronizer) {
-								APIForServerBridge.dataMemoryForServerBridge.setSingleSynchronizer(seed2.project_id, null);
-							}
-							
 						}
-						else {
-							// execute webcall within some appropriate web processor...
-							
-							boolean submitted = false;
-							try {
-								submitted = APIForServerBridge.wpbServiceForServerBridge.webCallToWebProcessor(seed2, action);
-							}
-							catch(Throwable t) {
-							}
-							
-							if (!submitted) {
-								seed2.timeToLive--;
-								if (seed2.timeToLive>0) {
-									tryAgain = true;
-									logger.info("reschedule/enqueue "+seed2.actionName+" ("+seed2.hashCode()+") app="+APIForServerBridge.dataMemoryForServerBridge.getProjectFullAppName(seed2.project_id)+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id)+",ttl="+seed2.timeToLive);					
-								}
-								else {
-									logger.info("seed time-to-live expired: "+seed2.actionName+" ("+seed2.hashCode()+") app="+APIForServerBridge.dataMemoryForServerBridge.getProjectFullAppName(seed2.project_id)+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id));
-								}
-							}					
-						}
+						
 					}
 					finally {
 						synchronized (WebCaller.this) {

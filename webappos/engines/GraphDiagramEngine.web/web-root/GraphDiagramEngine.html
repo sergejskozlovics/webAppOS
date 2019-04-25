@@ -48,7 +48,7 @@ function updateCollection(rDiagram, rElementsArr)
 // rElementsArr is an array of elements, where at least the reference and
 // the location(:String) attributes are specified
 {
-   console.log("in update collection "+rElementsArr.length);
+   console.log("in update collection, len="+rElementsArr.length);
    var arr = [];
    for (var i=0; i<rElementsArr.length; i++) {
      var el = tda.model[rElementsArr[i].reference];
@@ -77,7 +77,7 @@ function updateCollection(rDiagram, rElementsArr)
      collArr[i].delete();
    }
 
-console.log("UPDATE COLLECTION",arr.length);
+   console.log("updating collection, len="+arr.length);
    var coll = new tda.model.Collection();
    coll.setElement(arr);
    gd.setCollection([coll]);
@@ -108,49 +108,55 @@ function updateLocations(rElementsArr)
 
 
 ///// HANDLING EVENT OptionSelectedEvent /////
-function handleOptionSelectedEvent(ev)
+function handleLayoutOptionSelectedEvent(ev)
 {
-try {
-console.log("handleOptionSelectedEvent ev="+ev);
-console.log("handleOptionSelectedEvent tda.model[11836]="+tda.model[11836]);
-console.log("handleOptionSelectedEvent ev.option="+ev.option);
-  console.log("handleOptionSelectedEvent "+ev.option[0].caption);
-  var ee = tda.model.EnvironmentEngine.getFirstObject();
-  var rocmd = new tda.model.RefreshOptionsCommand();
-  rocmd.setEnvironmentEngine(ee);
-  tda.model.submit(rocmd);
-  
-  if (ev.option[0].caption == "Semi-automatic") {
-    gd.setLayoutMode(0);
-console.log("SWITCHED TO SEMI-AUTOMATIC");
-    smartLayoutAndRefresh(gd, null, true); // no changes, just reset layout to incremental (if needed)
+  try {
+  //console.log("handleOptionSelectedEvent ev="+ev);
+  //console.log("handleOptionSelectedEvent tda.model[11836]="+tda.model[11836]);
+  //console.log("handleOptionSelectedEvent ev.option="+ev.option);
+    console.log("handleOptionSelectedEvent "+ev.option[0].caption);
+    var ee = tda.model.EnvironmentEngine.getFirstObject();
+    
+    console.log("switching layout to "+ev.option[0].caption);
+    if (ev.option[0].caption == "Semi-automatic") {
+      gd.setLayoutMode(0);
+      smartLayoutAndRefresh(gd, null, true); // no changes, just reset layout to incremental (if needed)
+    }
+    else
+    if (ev.option[0].caption == "Manual") {
+      gd.setLayoutMode(1);
+      imcs_de.setLayoutManager(null);
+      smartLayoutAndRefresh(gd, [], true); // no changes, just reset layout to manual
+    }
+    else
+    if (ev.option[0].caption == "Symmetrically") {
+      gd.setLayoutMode(0);
+      gd.setLayoutAlgorithm(5);
+      smartLayoutAndRefresh(gd, [], false);
+    }
+    else
+    if (ev.option[0].caption == "Hierarchically") {
+      gd.setLayoutMode(0);
+      gd.setLayoutAlgorithm(2);
+      smartLayoutAndRefresh(gd, [], false);
+    }
+    else
+    if (ev.option[0].caption == "Universally") {
+      gd.setLayoutMode(0);
+      gd.setLayoutAlgorithm(3);
+      smartLayoutAndRefresh(gd, [], false);
+    }  
+
+/*    var rocmd = new tda.model.RefreshOptionsCommand();
+    rocmd.setEnvironmentEngine(ee);
+    tda.model.submit(rocmd);*/
   }
-  else
-  if (ev.option[0].caption == "Manual") {
-    gd.setLayoutMode(1);
-    imcs_de.setLayoutManager(null);
-    smartLayoutAndRefresh(gd, [], true); // no changes, just reset layout to manual
+  catch(t) {
+    console.log(t.stack);
   }
-  else
-  if (ev.option[0].caption == "Symmetrically") {
-    gd.setLayoutAlgorithm(5);
-    smartLayoutAndRefresh(gd, [], false);
-  }
-  else
-  if (ev.option[0].caption == "Hierarchically") {
-    gd.setLayoutAlgorithm(2);
-    smartLayoutAndRefresh(gd, [], false);
-  }
-  else
-  if (ev.option[0].caption == "Universally") {
-    gd.setLayoutAlgorithm(3);
-    smartLayoutAndRefresh(gd, [], false);
-  }  
-}
-catch(t) {
-console.log("HANDLE OPTION SELECTED EXCEPTION");
-console.log(t.stack);
-}
+
+  renderOptions(gd);
+
 }
 
 ///// RENDER FUNCTIONS /////
@@ -194,12 +200,12 @@ function renderOptions(gd)
 
   var opt1 = new tda.model.Option();
   opt1.setCaption("Semi-automatic");
-  opt1.setOnOptionSelectedEvent("engine:GraphDiagramEngine");
+  opt1.setOnOptionSelectedEvent("GDE.handlerForLayoutOptionSelectedEvent");
   opt1.setFrame(gd.frame);
   opt0.linkChild(opt1);
   var opt2 = new tda.model.Option();
   opt2.setCaption("Manual");
-  opt2.setOnOptionSelectedEvent("engine:GraphDiagramEngine");
+  opt2.setOnOptionSelectedEvent("GDE.handlerForLayoutOptionSelectedEvent");
   opt2.setFrame(gd.frame);
   opt0.linkChild(opt2);
 
@@ -215,17 +221,17 @@ function renderOptions(gd)
 
   var optU = new tda.model.Option();
   optU.setCaption("Universally");
-  optU.setOnOptionSelectedEvent("engine:GraphDiagramEngine");
+  optU.setOnOptionSelectedEvent("GDE.handlerForLayoutOptionSelectedEvent");
   optU.setFrame(gd.frame);
   optL.linkChild(optU);
   var optH = new tda.model.Option();
   optH.setCaption("Hierarchically");
-  optH.setOnOptionSelectedEvent("engine:GraphDiagramEngine");
+  optH.setOnOptionSelectedEvent("GDE.handlerForLayoutOptionSelectedEvent");
   optH.setFrame(gd.frame);
   optL.linkChild(optH);
   var optS = new tda.model.Option();
   optS.setCaption("Symmetrically");
-  optS.setOnOptionSelectedEvent("engine:GraphDiagramEngine");
+  optS.setOnOptionSelectedEvent("GDE.handlerForLayoutOptionSelectedEvent");
   optS.setFrame(gd.frame);
   optL.linkChild(optS);
 
@@ -235,17 +241,11 @@ function renderOptions(gd)
   var arr = ee.getOption();
   var arr2 = [];
   arr2.push(opt);
-  console.log(">>>OPTION Layout");
   for (var i=0; i<arr.length; i++) {
     arr2.push(arr[i]);
-    console.log(">>>OPTION "+arr[i].getCaption());
   }
 //  arr.splice(0, 0, opt);
   ee.setOption(arr2);
-
-  var arr3 = ee.getOption();
-  for (var i=0; i<arr3.length; i++)
-    console.log("ARR3=> "+arr3[i].getCaption());
 
   var rocmd = new tda.model.RefreshOptionsCommand();
   rocmd.setEnvironmentEngine(ee);
@@ -261,7 +261,6 @@ function repoElementsToDiagram(gd, elements) {
       if (s=="Node") {
         if (imcs_de.boxExists(obj.reference)) {
 //          imcs_de.removeBox(obj.reference);
-console.log("REPO ADD BOX");
           imcs_de.addBox(obj);
 //          var loc = new NodeLocation(obj.location);
 //          imcs_de.updateBoxLocation(obj.reference, loc.getX(), loc.getY(), loc.getWidth(), loc.getHeight()); 
@@ -276,7 +275,6 @@ console.log("REPO ADD BOX");
       var s = obj.getClassName();
       if (s == 'Edge') {
         if (imcs_de.lineExists(obj.reference)) {
-console.log("REPO ADD LINE",obj);
 //            var loc = new EdgeLocation(obj.location);
 //            imcs_de.updateLineLocation(obj.reference, loc.getPointsXY()); 
             imcs_de.removeLine(obj.reference);     // THIS IS A SLOW-DOWN, otherwise, updateLineLocation cannot find points...
@@ -339,10 +337,9 @@ function smartLayoutAndRefresh(gd, elements, isIncremental, fAfter) {
 
 
     if (zeroCnt > nodeCnt/2) {
-      console.log("SWITCH FROM INCREMENTAL TO UNIVERSAL");
+      console.log("Switching to arrange from scratch");
       isIncremental = false; // arrange from scratch; too many nodes with zero coos...
       if (forksCnt>0) {
-         console.log("SWITCH TO HIERARCHICAL");
          gd.setLayoutAlgorithm(2);
       }
     }
@@ -373,24 +370,21 @@ function smartLayoutAndRefresh(gd, elements, isIncremental, fAfter) {
           layoutName = "SYMMETRIC";
     }
 
-    tda.model.jsonsubmitAsync("layoutGraphDiagram",
-      {reference:gd.reference,layoutName:layoutName},
-      function(res) {
-        console.log("jsonsubmitAsync RETURNED: ",res);
-        repoElementsToDiagram(gd, gd.element);
-        imcs_de.refresh(fAfter);
-      });
+    webappos.webcall("layoutGraphDiagram",
+      {reference:gd.reference,layoutName:layoutName}).then(
+        function(res) {
+          console.log("layoutGraphDiagram returned: ",res);
+          repoElementsToDiagram(gd, gd.element);
+          imcs_de.refresh(fAfter);
+        });
     // server-side layout done!
   }
   else {
     if (isIncremental) {
       if (!imcs_de.layout) {
-console.log("SEMI-AUTOMATIC SET DEFAULT LAY MNGR");
         imcs_de.setDefaultLayoutManager(true);
       }
-console.log("SEMI-AUTOMATIC REPO ELEMENTS TO DIAGRAM");
       repoElementsToDiagram(gd, arr);
-console.log("SEMI-AUTOMATIC REFRESH");
       imcs_de.refresh(fAfter);
     }
     else {
@@ -406,10 +400,8 @@ console.log("SEMI-AUTOMATIC REFRESH");
         if (gd.layoutAlgorithm == 5)
           layoutName = "SYMMETRIC";
 
-console.log("BEFORE RESET",gd.layoutMode);
       imcs_de.resetLayout(layoutName);
 
-console.log("BEFORE REFRESH");
       imcs_de.refresh(fAfter);
 
       //if (gd.layoutMode == 1)
@@ -599,13 +591,13 @@ function renderGraphDiagram(_gd, _readOnly, _elements, _delayed) {
       var currTime = new Date();
       var diff = currTime.getTime() - lastRenderRequestTime.getTime();
       if ((diff>=600) && (typeof _gd != 'undefined')) {
-        console.log("DIFF between renders: "+diff);
+        //console.log("DIFF between renders: "+diff);
         // there was no other render request
         renderGraphDiagram(_gd, _readOnly, _elements, true);
       }
       else {
         // otherwise, another render request will be executed
-        console.log("ignoring render request", diff);
+        //console.log("ignoring render request", diff);
       }
     }, 605);
     return;
@@ -628,7 +620,6 @@ function renderGraphDiagram(_gd, _readOnly, _elements, _delayed) {
 
 function getChangedElements(cmd) {
   if (cmd.element) {
-    console.log("CHANGED COMMAND "+cmd.element.length+" ELMS");
     return cmd.element;
   }
 
@@ -645,12 +636,10 @@ function getChangedElements(cmd) {
     ok = false;
 
   if (gd.collection) {
-    console.log("GD COLLECTION",gd.collection.length);
     if (gd.collection.length>0)
       console.log(gd.collection[0].element);
   }
   if (ok) {
-    console.log("CHANGED SELECTED "+gd.collection[0].element.length+" ELMS");
     return gd.collection[0].element; // return selected elements as possible changed...
   }
 
@@ -662,9 +651,6 @@ function getChangedElements(cmd) {
         arr.push(gd.element[i]);
       }
   }
-  console.log("CHANGED NEW "+arr.length+" ELMS");
-if (arr.length==1)
-console.log("ARR="+arr[0].reference);
   return arr;
 }
 
@@ -688,9 +674,9 @@ function executeOkCmd(a) {
     console.log("OkCmd return");
     return;
   }
-  if (a.element) {
+/*  if (a.element) {
     console.log(a.element.size, a.element);
-  }
+  }*/
   renderGraphDiagram(a.graphDiagram[0], lastReadOnly, getChangedElements(a));
 }
 
@@ -708,7 +694,6 @@ function executeActiveElementCmd(a) {
   
   if (a.element && (a.element.length>0)) {
     var f = function() {
-      console.log("active el dgr ok",a.element);
       // adding elements, if they have not been added....
       var arr = [];
       for (var i=0; i<a.element.length; i++)
@@ -717,7 +702,6 @@ function executeActiveElementCmd(a) {
         }
       if (arr.length>0)
          renderGraphDiagram(a.graphDiagram[0], lastReadOnly, arr); // adding new elements...
-      console.log("selecting",a.element);
       updateCollection(a.graphDiagram[0].reference, a.element);
       imcs_de.selectElements(a.element);
     };
@@ -760,16 +744,14 @@ function executePopUpCmd(a) {
     s += "<li onclick='_executePopUpTransf(\""+elms[i].procedureName+"\")'><div>"+arr[0]+"</div></li>";
   }
   s += "</ul>";
-console.log("1");
   popUpDiv.innerHTML = s;
-console.log("1a");
-try{
+/*try{
   $("#popUpMenu").menu();
 }
 catch(t) {
   console.log(t);
-}
-/*  $("#popUpMenu").menu( {
+} */
+  $("#popUpMenu").menu( {
     classes: {
       "ui-menu": "highlight"
     },
@@ -778,19 +760,15 @@ catch(t) {
       of: globalMouseEvent,
       collision: "fit"
     }
-  });*/
-console.log("2");
+  });
   if (globalMouseEvent.pageX+$("#popUpDiv").width() >= document.body.clientWidth)
      globalMouseEvent.pageX = document.body.clientWidth-$("#popUpDiv").width();
   if (globalMouseEvent.pageY+$("#popUpDiv").height() >= document.body.clientHeight)
      globalMouseEvent.pageY = document.body.clientHeight-$("#popUpDiv").height();
-console.log("3");
   $("#popUpDiv").css("left", globalMouseEvent.pageX);
   $("#popUpDiv").css("top", globalMouseEvent.pageY);
 
-console.log("4");
   $("#wrapDiv").show();
-console.log("5");
 
 }
 

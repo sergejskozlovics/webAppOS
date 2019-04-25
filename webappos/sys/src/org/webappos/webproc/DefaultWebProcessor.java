@@ -2,6 +2,7 @@ package org.webappos.webproc;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.Executors;
@@ -44,10 +45,34 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 	}
 
 	@Override
-	public boolean perProjectCachedInstructionSet(String name) throws RemoteException {
-		return "lua".equals(name);  // TODO: move to webcalls adapters API
+	public boolean perProjectCachedInstructionSet(String instructionSet) throws RemoteException {
+		Class<?> adapterClass = null;
+		try {
+			adapterClass = Class.forName("org.webappos.adapters.webcalls."+instructionSet+".WebCallsAdapter");					
+			return adapterClass.getMethod("clearCache", String.class) != null;
+		}
+		catch(Throwable t) {
+			return false;
+		}
+		
+		
+//		return "lua".equals(name);  // TODO: move to webcalls adapters API
 	}
 	
+	@Override
+	public void clearCachedInstructionSet(String project_id, String instructionSet) throws RemoteException {
+		Class<?> adapterClass = null;
+		try {
+			adapterClass = Class.forName("org.webappos.adapters.webcalls."+instructionSet+".WebCallsAdapter");					
+			Method m = adapterClass.getMethod("clearCache", String.class);
+			if (m!=null)
+				m.invoke(project_id);
+		}
+		catch(Throwable t) {
+			return;
+		}
+	}
+
 	private static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	
 	@Override

@@ -269,4 +269,17 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 		logger.debug("LUA TIMES: INIT="+(time2-time1)+" COMPILE="+(time3-time2)+" RUN="+(time4-time3));	
 	}
 
+
+
+	/**
+	 * This function indicates that this web calls adapter can store cache per project.
+	 * By calling clearCache, that cache can be forgotten.
+	 * @param project_id the project_id for which to forget (clear) the cache
+	 */
+	public static void clearCache(String project_id) {
+		System.out.println("Removing from cache "+project_id+" (by request)...");
+		logger.trace("Removing from cache "+project_id+" (by request)...");
+		cache.remove(project_id);
+	}
+
 }

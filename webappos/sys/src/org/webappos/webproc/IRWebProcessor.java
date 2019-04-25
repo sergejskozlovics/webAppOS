@@ -33,7 +33,16 @@ public interface IRWebProcessor extends Remote {
 	 * @throws RemoteException on Web Processor Bus error
 	 */
 	public boolean perProjectCachedInstructionSet(String name) throws RemoteException;
-	
+
+	/**
+	 * Asks the web processor to clear cached instruction set. Normally, called when the project is being closed.
+	 *
+	 * @param project_id the project_id which is being closed
+	 * @param instructionSet the instruction set name, for which to clear the cache
+	 * @throws RemoteException on Web Processor Bus error
+	 */
+	public void clearCachedInstructionSet(String project_id, String instructionSet) throws RemoteException;
+
 	/**
 	 * Starts (asynchronously) the given webcall corresponding to the given webcall declaration.
 	 * The startWebCall must return immediately, thus, the caller (WebCaller from the web server bridge) can continue

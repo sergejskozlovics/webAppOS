@@ -1,4 +1,4 @@
-document: FileDialog API
+document: FileDialog App API
 
 group: Introduction
 
@@ -19,8 +19,8 @@ filter - a string containing descriptions of file filters to look for;
          filters are delimited by \n (%0A), extensions are delimited by ","; all
          blanks, pluses, and other non-URI characters must be escaped (e.g., "C++ file" => "C%2B%2B%20file")
 
-         Example:  "Word%20document%20(*.doc,*.rtf)%0AC%2B%2B%20file(*.cpp,*.h,*.hpp)"
-         [decodes to "Word document (*.doc,*.rtf)\nC++ file(*.cpp,*.h,*.hpp)"]
+         Example:  "Word%20document%20(*.doc,*.rtf)%0AC%2B%2B%20file(*.cpp,*.h,*.hpp)", which
+         decodes to "Word document (*.doc,*.rtf)\nC++ file(*.cpp,*.h,*.hpp)".
 browse_id - some id representing the file browse dialog; can be used to distinguish multiple
             dialogs when the return value is recevied via a HTML5 message; a good suggestion is to
             use the current timestamp
@@ -35,12 +35,12 @@ group: Getting the Chosen File Name
 When the file has been selected, FileDialog.html
 sends back a HTML5 message to its parent frame (the caller):
 ---code---
-window.parent.postMessage({protocol:"file_dialog_result", browse_id:<passed_browse_id>, result: <chosen_file_name_relative_to_user's_home>}, "*");
+window.parent.postMessage({protocol:"file_dialog_result", browse_id:"{passed_browse_id}", result: <chosen_file_name_relative_to_user's_home>}, "*");
 ----------
 
 If the Cancel button is pressed, the message will be:
 ---code---
-window.parent.postMessage({protocol:"file_dialog_result", browse_id:<passed_browse_id>, result: ""}, "*");
+window.parent.postMessage({protocol:"file_dialog_result", browse_id:"{passed_browse_id}", result: ""}, "*");
 ----------
 
 The parent must also check when the embedded FileDialog iframe is being removed from the screen

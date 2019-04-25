@@ -132,7 +132,6 @@ Actions = function(editor, action_name) {
                         if (target.lineType === "Direct") {
                             return;
                         }
-console.log("rerouting target ", target);
                         var line_rerouting = new LineRerouting(target);
                         line_rerouting.startDragging();
                         actions.state["object"] = line_rerouting;
@@ -316,6 +315,7 @@ Actions.prototype = {
 
                 var mouse_state = editor.getMouseState();
                 if (mouse_state.mouseDown) {
+                    new Event(editor, "mouseDown", {ev: e}); // by SK
 
                     var action_name = actions["state"]["name"];
                     if (action_name) {

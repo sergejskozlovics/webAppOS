@@ -1,3 +1,9 @@
+function now()
+{
+  var d = new Date();
+  return d.getTime();
+}
+
 ///// Helper functions for loading dependencies /////
 
 function addCSS(src) {
@@ -11,9 +17,9 @@ function addCSS(src) {
   headElement.appendChild(s);
 }
 
-var scriptsAdded = 0;
-var scriptsStarted = false;
-var scriptsFinished = false;
+var ajooScriptsAdded = 0;
+var ajooScriptsStarted = false;
+var ajooScriptsFinished = false;
 
 function getScriptFolder(filename) {
   var scriptElements = document.getElementsByTagName('script');
@@ -37,7 +43,7 @@ function addScript(src) {
   else
     s.src = SCRIPT_FOLDER + src;
   s.onload = function () {
-    scriptsAdded++;
+    ajooScriptsAdded++;
   };
   s.onerror = function () {
     console.log("script " + src + " not loaded");
@@ -48,25 +54,25 @@ function addScript(src) {
 
 function whenLibsLoaded(f, number) {
   if (typeof number == 'undefined')
-    number = 50;
-  if (scriptsStarted) {
+    number = 51;
+  if (ajooScriptsStarted) {
     // checking if loaded...
     var condition;
-    if (number == 50)
-      condition = ((scriptsAdded < number) || (typeof AjooEditor == 'undefined') || (typeof Konva == 'undefined') || (typeof Box == 'undefined') || (typeof ACircle == 'undefined'));
+    if (number == 51)
+      condition = ((ajooScriptsAdded < number) || (typeof AjooEditor == 'undefined') || (typeof Konva == 'undefined') || (typeof Box == 'undefined') || (typeof ACircle == 'undefined'));
     else
-      condition = (scriptsAdded < number);
+      condition = (ajooScriptsAdded < number);
 
     if (condition) {
       setTimeout(function () {
         whenLibsLoaded(f, number);
       }, 200);
     } else {
-      scriptsFinished = true;
+      ajooScriptsFinished = true;
       f();
     }
   } else {
-    scriptsStarted = true;
+    ajooScriptsStarted = true;
 
     // we assume that the dojo.js script is already loaded.
     // 23 scripts initially
@@ -141,8 +147,8 @@ function whenLibsLoaded(f, number) {
 
         addScript("lib/bootstrap.min.js");
         whenLibsLoaded(f);
-      }, 22);
-    }, 21);
+      }, 23);
+    }, 22);
   }
 }
 
@@ -307,12 +313,10 @@ function AjooDiagramEditor(settings) { // class
       // timeout launched earlier...
       if (!rightAway && (curTime - this.lastProcessCall < 100)) {
         if (fromTimeout) { // re-schedule
-          //            console.log("FROM t/o",curTime-this.lastProcessCall);
           setTimeout(function (myThis) {
             myThis.processDelayedData(null, false, true);
           }, 100, this);
         } else {
-          //            console.log("not t/o",curTime-this.lastProcessCall);
           this.lastProcessCall = curTime;
         }
       } else { // rightAway or timeout...
@@ -322,14 +326,14 @@ function AjooDiagramEditor(settings) { // class
         _EDITOR.addElements(this.delayedData, true);
         var dd2 = new Date();
         var time2 = dd2.getTime();
-        console.log("ADDED DELAYED ELMS " + time2 + " IN " + (time2 - time1));
+        //console.log("ADDED DELAYED ELMS " + time2 + " IN " + (time2 - time1));
         for (var i = 0; i < this.fAfterArr.length; i++)
           this.fAfterArr[i]();
         this.fAfterArr = [];
         this.delayedData = null;
         this.lastProcessCall = null;
         var arr = _EDITOR.getElements();
-        console.log(_EDITOR);
+        //console.log(_EDITOR);
 
         _.each(arr, function (el) {
           //             console.log("cache",el);
@@ -360,17 +364,17 @@ function AjooDiagramEditor(settings) { // class
 
   this.whenReady = function (f) {
     if (this.delayedData) {
-      console.log("ajoo_wrapper: not all added", this.delayedData.boxes.length, this.delayedData.lines.length);
+      //console.log("ajoo_wrapper: not all added", this.delayedData.boxes.length, this.delayedData.lines.length);
       setTimeout(f, 200);
       return;
     } else {
-      console.log("ajoo_wrapper ready, delayedData = " + this.delayedData);
+      //console.log("ajoo_wrapper ready, delayedData = " + this.delayedData);
       f();
     }
   };
 
   this.addNode = function (node) {
-    console.log("ADDBOX");
+    //console.log("ADDBOX");
 
     /* if (this.added)
       return;
@@ -463,7 +467,7 @@ function AjooDiagramEditor(settings) { // class
       }
 
       var box = elms[node.className + node.reference];
-      console.log("ABOX");
+      //console.log("ABOX");
       /*        _EDITOR.stage.cache({
                 x: node.location.getX(),
                 y: node.location.getY(),
@@ -567,7 +571,7 @@ function AjooDiagramEditor(settings) { // class
     }
     this.delayedData.lines.push(line);
     this.processDelayedData(function () {
-      console.log("ALINE");
+      //console.log("ALINE");
     }, true); // trigger delayed data processing...
 
   };
@@ -792,7 +796,7 @@ function AjooDiagramEditor(settings) { // class
   };
 
   this.initialized = function () {
-    return scriptsFinished && (window._EDITOR != null) && (typeof window._EDITOR != 'undefined');
+    return ajooScriptsFinished && (window._EDITOR != null) && (typeof window._EDITOR != 'undefined');
   };
 
   this.setVisibleHeight = function (newH) {
@@ -973,8 +977,34 @@ function AjooDiagramEditor(settings) { // class
     events: {
 
       //Clicks
+      mouseDown: function (data) {
+        console.log("on mousedown", data,)
+        if (!settings.onSelectionChange)
+          return;
+
+        var selElms = _EDITOR.getSelectedElements();
+        var arr = [];
+        for (var s in selElms) {
+          var r=0;
+          if (s && (s.substring(0, 4) == "Node"))
+            r = parseInt(s.substring(4, s.length));
+          else
+          if (s && (s.substring(0, 4) == "Edge")) {
+            r = parseInt(s.substring(4, s.length));
+          } else
+          if (s && (s.substring(0, 5) == "Label")) {
+            r = parseInt(s.substring(5, s.length));
+          }
+
+          if (r!=0)
+            arr.push({reference:r});
+        }
+
+        settings.onSelectionChange(_EDITOR, arr);
+      },
+
       clickedOnDiagram: function (data) {
-        console.log("in clicked on diagram", data)
+        console.log("on clicked on diagram", data)
         _EDITOR.unSelectElements(_EDITOR.getSelectedElements());
         _EDITOR.selectElements([]);
         if (settings.onDiagramClick)
@@ -1016,12 +1046,17 @@ function AjooDiagramEditor(settings) { // class
 
       //RClicks
       rClickedOnDiagram: function (data) {
+        if (_EDITOR.lastRClickTime && (now()-_EDITOR.lastRClickTime)<500)
+          return;
+        _EDITOR.lastRClickTime = now();
         if (settings.onDiagramRightClick)
           settings.onDiagramRightClick();
       },
 
       rClickedOnElement: function (data) {
-
+        if (_EDITOR.lastRClickTime && (now()-_EDITOR.lastRClickTime)<500)
+          return;
+        _EDITOR.lastRClickTime = now();
         var s = data.element._id;
         var r = 0;
         if (s && (s.substring(0, 4) == "Node"))
@@ -1036,7 +1071,11 @@ function AjooDiagramEditor(settings) { // class
       },
 
       rClickedOnCollection: function (data) {
-        console.log("in  rclicked on collection ", data)
+        if (_EDITOR.lastRClickTime && (now()-_EDITOR.lastRClickTime)<500)
+          return;
+        _EDITOR.lastRClickTime = now();
+
+        console.log("TODO: on rclicked on collection ", data)
       },
 
       /*TODO                      keystrokes: function(data) {
@@ -1130,8 +1169,7 @@ function AjooDiagramEditor(settings) { // class
       },
 
       collectionPositionChanged: function (data) {
-        console.log("collection position changed ", data);
-
+        console.log("in collection position changed ", data);
 
         if (settings.onElementsChange) {
           var arr = [];

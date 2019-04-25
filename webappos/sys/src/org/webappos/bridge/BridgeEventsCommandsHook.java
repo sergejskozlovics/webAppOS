@@ -123,6 +123,7 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 	}
 	
 	public boolean handleSyncedEvent(TDAKernel kernel, long rEvent, RAAPI_Synchronizer singleSynchronizer, String login, String project_id, String fullAppName) {
+		logger.trace("Caught synced event "+rEvent);
 		
 		try {
 			String[] handlers = kernel.getEventHandlers(rEvent);

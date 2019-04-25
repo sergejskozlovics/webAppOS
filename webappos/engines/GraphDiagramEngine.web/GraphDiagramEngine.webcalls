@@ -14,4 +14,5 @@ tdacall\ PopUpCmd=clientjs:executePopUpCmd
 layoutGraphDiagram=staticjava:lv.lumii.tda.webgde.GraphDiagramEngine_webcalls#layoutGraphDiagram
 tdacall\ GDE.onFrameActivatedEvent=staticjava:lv.lumii.tda.webgde.GraphDiagramEngine_webcalls#onFrameActivatedEvent
 tdacall\ GDE.onCloseFrameRequestedEvent=staticjava:lv.lumii.tda.webgde.GraphDiagramEngine_webcalls#onCloseFrameRequestedEvent
-tdacall\ GDE.onOptionSelectEvent=staticjava:lv.lumii.tda.webgde.GraphDiagramEngine_webcalls#onOptionSelectEvent
+tdacall\ GDE.defaultHandlerForOptionSelectedEvent=staticjava:lv.lumii.tda.webgde.GraphDiagramEngine_webcalls#onOptionSelectedEvent
+tdacall\ GDE.handlerForLayoutOptionSelectedEvent=clientjs:handleLayoutOptionSelectedEvent

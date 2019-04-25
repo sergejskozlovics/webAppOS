@@ -92,7 +92,6 @@ script_label: {
 
     var p = new Promise(async function(resolve, reject) {
       require([action.resolvedInstructionSet+"_webcalls_adapter.js"], function(adapter) {
-        console.log("ADAPTER",adapter);
         if (adapter.jsoncall) {
           resolve(adapter.jsoncall(action.resolvedLocation, arg));
         }
@@ -107,15 +106,9 @@ script_label: {
   };
 
   window.webappos.client_webcall_tdacall = function(actionName, obj) {
-    console.log("!!!clnt "+actionName+" "+obj);
     var action = webappos.webcalls[actionName];
-    console.log(webappos.webcalls["continueD#Command"]);
-    console.log("!!!"+action+" vs "+actionName);
     if (!action)
       return;
-
-      console.log("action",actionName,action,obj);
-      webappos.js_util.print_stack_trace();
 
     require([action.resolvedInstructionSet+"_webcalls_adapter.js"], function(adapter) {
       if (adapter.tdacall) {
@@ -429,11 +422,9 @@ script_label: {
      */
     webappos.desktop.set_shared_value = function (key, value) {
       if (webappos.parent_desktop) {
-        console.log("set shared parent value", key, value);
         window.parent.postMessage({ protocol: "webappos_desktop", method: "set_shared_value", key: key, value: value, caller_id: webappos.caller_id }, "*");
       }
       else {
-        console.log("set shared local value", key, value);
         webappos.desktop.shared_values[key] = value;
       }
     };
@@ -569,7 +560,6 @@ script_label: {
      *   a Promise which resolves in a string containing the chosen file name relative to the current login's home folder or null, if no file was chosen;
      */
     webappos.desktop.browse_for_file = async function (dialog_type, files_filter) {
-      console.log(webappos.in_desktop,webappos.parent_desktop);
       var d = new Date();
       var browse_id = d.getTime();
       var content = "<iframe id='theiframe' style='width:700px;height:465px;' src='/apps/filedialog/FileDialog.html?type=" + dialog_type + "&filter=" + files_filter + "&browse_id=" + browse_id + "'></iframe>" +
@@ -918,7 +908,7 @@ script_label: {
       if (webappos.in_desktop)
         return; // desktops must implement in their own way
 
-      console.log("RECEIVE " + webappos.in_desktop + " webappos.js @" + webappos.caller_id, event);
+      //console.log("RECEIVE MSG " + webappos.in_desktop + " webappos.js @" + webappos.caller_id, event);
       if (event.source == window.parent) {
         if (event.data.protocol == "webappos_desktop") {
           if (event.data.method == "i_am_desktop!") {
@@ -1021,9 +1011,7 @@ script_label: {
           if (this.readyState == this.DONE) {
             if (xhr.status == 200) {
               try {
-                console.log("ok");
                 eval(xhr.responseText);
-                console.log("ok2");
                 resolve(true);
               }
               catch (t) {
@@ -1766,7 +1754,7 @@ script_label: {
               var d = new Date();
               curTime = d.getTime();
               if (curTime - tda.model.lastChangeTime >= tda.model.SAVE_BALL_IDLE_TIME) {
-                console.log("SEND SAVE_BALL");
+                //console.log("SEND SAVE_BALL");
                 tda.model.saveBallLaunched = false;
                 tda.model.lastChangeTime = curTime;
                 var arr = new Float64Array(1);
@@ -1869,7 +1857,6 @@ script_label: {
           return r;
         },
         createClass: function (className, r) {
-          console.log("sync createClass "+className+" "+r);
           r = tda.model.checkReference(r);
           var mmcls = webappos.js_util.inherit(tda.prototypes.classPrototype);
           mmcls.reference = r;
@@ -1957,7 +1944,7 @@ script_label: {
               arr[2] = rAttr;
               tda.websocket.send(arr.buffer);
               if (oldval)
-                tda.websocket.send(tda.model.sharpenString("" + val) + "/" + tda.model.sharpenString(oldval));
+                tda.websocket.send(tda.model.sharpenString("" + val) + "/" + tda.model.sharpenString(""+oldval));
               else
                 tda.websocket.send(tda.model.sharpenString("" + val));
               tda.model.registerChange();
@@ -2019,7 +2006,7 @@ script_label: {
             arr[1] = rObj;
             arr[2] = rAttr;
             tda.websocket.send(arr.buffer);
-            tda.websocket.send(tda.model.sharpenString(val));
+            tda.websocket.send(tda.model.sharpenString(""+val));
             tda.model.registerChange();
           }
           tda.model.registerChange();
@@ -2376,6 +2363,7 @@ script_label: {
           if (obj2.classes[0] == tda.model["TDAKernel::Submitter"]) {
             var className = obj1.getClassName();            
             if (webappos.webcalls[className] && webappos.webcalls[className].isClient) {
+              console.log("client-side tdacall");
               webappos.client_webcall_tdacall(className,obj1);
               return true;
             }
@@ -2502,7 +2490,6 @@ script_label: {
         if (tda.websocket)
           return; // already initialized
 
-        console.log("ws tkn =" + webappos.ws_token);
         var protocol;
         var port = window.location.port;
 
@@ -2547,7 +2534,6 @@ script_label: {
             console.log('Closed (OK)');
           } else {
             console.log('Closed (halt)');
-            console.log(event);
             webappos.js_util.show_failure("The server has unexpectedly closed the socket connection.<br>Perhaps, some server-side exception has occured.");
           }
           console.log(event.code + ' ' + event.reason);
@@ -2866,12 +2852,12 @@ script_label: {
                   tda.model.predefinedBitsCount = arr[2];
                   tda.model.predefinedBitsValues = arr[3];
                   if (tda.standalone) {
-                    console.log("TDA standalone sync done!");
+                    console.log("standalone sync done!");
                     tda.synced = true;
                     console.log("tda.ee=" + tda.ee);
                   }
                   else {
-                    console.log("TDA web sync done!");
+                    console.log("web sync done!");
                     // issuing a command...
 
                     webappos.webcall("webappos.getAvailableWebCalls").then(function(result) {
@@ -2904,7 +2890,7 @@ script_label: {
             else {
               webappos.js_util.print_stack_trace();
               console.log("wrong arr type!",typeof event.data, JSON.stringify(event.data));
-              throw "aaa";
+              throw "wrong arr type!";
             }
         };
         socket.onerror = function (error) {
@@ -2937,7 +2923,7 @@ script_label: {
        */
       tda.model.submit = function (obj) {
         tda.model.last_submitted = tda.model.disassemble_object(obj);
-        console.log("submit"+obj.getClassName());
+        console.log("submit"+obj.getClassName()+" r="+obj.reference);
         obj.linkSubmitter(tda.model["TDAKernel::Submitter"].getFirstObject());
       };
 

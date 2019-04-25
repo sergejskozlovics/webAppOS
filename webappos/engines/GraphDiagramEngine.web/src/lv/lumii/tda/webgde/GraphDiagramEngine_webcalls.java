@@ -106,7 +106,7 @@ public class GraphDiagramEngine_webcalls {
 				o.setImage(te.getPicture());
 				o.setLocation("TOOLBAR");
 				// TODO?: create another event handler, which will convert event to ToolbarElementSelectEvent
-				o.setOnOptionSelectedEvent("GDE.onOptionSelectEvent");
+				o.setOnOptionSelectedEvent("GDE.defaultHandlerForOptionSelectedEvent");
 				
 				o.setFrame(frame);
 				lv.lumii.tda.ee.mm.EnvironmentEngine ee = lv.lumii.tda.ee.mm.EnvironmentEngine.firstObject(eeFactory);
@@ -129,7 +129,7 @@ public class GraphDiagramEngine_webcalls {
 		return true;
 	}
 	
-	public static boolean onOptionSelectEvent(RAAPI raapi, long r) { // for converting to ToolbarElementSelectEvent
+	public static boolean onOptionSelectedEvent(RAAPI raapi, long r) { // for converting to ToolbarElementSelectEvent
 		
 		lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory eeFactory = new lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory();
 		try {

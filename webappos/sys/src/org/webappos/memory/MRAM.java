@@ -12,6 +12,7 @@ import org.webappos.project.CloudProject;
 import org.webappos.project.IProject;
 import org.webappos.properties.AppProperties;
 import org.webappos.server.API;
+import org.webappos.server.APIForServerBridge;
 
 import lv.lumii.tda.kernel.TDAKernel;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
@@ -121,6 +122,12 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		}
 		
 		public void done(boolean fault) {
+			for (String instructionSet : cachedInstructionSetToWebProcessor.keySet()) {
+				String webProcName = cachedInstructionSetToWebProcessor.get(instructionSet);
+				APIForServerBridge.wpbServiceForServerBridge.clearCachedInstructionSet(this.project.getName(), instructionSet, webProcName);
+			}
+			cachedInstructionSetToWebProcessor.clear();
+			
 			if (project!=null) {
 				project.close();
 			}
