@@ -458,4 +458,49 @@ static\ webappos.setUserRegistryValue(JSON)=staticjava:org.webappos.webcalls.Reg
 static\ webappos.getAvailableWebCalls()=staticjava:org.webappos.webcalls.WebCallsActions_webcalls#getAvailableWebCalls
 
 
+# Group: Users-related functions
+
+##
+# Function: userInGroup
+#   Checks whether the current user belongs to the given group.
+#
+#   Parameter:
+#     groupName - the name of the group to check
+#
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        result: true|false
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+static\ webappos.userInGroup(groupName)=staticjava:org.webappos.webcalls.UsersActions_webcalls#userInGroup
+
+# Group: Miscellaneous functions
+
+##
+# Function: echo
+#   Returns the same JSON as passed.
+#
+#   Parameter:
+#     json - a stringified JSON
+#
+#   Returns:
+#      a JSON object that is equal to the JSON object received (formatting may differ, though)
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+public\ static\ echo(json)=staticjava:org.webappos.webcalls.Misc_webcalls#echo
+
 # @}
+

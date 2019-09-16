@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import org.webappos.fs.HomeFS;
 import org.webappos.fs.IFileSystem.PathInfo;
 import org.webappos.server.API;
-import org.webappos.server.APIForServerBridge;
+import org.webappos.server.ConfigEx;
 import org.webappos.server.ConfigStatic;
 
 public class AppProperties extends SomeProperties {
@@ -28,6 +28,7 @@ public class AppProperties extends SomeProperties {
 	
 	public boolean hidden = false;
 	
+	public boolean collaborative = false;
 	public boolean singleton = false;
 	public String app_type = "html";
 	public boolean requires_root_url_paths = false;
@@ -47,7 +48,7 @@ public class AppProperties extends SomeProperties {
 	private String default_app_templates_search_path = "$WEBAPPOS_ROOT/apps/$APP_FULL_NAME/templates".replace("$WEBAPPOS_ROOT", ConfigStatic.ROOT_DIR);
 	private String default_published_templates_search_path = "$WEBAPPOS_ROOT/apps/$APP_FULL_NAME/published_templates".replace("$WEBAPPOS_ROOT", ConfigStatic.ROOT_DIR);
 	private String default_user_templates_search_path = "$WEBAPPOS_ROOT/home/$LOGIN/templates".replace("$WEBAPPOS_ROOT", ConfigStatic.ROOT_DIR);
-		
+			
 	private String[] process_templates_path(String templates_path) {
 		if (!System.getProperty("os.name").contains("Windows"))
 			templates_path = templates_path.replace(':', ';').replace('/', File.separatorChar);
@@ -80,6 +81,11 @@ public class AppProperties extends SomeProperties {
 				if (entry.getValue().toString().indexOf("$WEBAPPOS_ROOT")>=0) {
 					properties.setProperty(entry.getKey().toString(), entry.getValue().toString().replace("$WEBAPPOS_ROOT", ConfigStatic.ROOT_DIR));
 				}
+				
+				if (entry.getValue().toString().indexOf("$APP_DIR")>=0) {
+					properties.setProperty(entry.getKey().toString(), entry.getValue().toString().replace("$APP_DIR", appDir));
+				}
+				
 			}
 
 			String simpleName = appName;			
@@ -121,6 +127,12 @@ public class AppProperties extends SomeProperties {
 					arr1.add(ext.trim());
 			}
 			supported_extensions = arr1.toArray(new String[] {});
+			
+			try {
+				collaborative = Boolean.parseBoolean(properties.getProperty("collaborative", collaborative+""));
+			}
+			catch(Throwable t) {				
+			}
 
 			try {
 				singleton = Boolean.parseBoolean(properties.getProperty("singleton", singleton+""));
@@ -173,7 +185,8 @@ public class AppProperties extends SomeProperties {
 			user_templates_search_path = process_templates_path( properties.getProperty("user_templates_search_path", default_user_templates_search_path).trim() );
 			
 			
-			APIForServerBridge.configForServerBridge.addMimes(properties.getProperty("mimes"));
+			if (API.config instanceof ConfigEx)
+				((ConfigEx)API.config).addMimes(properties.getProperty("mimes"));
 
 			
 		} catch (Throwable t) {

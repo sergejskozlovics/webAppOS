@@ -14,6 +14,7 @@ import org.luaj.vm2.lib.*;
 import org.luaj.vm2.lib.jse.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.webappos.properties.AppProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
 import org.webappos.util.StackTrace;
@@ -95,9 +96,18 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 	}
 	
 	
+	public static class DateFunc extends OneArgFunction {		
+
+		@Override
+		public LuaValue call(LuaValue v) {
+			Date d = new Date();
+			return LuaValue.valueOf( d.toString().replace('.', '_').replace(':', '_') );
+		}
+
+	}
 	
 	@Override
-	public void tdacall(String location, long rObject, RAAPI raapi, String project_id, String appFullName,
+	public void tdacall(String location, String pwd, long rObject, RAAPI raapi, String project_id, String appFullName,
 			String login) {
 
 		 
@@ -161,17 +171,23 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 				luaCachedEnv.globals.set("store_java_pipe_handle_pointer_address", store_java_pipe_handle_pointer_address);
 				luaCachedEnv.globals.set("eval", eval);
 				
+				luaCachedEnv.globals.set("os_date", new DateFunc());
+				
 				API.classLoader.loadLuaClasses(specificBin+"/lua_classes");
 				
 				LuaValue luaLoad = luaCachedEnv.globals.get("loadstring");
 				
 				String paths = specificBin+"/lua_src/?.lua;"
-								+specificBin+"/lua_classes/?.class;";
-					    /*specificBin+"/lua/?.lua;"
-					    +specificBin+"/lua/libs/?.lua;"
-						+specificBin+"/bin/lua/?.lua;"
-						+specificBin+"/bin/lua/libs/?.lua;"
-						+projectDirectory+"/Plugins/?.lua";*/
+								+specificBin+"/lua_src/libs/?.lua;"
+								+specificBin+"/lua_classes/?.class;"
+								+specificBin+"/lua/?.lua;"
+								+specificBin+"/lua/libs/?.lua;"
+								+specificBin+"/lua/?.class;"
+								+pwd+"/?.lua;"
+								+pwd+"/?.class;";
+				
+				AppProperties props = API.propertiesManager.getAppPropertiesByFullName(appFullName);
+				paths += props.properties.getProperty("lua_paths","");
 					
 					paths = paths.replace('\\', '/');
 					
@@ -199,6 +215,9 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 							+ "return loadstring('return '..name..'()')"
 							+ "end\n"));
 					luaCompiledCode4.call();		
+					LuaValue luaCompiledCode5 = luaLoad.call(LuaValue.valueOf( // TODO (or not needed?)
+							"os.date = os_date\n"));
+					luaCompiledCode5.call();		
 				
 			}
 			catch (Throwable t) {
@@ -249,12 +268,16 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 		
 		
 		long time3 = 0;
-		if (!funcName.endsWith("()"))
-			funcName += "(lQuery("+rObject+"))";
+		if (!funcName.endsWith("()")) {
+			if (rObject!=0)
+				funcName += "(lQuery("+rObject+"))";
+			else
+				funcName += "()";
+		}
 		
 		String code = moduleName+" = require(\""+className+"\")\n"+moduleName+"."+funcName;
-		if (logger.isDebugEnabled())
-			code = moduleName+" = require(\""+className+"\")\nprint(\"BEFORE LUA CODE "+moduleName+"."+funcName+"\")\n\n"+moduleName+"."+funcName+"\nprint(\"AFTER LUA CODE\")";
+		if (true || logger.isDebugEnabled())
+			code = "print(\"BEFORE REQUIRE "+className+"\")\n"+moduleName+" = require(\""+className+"\")\nprint(\"BEFORE LUA CODE "+moduleName+"."+funcName+"\")\n\n"+moduleName+"."+funcName+"\nprint(\"AFTER LUA CODE\")";
 		try {
 			LuaValue luaLoad = luaCachedEnv.globals.get("loadstring");
 			LuaValue luaCompiledCode = luaLoad.call(LuaValue.valueOf(code));
@@ -276,7 +299,7 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 	 * By calling clearCache, that cache can be forgotten.
 	 * @param project_id the project_id for which to forget (clear) the cache
 	 */
-	public static void clearCache(String project_id) {
+	synchronized public static void clearCache(String project_id) {
 		System.out.println("Removing from cache "+project_id+" (by request)...");
 		logger.trace("Removing from cache "+project_id+" (by request)...");
 		cache.remove(project_id);

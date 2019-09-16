@@ -932,52 +932,72 @@ var IMCSDiagramEditor = function(settings) { // class
         delete settings.onceReady;
       }
     },
-    onNewBox: function (palette_element, x, y, w, h) {
+    onNewBox: function (ajooDgr, palette_element, x, y, w, h) {
       ajoo_de.selectElements([]);
-      if (settings.onElementsSelected)
-        settings.onElementsSelected([]);
+
+      this.onSelectionChange(ajooDgr, []);
+
       if (settings.onNewBox)
         settings.onNewBox(palette_element.reference, x, y, w, h);
     },
-    onNewLine: function (paletteElement, src, tgt, points) {
+    onNewLine: function (ajooDgr, paletteElement, src, tgt, points) {
       if (settings.onNewLine)
         settings.onNewLine(paletteElement.reference, src.reference, tgt.reference, points);
     },
     onElementsChange: function (ajooDgr, arr) {
-      console.log("ajoo_de callback: onElementsChange", arr);
+//      console.log("ajoo_de callback: onElementsChange", arr);
 
-      if (settings.onElementsSelected)
-        settings.onElementsSelected(arr);
+      this.onSelectionChange(ajooDgr, arr);
 
       var t1 = now();
 
       // re-layout and refresh according to elements in the arr;
       updateLayoutAndRefreshOnMove(arr);
       var t2 = now();
-      console.log("CHANGE TIME ", (t2 - t1));
+//      console.log("CHANGE TIME ", (t2 - t1));
 
     },
     onSelectionChange: function (ajooDgr, arr) {
-      console.log("ajoo_de callback: onSelectionChange", arr);
-      // TODO: check with previous arr passed to onElementsSelected
-      if (settings.onElementsSelected)
-        settings.onElementsSelected(arr);
+//      console.log("ajoo_de callback: onSelectionChange", arr);
+      if (!settings.onElementsSelected)
+        return; // no callback specified
+
+      arr = arr.sort(function(a,b) {
+        return (a.reference-b.reference);
+      });
+
+      if (this.prevSelectionArr) {
+        // compare the previous prevSelectionArr with the current arr
+        var equal=true;
+        if (this.prevSelectionArr.length==arr.length) {
+          for (var i=0; i<this.prevSelectionArr.length; i++) {
+            if (this.prevSelectionArr[i].reference!=arr[i].reference) {
+              equal=false;
+              break;
+            }
+          }
+          if (equal)
+            return; // do not need to call the callback, if both arrays are equal
+        }
+      }
+
+      this.prevSelectionArr = arr;
+
+      settings.onElementsSelected(arr);
     },
 
-    onDiagramClick: function () {
-      console.log("ajoo_de callback: onDiagramClick");
-      if (settings.onElementsSelected)
-        settings.onElementsSelected([]);
+    onDiagramClick: function (ajooDgr) {
+//      console.log("ajoo_de callback: onDiagramClick");
+      this.onSelectionChange(ajooDgr, []);
     },
-    onDiagramRightClick: function() {
-      console.log("ajoo_de callback: onDiagramRightClick");
-      if (settings.onElementsSelected)
-        settings.onElementsSelected([]);
+    onDiagramRightClick: function(ajooDgr) {
+//      console.log("ajoo_de callback: onDiagramRightClick");
+      this.onSelectionChange(ajooDgr, []);
       if (settings.onDiagramRightClick)
         settings.onDiagramRightClick();
     },
-    onElementClick: function (r) {
-      console.log("ajoo_de callback: onElementClick");
+    onElementClick: function (ajooDgr, r) {
+//      console.log("ajoo_de callback: onElementClick");
 
       var arr = [];
       arr.push({
@@ -995,25 +1015,30 @@ var IMCSDiagramEditor = function(settings) { // class
               }
             }*/
 
-      if (settings.onElementsSelected)
-        settings.onElementsSelected(arr);
+      this.onSelectionChange(ajooDgr, arr);
 
     },
-    onElementDoubleClick: settings.onElementDoubleClick,
-    onElementRightClick: function (r) {
-      if (settings.onElementsSelected)
-        settings.onElementsSelected([{
+    onElementDoubleClick: function(ajooDgr, r) {
+      this.onSelectionChange(ajooDgr, [{
           reference: r
-        }]);
+      }]);
+      if (settings.onElementDoubleClick)
+	settings.onElementDoubleClick(r);
+    },
+    onElementRightClick: function (ajooDgr, r) {
+
+      this.onSelectionChange(ajooDgr, [{
+          reference: r
+      }]);
       if (settings.onElementRightClick)
         settings.onElementRightClick(r);
     },
-    onRepaint: function () {
+    onRepaint: function (ajooDgr) {
       showHideScrollBars();
       //      window.updateScrollBars(ajoo_de.getVisibleWidth(), ajoo_de.getVisibleHeight(),
       //         ajoo_de.getTotalWidth(), ajoo_de.getTotalHeight());
     },
-    onLabelMoved: function (r, x, y, w, h) {
+    onLabelMoved: function (ajooDgr, r, x, y, w, h) {
       ajoo_de.updateLabelLocation(r, x, y, w, h);
       ajoo_de.repaint();
     }
@@ -1561,7 +1586,7 @@ var IMCSDiagramEditor = function(settings) { // class
    * @param {function} fAfter a function to be called after the diagram is repainted
    */
   this.refresh = function (fAfter) {
-    console.log("refresh()");
+//    console.log("refresh()");
     runInLayoutThread(4, function () { // waiting for all elements to be added to the diagram...
       ajoo_de.whenReady(function () {
         logDiagram();
@@ -1569,13 +1594,13 @@ var IMCSDiagramEditor = function(settings) { // class
           runInLayoutThread(4, function () {
             if (myThis.layout) {
               try {
-                console.log("refresh: arranging incrementally...");
+//                console.log("refresh: arranging incrementally...");
                 var t1 = now();
                 var coos = myThis.layout.arrangeIncrementally();
                 var t2 = now();
                 setCoos(coos);
                 var t3 = now();
-                console.log("arranged incrementally in " + (t2 - t1) + " ms, setCoos in " + (t3 - t2)+" ms");
+//                console.log("arranged incrementally in " + (t2 - t1) + " ms, setCoos in " + (t3 - t2)+" ms");
               } catch (t) {
                 console.log("Exception occurred during refresh(). Switching to slow-mode...", t);
                 myThis.resetLayout(null, true);

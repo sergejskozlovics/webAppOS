@@ -1,5 +1,8 @@
 package org.webappos.memory;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
@@ -12,7 +15,9 @@ import org.webappos.project.CloudProject;
 import org.webappos.project.IProject;
 import org.webappos.properties.AppProperties;
 import org.webappos.server.API;
-import org.webappos.server.APIForServerBridge;
+import org.webappos.webproc.WebProcessorBusService;
+
+import com.google.common.collect.HashMultiset;
 
 import lv.lumii.tda.kernel.TDAKernel;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
@@ -54,7 +59,9 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 
 		public IProject project = null;
 		public RAAPI_WR raapi_wr = null;
-		public Map<String, Runnable> ws_tokens = new HashMap<String, Runnable>(); // connected clients and their onFault runnables
+		//public Map<String, Runnable> ws_tokens = new HashMap<String, Runnable>(); // connected clients and their onFault runnables
+		public HashMultiset<String> ws_tokens = HashMultiset.create();
+		//public Map<MRAM_Handle, Runnable> onFaultRunnables = new HashMap<String, Runnable>(); // connected clients and their onFault runnables
 		public Set<MRAM_Handle> handles = new HashSet<MRAM_Handle>(); // handles of connected clients		
 		public Set<Long> usedPredefinedBitsValues = new HashSet<Long>();
 		private long lastUsedPredefinedBits = 0;
@@ -100,6 +107,7 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 						logger.trace("not opened from template "+template);
 						return false;
 					}
+											
 				}
 				else {					
 					if (!project.open(appProps, project_id, login, sync, BridgeEventsCommandsHook.INSTANCE)) {
@@ -108,6 +116,7 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 					}
 				}
 			}			
+			
 			
 			usedPredefinedBitsValues.add(0L); // our server-side repository 
 			usedPredefinedBitsValues.add(1L); // the first client-side repository 
@@ -124,7 +133,8 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		public void done(boolean fault) {
 			for (String instructionSet : cachedInstructionSetToWebProcessor.keySet()) {
 				String webProcName = cachedInstructionSetToWebProcessor.get(instructionSet);
-				APIForServerBridge.wpbServiceForServerBridge.clearCachedInstructionSet(this.project.getName(), instructionSet, webProcName);
+				if (API.wpbService instanceof WebProcessorBusService)
+					((WebProcessorBusService)API.wpbService).clearCachedInstructionSet(this.project.getName(), instructionSet, webProcName);
 			}
 			cachedInstructionSetToWebProcessor.clear();
 			
@@ -133,8 +143,8 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 			}
 			
 			if (fault) {
-				for (String k : ws_tokens.keySet()) {
-					Runnable r = ws_tokens.get(k);
+				for (MRAM_Handle h : this.handles) {
+					Runnable r = h.onFault;
 					if (r!=null) {
 						try {
 							r.run();
@@ -165,6 +175,7 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		public RAAPI_WR raapi_wr; // without synchronizers
 		public RAAPI_Synchronizer otherSynchronizers; // other synchronizers (excluding currentSynchronizer)
 		private long predefinedBitsValues;
+		public Runnable onFault;
 		
 		public String getFullAppName() {
 			Slot slot = projectIdToSlotMap.get(this.project_id);
@@ -306,10 +317,7 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		boolean inited = false;
 		if (slot==null) {
 				slot = new Slot();
-				
-				if (slot.ws_tokens.containsKey(ws_token))
-					return null; // this user/browser already connected to this project_id
-				
+								
 				if (slot.init(bootstrap, app_url_name, template, project_id, login, sync)) {
 					project_id = slot.project.getName(); // bootstrap or creating from template could modify desired project_id
 					projectIdToSlotMap.put(project_id, slot);
@@ -322,21 +330,36 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 
 		long newPredefinedBitsValues;
 		if (inited) {
-			slot.ws_tokens.put(ws_token, onFault);				
+			slot.ws_tokens.add(ws_token);
 			slot.allSynchronizers.add(sync);
 			newPredefinedBitsValues = 1; // the first client
+			slot.usedPredefinedBitsValues.add(1L);
 		}
 		else {
 			if (slot.usedPredefinedBitsValues.size() >= API.config.max_users_per_project) {
 				return null; // too many users connected
 			}
+			
+			if (!"*".equals(app_url_name)) {				
+				AppProperties appProps = API.propertiesManager.getAppPropertiesByUrlName(app_url_name);
+				if (appProps == null || !appProps.collaborative)
+					return null; // must be collaborative
+				
+				if (!app_url_name.equals(slot.appProps.app_url_name))
+					return null; // must be the same app name
+				
+				if (slot.ws_tokens.contains(ws_token))
+					return null; // must be another user: this user/browser already connected to this project_id
+			}
+			
 
-			slot.ws_tokens.put(ws_token, onFault);				
+			slot.ws_tokens.add(ws_token);	
 			slot.allSynchronizers.add(sync);
 		
 			final Slot slot1 = slot;
 			
 			newPredefinedBitsValues = slot.newPredefinedBits();
+			slot.usedPredefinedBitsValues.add(newPredefinedBitsValues);
 			
 			/*ForegroundThread.runInForegroundThread(new Runnable() {
 
@@ -357,6 +380,7 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		retVal.raapi_wr = slot.raapi_wr;
 		retVal.otherSynchronizers = new MultiSynchronizer(slot.allSynchronizers, sync);
 		retVal.predefinedBitsValues = newPredefinedBitsValues;
+		retVal.onFault = onFault;
 		
 		slot.handles.add(retVal);
 		return retVal;
@@ -369,6 +393,8 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		if (h==null)
 			return;
 		
+		System.out.println("DISCONNECT "+h.predefinedBitsValues);
+		
 		Slot slot = projectIdToSlotMap.get(h.project_id);
 		if (slot==null)
 			return;
@@ -377,7 +403,8 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		slot.ws_tokens.remove(h.ws_token);
 		slot.allSynchronizers.remove(h.currentSynchronizer);
 		slot.handles.remove(h);
-		if (slot.ws_tokens.isEmpty()) {
+		if (slot.ws_tokens.isEmpty()) { // or handles.isEmpty()
+			System.out.println("SLOT CLEAR");
 			// clearing MRAM slot
 			slot.done(false/*no fault*/);
 			projectIdToSlotMap.remove(h.project_id);

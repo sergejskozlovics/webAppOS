@@ -7,7 +7,6 @@ import org.webappos.fs.HomeFS;
 import org.webappos.fs.IFileSystem.PathInfo;
 import org.webappos.properties.AppProperties;
 import org.webappos.server.API;
-import org.webappos.server.APIForServerBridge;
 import org.webappos.server.ConfigStatic;
 import org.webappos.webcaller.IWebCaller;
 
@@ -189,7 +188,6 @@ public class AppsActions_webcalls {
 	
 	public static String bootstrapProject(String project_id, String arg, String login, String fullAppName) {
 		
-		System.out.println("in boostrapProject "+APIForServerBridge.dataMemoryForServerBridge.getSingleSynchronizer(project_id));
 		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(fullAppName);
 		if (props==null)
 			return "{}";

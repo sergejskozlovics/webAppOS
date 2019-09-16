@@ -6,8 +6,9 @@ define(function(){
       webappos.login = null;
       webappos.ws_token = null;
       var redirect = window.location.href;
-      if ((redirect.indexOf("://login.")<0) && (redirect.indexOf("/apps/login/")<0))
+      if ((redirect.indexOf("://login.")<0) && (redirect.indexOf("/apps/login/")<0)) {
          window.location.href = "/apps/login?redirect="+redirect;
+      }
     };
   
     var request_login = async function() { // private function
@@ -136,8 +137,8 @@ define(function(){
           contentURI = "<img height='100' width='auto' src='"+webappos.app_icon_url+"'></img>"+contentURI;
   
         var INIT_CODE = "document.body.removeChild(document.getElementById('"+newDiv.id+"'));webappos.init_web_memory();let f=window.resolve_project_id; delete window.resolve_project_id; f();";
-  
-        if (!window.webappos.webcall("webappos.appRequiresTemplate", webappos.app_full_name).result) {
+
+        if (!window.webappos.webcall_and_wait("webappos.appRequiresTemplate", webappos.app_full_name).result) {
               contentURI+="<div style='border-bottom:1px dotted #888;'>New</div>";
               contentURI+="<div onclick=\"javascript:"+INIT_CODE+"\" style='display:inline-block; align:center; width:100px; min-height:100px; cursor:pointer; margin:10px; vertical-align:top;'>"+
                       "<div style='display:inline-block;width:100px;height:80px;'><img src='template-icons/new.png' width='100px' height='auto'></img></div>"+
@@ -216,6 +217,21 @@ define(function(){
             if (arr[i]=="login")
               await request_login();
             else
+            if (arr[i].indexOf("login:")==0) {
+              // login:group
+              await request_login();
+              var group = arr[i].substring(6);
+              var retVal = await webappos.webcall("webappos.userInGroup", group);
+              if (!retVal.result) {
+                if (confirm("The user does not belong to the `"+group+"' group. Do you want to log out and log in as another user?")) {
+                  await this.revoke_serverless_access(true); // with redirect
+                }
+                else {
+                  document.body.innerHTML="<h1>Access denied</h1>";
+                }
+              }
+            }
+            else
             if (arr[i]=="project_id") {
               await request_login();
               await request_project_id();
@@ -226,7 +242,7 @@ define(function(){
           return true;
         },
 
-        revoke_serverless_access: async function() {
+        revoke_serverless_access: async function(withRedirect) {
           localStorage.removeItem("login");
           localStorage.removeItem("ws_token");
           var data = ("login="+webappos.login+"&ws_token="+webappos.ws_token).replace(/%20/g, '+');
@@ -241,7 +257,10 @@ define(function(){
             var retVal = null;
             xhr.onreadystatechange = function() {
                 if (this.readyState == this.DONE) {
-                  window.location.href = "/apps/login?signout=true";
+                  if (withRedirect)
+                    window.location.href = "/apps/login?signout=true&redirect="+location.href;
+                  else
+                    window.location.href = "/apps/login?signout=true";
                   return resolve(true);
                 }
             };

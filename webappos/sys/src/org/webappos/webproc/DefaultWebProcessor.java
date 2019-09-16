@@ -110,7 +110,7 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 							kernel.setOwner(owner);
 						}
 						try {
-							jsonResult = ((IJsonWebCallsAdapter)adapter).jsoncall(action.resolvedLocation, seed.jsonArgument, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
+							jsonResult = ((IJsonWebCallsAdapter)adapter).jsoncall(action.resolvedLocation, action.pwd, seed.jsonArgument, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
 						}
 						catch(Throwable t) {
 							jsonResult = "ERROR:"+t.getMessage();
@@ -130,7 +130,7 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 						}
 						
 						try {
-							((ITdaWebCallsAdapter)adapter).tdacall(action.resolvedLocation, seed.tdaArgument, kernel, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
+							((ITdaWebCallsAdapter)adapter).tdacall(action.resolvedLocation, action.pwd, seed.tdaArgument, kernel, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
 						}
 						catch(Throwable t) {
 							jsonResult = "ERROR:"+t.getMessage();

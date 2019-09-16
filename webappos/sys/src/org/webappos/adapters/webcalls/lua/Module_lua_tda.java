@@ -1,6 +1,9 @@
 package org.webappos.adapters.webcalls.lua;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +17,11 @@ import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.ZeroArgFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.webappos.antiattack.ValidityChecker;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
+import org.webappos.util.StackTrace;
+import org.webappos.webcaller.IWebCaller;
 import org.webappos.webcaller.WebCaller;
 
 import lv.lumii.tda.kernel.TDAKernel;
@@ -23,6 +29,7 @@ import lv.lumii.tda.raapi.RAAPI;
 
 import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.OneArgFunction;
+import org.luaj.vm2.lib.ThreeArgFunction;
 import org.luaj.vm2.lib.TwoArgFunction;
 import org.luaj.vm2.lib.VarArgFunction;
 
@@ -65,18 +72,25 @@ public class Module_lua_tda extends TwoArgFunction {
     }
 
 	@Override
-	public LuaValue call(LuaValue modName, LuaValue env) {
+	synchronized public LuaValue call(LuaValue modName, LuaValue env) {
 		LuaTable module = new LuaTable(0,30); // I think "new LuaTable()" instead of "(0, 30)" is OK
         module.set("GetProjectPath", new GetProjectPath());
         module.set("GetToolPath", new GetToolPath());
         module.set("GetRuntimePath", new GetRuntimePath());        
-        module.set("EnqueueCommand", new ExecuteCommand());
+        module.set("FindPath", new FindPath());        
+        module.set("EnqueueCommand", new EnqueueCommand());
         module.set("ExecuteCommand", new ExecuteCommand());
         module.set("BrowseForFile", new BrowseForFile());
+        module.set("BrowseForFolder", new BrowseForFolder());
+        module.set("BrowseForFolderAsList", new BrowseForFolderAsList());
         module.set("CallFunctionWithPleaseWaitWindow", new CallFunctionWithPleaseWaitWindow());
         module.set("SetProgressMessage", new SetProgressMessage());
         module.set("SetProgressBar", new SetProgressBar());
         module.set("BringTDAToForground", new BringTDAToForground());
+        module.set("isWeb", LuaValue.TRUE);        
+        module.set("inWebMode",LuaValue.valueOf(API.config.inWebMode));
+        module.set("CopyFile",new CopyFile());
+        module.set("DeleteFileOrFolder", new DeleteFileOrFolder());
         return module;		
 	}
 
@@ -98,7 +112,7 @@ public class Module_lua_tda extends TwoArgFunction {
 	class GetProjectPath extends ZeroArgFunction {		
 
 		@Override
-		public LuaValue call() {
+		synchronized public LuaValue call() {
 			String s = API.dataMemory.getProjectFolder(project_id);
 			return LuaValue.valueOf(s);
 		}
@@ -108,7 +122,7 @@ public class Module_lua_tda extends TwoArgFunction {
 	class GetToolPath extends ZeroArgFunction {		
 
 		@Override
-		public LuaValue call() {	
+		synchronized public LuaValue call() {	
 			return LuaValue.valueOf(ConfigStatic.APPS_DIR+File.separator+API.dataMemory.getProjectFullAppName(project_id));
 		}
 
@@ -117,17 +131,44 @@ public class Module_lua_tda extends TwoArgFunction {
 	class GetRuntimePath extends ZeroArgFunction {		
 
 		@Override
-		public LuaValue call() {						
+		synchronized public LuaValue call() {						
 			return LuaValue.valueOf(ConfigStatic.BIN_DIR);
 		}
 
 	}
 
+	class FindPath extends TwoArgFunction {
+		
+		private String searchRecursively(File where, String what) {
+			for (File f: where.listFiles()) {
+				if (!f.isDirectory())
+					continue;
+				if (f.getName().equals(what))
+					return where.getAbsolutePath()+File.separator+what;
+				else {
+					String s = searchRecursively(f, what);
+					if (s!=null)
+						return s;
+				}
+			}
+			return null;
+		}
+
+		@Override
+		synchronized public LuaValue call(LuaValue _where, LuaValue _what) {
+			String s = searchRecursively(new File(_where.tojstring()), _what.tojstring());
+			if (s == null)
+				return LuaValue.NIL;
+			else
+				return LuaValue.valueOf(s);
+		}
+
+	}
 
 	public static class console_log extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue v) {
+		synchronized public LuaValue call(LuaValue v) {
 			System.err.println(v.toString());
 			return null;
 		}
@@ -138,7 +179,7 @@ public class Module_lua_tda extends TwoArgFunction {
 	public static class getenv extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue v) {
+		synchronized public LuaValue call(LuaValue v) {
 			return LuaValue.valueOf(System.getenv(v.tojstring()));
 		}
 
@@ -148,7 +189,7 @@ public class Module_lua_tda extends TwoArgFunction {
 	public static class setenv extends TwoArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue arg1, LuaValue arg2) {
+		synchronized public LuaValue call(LuaValue arg1, LuaValue arg2) {
 			// do nothing (TODO)
 			return LuaValue.NONE;
 		}
@@ -159,7 +200,7 @@ public class Module_lua_tda extends TwoArgFunction {
 	public static class retrieve_java_pipe_handle_pointer_address extends ZeroArgFunction {		
 
 		@Override
-		public LuaValue call() {
+		synchronized public LuaValue call() {
 			return LuaValue.valueOf(javaHandle);
 		}
 
@@ -168,7 +209,7 @@ public class Module_lua_tda extends TwoArgFunction {
 	public static class store_java_pipe_handle_pointer_address extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue v) {
+		synchronized public LuaValue call(LuaValue v) {
 			javaHandle = v.tolong();
 			return LuaValue.NONE;
 		}
@@ -178,7 +219,7 @@ public class Module_lua_tda extends TwoArgFunction {
 	public static class eval extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue v) {
+		synchronized public LuaValue call(LuaValue v) {
 			// TODO client jsonsbumit show please wait
 			LuaValue luaLoad = globals.get("loadstring");
 			LuaValue luaCompiledCode = luaLoad.call(LuaValue.valueOf("return "+v.tojstring()));
@@ -188,18 +229,194 @@ public class Module_lua_tda extends TwoArgFunction {
 
 	}
 
+	private boolean skipCommand(long r, long rCls) {
+		long rAssoc = raapi.findAssociationEnd(rCls, "receiver"); // D#Form
+		if (rAssoc==0)
+			rAssoc = raapi.findAssociationEnd(rCls, "graphDiagram"); // GraphDiagram
+		if (rAssoc==0)
+			return false;		
+		long rInvAssoc = raapi.getInverseAssociationEnd(rAssoc);
+		if (rInvAssoc==0)
+			return false;
+		
+		long rAttr = raapi.findAttribute(rCls, "info");
+		if (rAttr != 0) {
+			String val = raapi.getAttributeValue(r, rAttr);
+			if (!"Refresh".equalsIgnoreCase(val))
+				return false;
+		}
+		
+		
+		long it = raapi.getIteratorForLinkedObjects(r, rAssoc);
+		long rr = raapi.resolveIteratorFirst(it);
+		boolean retVal = false;
+		
+		while (rr!=0) {
+			long itInv = raapi.getIteratorForLinkedObjects(rr, rInvAssoc);
+			long rrInv = raapi.resolveIteratorFirst(itInv);
+			rrInv = raapi.resolveIteratorNext(itInv);
+			raapi.freeIterator(itInv);
+			if (rrInv!=0) {
+				// there are at least 2 commands, which means that we have
+				// found some other command for the same D#Form/GraphDiagram
+				retVal = true;
+				logger.debug("Skipping object "+r);
+				raapi.deleteObject(r); // deleting object
+				break; 
+			}
 
-	public class ExecuteCommand extends OneArgFunction {		
+			rr = raapi.resolveIteratorNext(it);
+		}
+		raapi.freeIterator(it);
+		return retVal;
+	}
+
+	public class EnqueueCommand extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue v) {
-			boolean retVal = raapi.createLink(v.tolong(), rSubmitterObj, rCommandSubmitterAssoc);
-			return LuaValue.valueOf(retVal);
+		synchronized public LuaValue call(LuaValue v) {
+			
+			/*
+			System.out.println("lua replicate1 "+v.tolong());
+			long r2 = ((TDAKernel)raapi).replicateEventOrCommand(v.tolong());
+			System.out.println("lua replicate2 "+r2);*/
+			
+			long r2 = v.tolong();
+			
+			//boolean retVal = raapi.createLink(r2, rSubmitterObj, rCommandSubmitterAssoc);
+			//return LuaValue.valueOf(retVal);
+			
+			TDAKernel.Owner o = ((TDAKernel)raapi).getOwner();
+			
+			long it = raapi.getIteratorForDirectObjectClasses(r2);
+			long rCls = raapi.resolveIteratorFirst(it);		
+			String className = raapi.getClassName(rCls);
+			raapi.freeReference(rCls);
+			raapi.freeIterator(it);
+			
+			if (className == null)
+				return LuaValue.valueOf(false);
+			
+			
+			if (className.equals("D#Command") && skipCommand(r2, rCls))
+				return LuaValue.valueOf(true);
+			if (className.equals("OkCmd") && skipCommand(r2, rCls))
+				return LuaValue.valueOf(true);
+				
+			IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
+			
+			logger.debug("lua enqueue "+className+" r="+r2);
+			
+			seed.actionName = className;
+			
+			seed.callingConventions = WebCaller.CallingConventions.TDACALL;
+			seed.tdaArgument = r2;			
+	
+			if (o!=null) {
+				seed.login = o.login;
+				seed.project_id = o.project_id;
+			}
+	  		
+	  		API.webCaller.enqueue(seed);
+			
+			return LuaValue.valueOf(true);
 		}
 
 	}
 	
+
+	public class ExecuteCommand extends OneArgFunction {		
+
+		@Override
+		synchronized public LuaValue call(LuaValue v) {
+			
+			/*
+			System.out.println("lua replicate1 "+v.tolong());
+			long r2 = ((TDAKernel)raapi).replicateEventOrCommand(v.tolong());
+			System.out.println("lua replicate2 "+r2);*/
+			
+			long r2 = v.tolong();
+			
+			//boolean retVal = raapi.createLink(r2, rSubmitterObj, rCommandSubmitterAssoc);
+			//return LuaValue.valueOf(retVal);
+			
+			TDAKernel.Owner o = ((TDAKernel)raapi).getOwner();
+			
+			long it = raapi.getIteratorForDirectObjectClasses(r2);
+			long rCls = raapi.resolveIteratorFirst(it);		
+			String className = raapi.getClassName(rCls);
+			raapi.freeReference(rCls);
+			raapi.freeIterator(it);
+			
+			if (className == null)
+				return LuaValue.valueOf(false);
+			
+			if (className.equals("ExecTransfCmd")) {		//do we need it???		
+				// executing now...
+			
+				long rAttr = raapi.findAttribute(rCls, "info");
+				String location = raapi.getAttributeValue(r2, rAttr);
+				
+				if (location == null)
+					return LuaValue.valueOf(false);	
+				
+				if (location.startsWith("lua_engine#"))
+					location = location.substring("lua_engine#".length());
+				
+				String className2 = location.substring(0, location.lastIndexOf('.'));
+				String funcName = location.substring(location.lastIndexOf('.')+1);
+				String moduleName = className2;
+				if (moduleName.lastIndexOf('.')>=0)
+					moduleName = moduleName.substring(moduleName.lastIndexOf('.')+1);
+						
+				
+				if (!funcName.endsWith("()")) {
+					funcName += "()";
+				}
+				
+				String code = moduleName+" = require(\""+className2+"\")\n"+moduleName+"."+funcName;
+				if (true || logger.isDebugEnabled())
+					code = "print(\"EXECTRANSF BEFORE REQUIRE "+className2+"\")\n"+moduleName+" = require(\""+className2+"\")\nprint(\"EXECTransf BEFORE LUA CODE "+moduleName+"."+funcName+"\")\n\n"+moduleName+"."+funcName+"\nprint(\"AFTER LUA CODE\")";
+				try {
+					LuaValue luaLoad = globals.get("loadstring");
+					LuaValue luaCompiledCode = luaLoad.call(LuaValue.valueOf(code));
+					luaCompiledCode.call();			
+				}
+				catch (Throwable t) {
+					logger.error("Lua exception: "+t+"\nStackTrace="+StackTrace.get(t)+"\ncode=["+code+"]");
+				}
+				
+				return LuaValue.valueOf(true);				
+			}
+			
+			if (className.equals("D#Command") && skipCommand(r2, rCls))
+				return LuaValue.valueOf(true);
+			if (className.equals("OkCmd") && skipCommand(r2, rCls))
+				return LuaValue.valueOf(true);
+
+			
+			IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
+			
+			logger.debug("lua invokeNow "+className+" r="+r2);
+			seed.actionName = className;
+			
+			seed.callingConventions = WebCaller.CallingConventions.TDACALL;
+			seed.tdaArgument = r2;			
 	
+			if (o!=null) {
+				seed.login = o.login;
+				seed.project_id = o.project_id;
+			}
+	  		
+	  		/*API.webCaller.enqueue(seed);*/
+			
+			API.webCaller.invokeNow(seed);
+			
+			return LuaValue.valueOf(true);
+		}
+
+	}
+
 	abstract public class FiveArgFunction extends LibFunction {
 
 		abstract public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3, LuaValue arg4, LuaValue arg5);
@@ -212,31 +429,31 @@ public class Module_lua_tda extends TwoArgFunction {
 		}
 
 		@Override
-		public final LuaValue call() {
+		synchronized public final LuaValue call() {
 		return call(NIL, NIL, NIL, NIL, NIL);
 		}
 
 		@Override
-		public final LuaValue call(LuaValue arg) {
+		synchronized public final LuaValue call(LuaValue arg) {
 		return call(arg, NIL, NIL, NIL, NIL);
 		}
 
 		@Override
-		public LuaValue call(LuaValue arg1, LuaValue arg2) {
+		synchronized public LuaValue call(LuaValue arg1, LuaValue arg2) {
 		return call(arg1, arg2, NIL, NIL, NIL);
 		}
 
 		@Override
-		public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3) {
+		synchronized public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3) {
 		return call(arg1, arg2, arg3, NIL, NIL);
 		}
 
-		public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3, LuaValue arg4) {
+		synchronized public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3, LuaValue arg4) {
 		return call(arg1, arg2, arg3, arg4, NIL);
 		}
 
 		@Override
-		public Varargs invoke(Varargs varargs) {
+		synchronized public Varargs invoke(Varargs varargs) {
 			return call(varargs.arg1(), varargs.arg(2), varargs.arg(3), varargs.arg(4), varargs.arg(5));
 		}
 
@@ -350,7 +567,7 @@ static int tda_BrowseForFile(lua_State *L) {
 	
 	class BrowseForFile extends VarArgFunction {		
 		@Override
-		public Varargs invoke(Varargs v) {
+		synchronized public Varargs invoke(Varargs v) {
 			logger.debug("In BrowseForFile");
 			
 			LuaValue filterStr = v.arg(2);
@@ -408,7 +625,7 @@ static int tda_BrowseForFile(lua_State *L) {
 							seed.login = login;
 							seed.project_id = project_id;
 					  		
-					  		System.out.println("seed: "+seed.actionName+" "+seed.jsonArgument);
+					  		logger.debug("seed: "+seed.actionName+" "+seed.jsonArgument);
 					  		
 					  		API.webCaller.enqueue(seed);
 							
@@ -514,16 +731,225 @@ static int tda_BrowseForFile(lua_State *L) {
 	}
 	
 
+	class BrowseForFolder extends TwoArgFunction {
+		// returns NIL if continued at the client-side
+		
+		@Override
+		synchronized public LuaValue call(LuaValue _caption, LuaValue _startFolder) {
+			if (API.config.inWebMode) {			
+				File fs = new File(API.dataMemory.getProjectFolder(project_id)+File.separator+"selected.browseForFolder");
+				File fc = new File(API.dataMemory.getProjectFolder(project_id)+File.separator+"cancelled.browseForFolder"); 
+				if (fs.exists()) {
+					String s = "";				
+					try { 
+						s = FileUtils.readFileToString(fs, "UTF-8");
+					}
+					catch(Throwable t) {								
+					}
+					fs.delete();
+					if (fc.exists())
+						fc.delete();
+					
+					if ("/home".equals(s))
+						s="";
+					
+					try {
+						ValidityChecker.checkRelativePath(s, true);
+					} catch (Exception e) {
+						LuaValue.valueOf(""); // cancelled (wrong path specified)
+					}
+					
+					s = API.config.HOME_DIR+File.separator+login+File.separator+s;
+					logger.debug("BrowseForFolder is returning ["+s+"]"); 
+					return LuaValue.valueOf(s);
+				}
+				else {
+					if (fc.exists()) {
+						fc.delete();
+						return LuaValue.valueOf(""); // cancelled
+					}
+					
+					WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();
+					
+					seed.actionName = "browseForFolder";
+					
+					seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+					seed.jsonArgument = "{\"caption\":\""+_caption.tojstring()+"\"}"; // _startFolder will be ignored; we will start from the user's home directory
+					
+					seed.login = login;
+					seed.project_id = project_id;
+			  		
+			  		API.webCaller.enqueue(seed);
+					logger.debug("lua_tda.BrowseForFolder: the folder has not been chosen yet, the client has to show the choser dialog and re-launch our transformation after the folder is chosen");
+					return LuaValue.NIL; // continued at the client-side
+				}
+			
+			}
+			else {
+				final JFileChooser fc = new JFileChooser();
+
+				fc.setCurrentDirectory(new File(_startFolder.tojstring()));
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				
+				String retVal = "";
+				if (fc.showDialog(null, "Choose!") == JFileChooser.APPROVE_OPTION) {
+						retVal = fc.getSelectedFile().getAbsolutePath();
+				}
+				
+				logger.debug("BrowseForFolder retVal="+retVal);
+				
+				return LuaValue.valueOf(retVal);
+				
+			}
+		}
+
+	}
+
+	class BrowseForFolderAsList extends TwoArgFunction {
+		
+		private String collectRecursively(File where, String prefix, ArrayList<String> arr) {
+			for (File f: where.listFiles()) {
+				if (!f.isDirectory())
+					continue;
+				if (f.getName().startsWith("."))
+					continue;
+				
+				if (prefix.length()==0) {
+					arr.add(f.getName());
+					collectRecursively(f, f.getName(), arr);
+				}
+				else {
+					arr.add(prefix+"/"+f.getName());
+					collectRecursively(f, prefix+"/"+f.getName(), arr);
+				}
+			}
+			return null;
+		}
+		
+		@Override
+		synchronized public LuaValue call(LuaValue _caption, LuaValue _startFolder) {
+//test:			_startFolder = LuaValue.valueOf("D:\\webappos.org\\webappos\\home\\sk\\test_ar.owlgred_jr");
+			if (API.config.inWebMode) {
+				File fs = new File(API.dataMemory.getProjectFolder(project_id)+File.separator+"selected.browseForFolderAsList");
+				File fc = new File(API.dataMemory.getProjectFolder(project_id)+File.separator+"cancelled.browseForFolderAsList");
+				if (fs.exists()) {
+					String s = "";				
+					try { 
+						s = FileUtils.readFileToString(fs, "UTF-8");
+					}
+					catch(Throwable t) {								
+					}
+					fs.delete();
+					if (fc.exists())
+						fc.delete();
+					
+					try {
+						ValidityChecker.checkRelativePath(s, false);
+					} catch (Exception e) {
+						return LuaValue.valueOf("");
+					}
+					
+					return LuaValue.valueOf(_startFolder.tojstring()+File.separator+s);
+				}
+				else {
+					if (fc.exists()) {
+						fc.delete();
+						return LuaValue.valueOf(""); // cancelled
+					}
+					
+					WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();
+					
+					seed.actionName = "browseForFolderAsList";
+					
+					seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+					ArrayList<String> arr = new ArrayList<String>();
+					seed.jsonArgument = "{\"caption\":\""+_caption.tojstring()+"\", \"items\":[";
+					collectRecursively(new File(_startFolder.tojstring()), "", arr);
+					// collect recursively and add to items
+					for (int i=0; i<arr.size(); i++) {
+						if (i==arr.size()-1)
+							seed.jsonArgument+="\""+arr.get(i)+"\"";
+						else
+							seed.jsonArgument+="\""+arr.get(i)+"\", ";
+					}
+					seed.jsonArgument += "]}";
+					
+					seed.login = login;
+					seed.project_id = project_id;
+			  		
+			  		API.webCaller.enqueue(seed);
+					logger.debug("lua_tda.BrowseForFolderAsList: the folder (list item) has not been chosen yet, the client has to show the choser dialog and re-launch our transformation after the folder is chosen");
+
+					return LuaValue.NIL; // continued at the client-side
+				}
+								
+			}
+			else {
+				final JFileChooser fc = new JFileChooser();
+
+				fc.setCurrentDirectory(new File(_startFolder.tojstring()));
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				
+				String retVal = "";
+				if (fc.showDialog(null, "Choose!") == JFileChooser.APPROVE_OPTION) {
+						retVal = fc.getSelectedFile().getAbsolutePath();
+				}
+				
+				logger.debug("BrowseForFolderAsList retVal="+retVal);
+				
+				return LuaValue.valueOf(retVal);
+				
+			}
+		}
+
+	}
+
 	public class CallFunctionWithPleaseWaitWindow extends TwoArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue luaFunction, LuaValue luaArg) {
-			// TODO client jsonsbumit show please wait
+		synchronized public LuaValue call(LuaValue luaFunction, LuaValue luaArg) {
+			
+/*			WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();			
+			seed.actionName = "showPleaseWait";			
+			seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+			seed.jsonArgument = "{\"message\":\"Please, wait\"}";			
+			seed.login = login;
+			seed.project_id = project_id;	  		
+	  		API.webCaller.enqueue(seed);*/
+
+			WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();			
+			seed.actionName = "showPleaseWait";			
+			seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+			seed.jsonArgument = "{}";			
+			seed.login = login;
+			seed.project_id = project_id;	  		
+	  		API.webCaller.invokeNow(seed);
+
+			
+	  		/*TDAKernel kernel = API.dataMemory.getTDAKernel(project_id);
+	  		kernel.getSynchronizer().syncRawAction(new double[] {0xC0, 0}, "showPleaseWait/{}");*/
+	  		
 			LuaValue luaLoad = globals.get("loadstring");
 			LuaValue luaCompiledCode = luaLoad.call(LuaValue.valueOf(luaFunction+"([["+luaArg.tojstring()+"]])"));
-			
+						
 			LuaValue retVal = luaCompiledCode.call();
-			// TODO client jsonsbumit hide please wait
+
+/*			seed = new WebCaller.WebCallSeed();			
+			seed.actionName = "hidePleaseWait";			
+			seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+			seed.login = login;
+			seed.project_id = project_id;	  		
+	  		API.webCaller.enqueue(seed);*/
+			
+			seed = new WebCaller.WebCallSeed();			
+			seed.actionName = "hidePleaseWait";			
+			seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+			seed.login = login;
+			seed.jsonArgument="{}";
+			seed.project_id = project_id;	  		
+	  		API.webCaller.invokeNow(seed);
+			
+	  		//kernel.getSynchronizer().syncRawAction(new double[] {0xC0, 0}, "hidePleaseWait/{}");
 			
 			return retVal;
 		}
@@ -534,8 +960,39 @@ static int tda_BrowseForFile(lua_State *L) {
 	public class SetProgressMessage extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue msg) {
+		synchronized public LuaValue call(LuaValue msg) {
 			System.err.println(msg.tojstring());
+/*			WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();			
+			seed.actionName = "showPleaseWait";			
+			seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+			seed.jsonArgument = "{\"message\":\""+msg.tojstring()+"\"}";			
+			seed.login = login;
+			seed.project_id = project_id;	  		
+	  		API.webCaller.enqueue(seed);*/
+			
+	  		/*TDAKernel kernel = API.dataMemory.getTDAKernel(project_id);
+	  		
+			String s = msg.tojstring();
+			if ((s == null) || (s.isEmpty())) {
+		  		kernel.getSynchronizer().syncRawAction(new double[] {0xC0, 0}, "hidePleaseWait/{}");				
+			}
+			else {	  		
+				kernel.getSynchronizer().syncRawAction(new double[] {0xC0, 0}, "showPleaseWait/{\"message\":\""+msg.tojstring()+"\"}");
+			}*/
+			
+			WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();			
+			seed.actionName = "showPleaseWait";			
+			seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+			seed.login = login;
+			seed.project_id = project_id;	  		
+	  		
+			String s = msg.tojstring();
+			if ((s == null) || (s.isEmpty()))
+				seed.jsonArgument="{}";
+			else
+				seed.jsonArgument="{\"message\":\""+msg.tojstring()+"\"}";
+				
+	  		API.webCaller.invokeNow(seed);
 			return LuaValue.NONE;
 		}
 
@@ -544,8 +1001,27 @@ static int tda_BrowseForFile(lua_State *L) {
 	public class SetProgressBar extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue val) {
+		synchronized public LuaValue call(LuaValue val) {
 			System.err.println(val.toint());
+			/*WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();			
+			seed.actionName = "showPleaseWait";			
+			seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+			seed.jsonArgument = "{\"percentage\":\""+val.toint()+"\"}";			
+			seed.login = login;
+			seed.project_id = project_id;	  		
+	  		API.webCaller.enqueue(seed);*/
+			
+	  		/*TDAKernel kernel = API.dataMemory.getTDAKernel(project_id);
+	  		kernel.getSynchronizer().syncRawAction(new double[] {0xC0, 0}, "showPleaseWait/{\"percentage\":"+val.toint()+"}");*/
+			
+			WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();			
+			seed.actionName = "showPleaseWait";			
+			seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+			seed.jsonArgument = "{\"percentage\":"+val.toint()+"}";			
+			seed.login = login;
+			seed.project_id = project_id;	  		
+	  		API.webCaller.invokeNow(seed);
+			
 			return LuaValue.NONE;
 		}
 
@@ -554,8 +1030,49 @@ static int tda_BrowseForFile(lua_State *L) {
 	public class BringTDAToForground extends ZeroArgFunction {		
 
 		@Override
-		public LuaValue call() {
+		synchronized public LuaValue call() {
 			return LuaValue.NONE;
+		}
+
+	}
+	
+	public class CopyFile extends ThreeArgFunction {		
+
+		@Override
+		synchronized public LuaValue call(LuaValue src_path, LuaValue target_path, LuaValue fail_on_exists) {
+			
+			try {
+				Files.copy(Paths.get(src_path.tojstring()), Paths.get(target_path.tojstring()), fail_on_exists.toboolean()?StandardCopyOption.COPY_ATTRIBUTES:StandardCopyOption.REPLACE_EXISTING);
+				return LuaValue.TRUE;
+			}
+			catch(Throwable t) {
+				return LuaValue.FALSE;
+			}
+		}
+
+	}
+	
+	public class DeleteFileOrFolder extends OneArgFunction {		
+
+		@Override
+		synchronized public LuaValue call(LuaValue path) {
+			File f = new File(path.tojstring());
+			if (!f.exists())
+				return LuaValue.FALSE;
+			if (f.isFile())
+				return LuaValue.valueOf( f.delete() );
+			
+			if (f.isDirectory()) {
+				try {
+					FileUtils.deleteDirectory(f);
+					return LuaValue.TRUE;					
+				}
+				catch(Throwable t)	{
+					return LuaValue.FALSE;
+				}
+			}
+			
+			return LuaValue.FALSE;
 		}
 
 	}

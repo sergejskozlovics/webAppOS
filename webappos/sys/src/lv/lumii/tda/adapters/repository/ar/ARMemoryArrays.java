@@ -93,7 +93,7 @@ public class ARMemoryArrays implements IARMemory {
 	private int factorNLog = 0; // actual actions size is (2^factorNLog)*INITIAL_N
 	private int factorSLog = 0; // actual actions size is (2^factorSLog)*INITIAL_S
 	
-	private int curmaxN, curmaxS;
+	/*private*/int curmaxN, curmaxS;
 	private int deletedN, deletedS; 
 	/*package*/ double[] actions;
 	/*package*/ String[] strings;
@@ -276,9 +276,11 @@ public class ARMemoryArrays implements IARMemory {
 			while (s2a_a[hash1] != 0) {
 				si = s2a_s[hash1]; // string index
 				ssi = strings[si];
-				if ((ssi!=null) && (ssi.endsWith(s1)||ssi.startsWith(s2)))
-					if (s2a_a[hash1]>0)
-						retVal.add(s2a_a[hash1]);
+				if ((ssi!=null) && (ssi.endsWith(s1)||ssi.startsWith(s2))) {
+					int index=s2a_a[hash1];
+					if ((index>0) && (actions[index]!=0x00))
+						retVal.add(index);
+				}
 				hash1 = hash1+hash2;
 				if (hash1>=s2a_a.length)
 					hash1-=s2a_a.length;
@@ -288,9 +290,11 @@ public class ARMemoryArrays implements IARMemory {
 			int si;
 			while (s2a_a[hash1] != 0) {				
 				si = s2a_s[hash1]; // string index
-				if (s.equals(strings[si]))
-					if (s2a_a[hash1]>0)
-						retVal.add(s2a_a[hash1]);
+				if (s.equals(strings[si])) {
+					int index = s2a_a[hash1]; 
+					if ((index>0) && (actions[index]!=0x00))
+						retVal.add(index);
+				}
 				hash1 = hash1+hash2;
 				if (hash1>=s2a_a.length)
 					hash1-=s2a_a.length;
@@ -438,7 +442,7 @@ public class ARMemoryArrays implements IARMemory {
 		int bskips=0;
 		ArrayList<String> arr = new ArrayList<String>();
 		ArrayList<Integer> arr2 = new ArrayList<Integer>();
-		while ((s2a_a[hash1]!=0)&&(s2a_a[hash1]!=-1)) {  // !=0 and !=-1
+		while (s2a_a[hash1]!=0) { //&&(s2a_a[hash1]!=-1)) {  // !=0 and !=-1
 			if (firstOur==-1) {
 				_si = s2a_s[hash1];
 				ssi = strings[_si];
@@ -510,7 +514,7 @@ public class ARMemoryArrays implements IARMemory {
 					hash1-=s2a_a.length;
 				ourLen++;
 
-				while ((s2a_a[hash1] != 0) && (s2a_a[hash2]!=-1)) {  // !=0 and !=-1
+				while (s2a_a[hash1] != 0) { // && (s2a_a[hash2]!=-1)) {  // !=0 and !=-1
 					ourLen++;
 					hash1 = hash1+hash2;
 					if (hash1>=s2a_a.length)
@@ -616,11 +620,13 @@ public class ARMemoryArrays implements IARMemory {
 	private class R2AImpl implements IARMemory.ActionsIterator {
 		private double r;
 		private int hash1, hash2, len;
+		private int Len;
 		public R2AImpl(double _r, int _hash1, int _hash2, int _len) {
 			r = _r;
 			hash1 = _hash1;
 			hash2 = _hash2;
 			len = _len;
+			Len = _len;
 		}
 
 		@Override
@@ -632,12 +638,14 @@ public class ARMemoryArrays implements IARMemory {
 			while (r2a_a[hash1] != 0) {
 				len--;
 				if (r2a_r[hash1] == r) {
-					if (r2a_a[hash1]>=0) { // negative numbers specify the skip length or deleted elements						
+					if (r2a_a[hash1]>0) { // negative numbers specify the skip length or deleted elements						
 						int tmp = r2a_a[hash1];
-						hash1 = hash1+hash2;
-						if (hash1>=r2a_a.length)
-							hash1-=r2a_a.length;
-						return tmp;
+						if (actions[tmp]!=0x00) {
+							hash1 = hash1+hash2;
+							if (hash1>=r2a_a.length)
+								hash1-=r2a_a.length;
+							return tmp;
+						}
 					}
 				}
 				hash1 = hash1+hash2;
@@ -651,7 +659,7 @@ public class ARMemoryArrays implements IARMemory {
 		private int get(int index) {
 			int h = (int) (((long)hash1+(long)hash2*(long)index)%(long)r2a_a.length); // !handling overflow via long
 			
-			if ((r2a_r[h] == r) && (r2a_a[h]>=0)) 			
+			if ((r2a_r[h] == r) && (r2a_a[h]>0) && (actions[r2a_a[h]]!=0x00))  			
 				return r2a_a[h];
 			
 			return -1;
@@ -818,7 +826,7 @@ public class ARMemoryArrays implements IARMemory {
 				
 		// searching for the first our cell...
 		
-		while ((r2a_a[hash1]!=0)&&(r2a_a[hash1]!=-1)) {  // !=0 and !=-1
+		while (r2a_a[hash1]!=0) { 
 			if (r2a_r[hash1]==r) {
 				// this is the first "our" cell...
 				if (r2a_a[hash1]<-1) {
@@ -828,7 +836,12 @@ public class ARMemoryArrays implements IARMemory {
 					return new R2AImpl(r, hash1, hash2, ourLen+1);
 				}
 				else {
-					return new SingleActionIterator(r2a_a[hash1]);
+					int index = r2a_a[hash1];
+					if ((index<=0) || (actions[index]==0x00)) {
+						return EmptyActionsIterator.INSTANCE;
+					}
+					else
+						return new SingleActionIterator(index);
 				}
 			}
 			else {				
@@ -848,7 +861,9 @@ public class ARMemoryArrays implements IARMemory {
 		while (r2a_a[hash1] != 0) {
 			if (r2a_r[hash1] == r) {
 				if (r2a_a[hash1]>=0) { // negative numbers specify the skip length or deleted elements
-					return r2a_a[hash1];
+					int index=r2a_a[hash1];
+					if (actions[index]!=0x00)
+						return index;
 				}
 			}
 			hash1 = hash1+hash2;
@@ -866,9 +881,12 @@ public class ARMemoryArrays implements IARMemory {
 
 		while (r2a_a[hash1] != 0) {
 			if (r2a_r[hash1] == r) {
-				if (r2a_a[hash1]>=0) // negative numbers specify the skip length or deleted elements
-					retVal.add(r2a_a[hash1]);
-				r2a_a[hash1] = -1; // removed
+				if (r2a_a[hash1]>0) { // negative numbers specify the skip length or deleted elements
+					int index=r2a_a[hash1];
+					if (actions[index]!=0x00)
+						retVal.add(index);
+					r2a_a[hash1] = -1; // removed
+				}
 			}
 			hash1 = hash1+hash2;
 			if (hash1>=r2a_a.length)
@@ -894,7 +912,7 @@ public class ARMemoryArrays implements IARMemory {
 		int ourLen = 0;
 		// searching for the first empty cell...
 		
-		while ((r2a_a[hash1]!=0)&&(r2a_a[hash1]!=-1)) {  // !=0 and !=-1
+		while (r2a_a[hash1]!=0) {
 			if (firstOur==-1) {
 				if (r2a_r[hash1]==d) {
 					// this is the first "our" cell...
@@ -1233,11 +1251,11 @@ private double firstActionWhere(double r) {
 
 	public void deleteSimpleAction(int index) {
 	
-		if (actions[index]==0)
+		if (actions[index]==0x00)
 			return; // already deleted
 		
 		int size = RepositoryAdapter.getOpSize(actions[index]);
-		actions[index] = 0;
+		actions[index] = 0x00;
 		actions[index+1] = size;		
 		// other actions[index+i] may remain the same
 		deletedN++;
@@ -1246,6 +1264,7 @@ private double firstActionWhere(double r) {
 		if (si>=0) {
 			// whereReferenceMap, whereStringMap - do not modify, it will be modified during re-arranging actions
 			strings[si] = null;
+			deletedS++;
 		}
 	}
 	
@@ -1399,6 +1418,12 @@ private double firstActionWhere(double r) {
 	@Override
 	public boolean memoryFault() {
 		return false;
+	}
+
+	@Override
+	public void rearrange() {
+		rearrangeActions(0);
+		//rearrangeStrings(0);
 	}
 	
 }

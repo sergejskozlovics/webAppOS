@@ -21,7 +21,7 @@ public class Module_lua_graphDiagram extends TwoArgFunction {
     }
 
 	@Override
-	public LuaValue call(LuaValue modName, LuaValue env) {
+	synchronized public LuaValue call(LuaValue modName, LuaValue env) {
 		LuaTable module = new LuaTable(0,30); // I think "new LuaTable()" instead of "(0, 30)" is OK
         module.set("GetNodeStyle", new GetNodeStyle());
         module.set("GetEdgeStyle", new GetEdgeStyle());
@@ -37,7 +37,7 @@ public class Module_lua_graphDiagram extends TwoArgFunction {
 	class GetNodeStyle extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue arg0) {
+		synchronized public LuaValue call(LuaValue arg0) {
 			String s = arg0.tojstring();
 			if (s==null)
 				return LuaValue.valueOf("");
@@ -78,7 +78,7 @@ public class Module_lua_graphDiagram extends TwoArgFunction {
 	class GetEdgeStyle extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue arg0) {
+		synchronized public LuaValue call(LuaValue arg0) {
 			String s = arg0.tojstring();
 			if (s==null)
 				return LuaValue.valueOf("");
@@ -138,7 +138,7 @@ public class Module_lua_graphDiagram extends TwoArgFunction {
 	class GetPortStyle extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue arg0) {			
+		synchronized public LuaValue call(LuaValue arg0) {			
 			return new GetNodeStyle().call(arg0);
 		}
 
@@ -146,7 +146,7 @@ public class Module_lua_graphDiagram extends TwoArgFunction {
 	class GetCompartmentStyle extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue arg0) {
+		synchronized public LuaValue call(LuaValue arg0) {
 			String s = arg0.tojstring();
 			if (s==null)
 				return LuaValue.valueOf("");
@@ -194,7 +194,7 @@ public class Module_lua_graphDiagram extends TwoArgFunction {
 	class IsOpenDiagram extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue arg0) {
+		synchronized public LuaValue call(LuaValue arg0) {
 			long r = arg0.tolong();
 			
 			

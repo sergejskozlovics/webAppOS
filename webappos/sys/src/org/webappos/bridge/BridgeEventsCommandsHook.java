@@ -27,7 +27,7 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 	public static BridgeEventsCommandsHook INSTANCE = new BridgeEventsCommandsHook();
 	
 	@Override
-	public boolean handleEvent(TDAKernel kernel, long rEvent) {
+	synchronized public boolean handleEvent(TDAKernel kernel, long rEvent) {
 		logger.trace("Caught TDA Kernel event "+rEvent);
 		
 		try {
@@ -80,7 +80,7 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 	}
 
 	@Override
-	public boolean executeCommand(TDAKernel kernel, long rCommand) {		
+	synchronized public boolean executeCommand(TDAKernel kernel, long rCommand) {		
 		logger.trace("Caught TDA Kernel command "+rCommand);
 		
 		try {
@@ -122,7 +122,7 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 		}
 	}
 	
-	public boolean handleSyncedEvent(TDAKernel kernel, long rEvent, RAAPI_Synchronizer singleSynchronizer, String login, String project_id, String fullAppName) {
+	synchronized public boolean handleSyncedEvent(TDAKernel kernel, long rEvent, RAAPI_Synchronizer singleSynchronizer, String login, String project_id, String fullAppName) {
 		logger.trace("Caught synced event "+rEvent);
 		
 		try {
@@ -169,7 +169,7 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 		}
 	}
 	
-	public boolean executeSyncedCommand(TDAKernel kernel, long rCommand, RAAPI_Synchronizer singleSynchronizer, String login, String project_id, String fullAppName) {
+	synchronized public boolean executeSyncedCommand(TDAKernel kernel, long rCommand, RAAPI_Synchronizer singleSynchronizer, String login, String project_id, String fullAppName) {
 		try {
 			long it = kernel.getIteratorForDirectObjectClasses(rCommand);
 			long rCls = kernel.resolveIteratorFirst(it);		
@@ -185,6 +185,7 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 			
 			WebCaller.SyncedWebCallSeed seed = new WebCaller.SyncedWebCallSeed();
 			
+			System.out.println("ENQUEUE SYNCED CMD "+className);
 			seed.actionName = className;
 			
 			seed.callingConventions = WebCaller.CallingConventions.TDACALL;
@@ -355,6 +356,64 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 			return;
 		}
 		String transformationName = raapi.getAttributeValue(rCommand, rAttr);
+		if (transformationName == null) {
+			raapi.freeReference(rCls);
+			logger.error("No transformation URI specified in the given instance of TDAKernel::LaunchTransformationCommand.");
+			return;
+		}
+		raapi.freeReference(rAttr);
+		raapi.freeReference(rCls);
+		
+		long rArgument = 0;
+		int j = transformationName.indexOf("):");
+		int i = transformationName.indexOf('(');
+		if ((i>=0) && (j>i)) {
+			try {
+				rArgument = Long.parseLong(transformationName.substring(i+1, j));
+			}
+			catch (Throwable t) {
+			}
+			transformationName = transformationName.substring(0, i) + transformationName.substring(j+1);
+		}
+		
+		if (rArgument==0)
+			rArgument = rCommand;
+		
+		IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
+		
+		seed.actionName = transformationName;
+		
+		seed.callingConventions = WebCaller.CallingConventions.TDACALL;
+		seed.tdaArgument = rArgument;
+
+		if (o != null) {
+			seed.login = o.login;
+			seed.project_id = o.project_id;
+		}
+  		
+  		API.webCaller.enqueue(seed);
+		
+	}
+
+	public static void executeExecTransfCmd(RAAPI raapi, long rCommand) {
+		if (!(raapi instanceof TDAKernel))
+			return;
+		
+		TDAKernel.Owner o = ((TDAKernel)raapi).getOwner();
+		
+		long rCls = RAAPIHelper.getObjectClass(raapi, rCommand);
+		long rAttr = raapi.findAttribute(rCls, "info");
+		if (rAttr == 0) {
+			raapi.freeReference(rCls);
+			logger.error("Attribute 'info' not found in class ExecTransfCommand.");
+			return;
+		}
+		String transformationName = raapi.getAttributeValue(rCommand, rAttr);
+		
+		// legacy fix:
+		if (transformationName.startsWith("lua_engine#lua."))
+			transformationName = "lua:"+transformationName.substring(15);
+		
 		raapi.freeReference(rAttr);
 		raapi.freeReference(rCls);
 		
@@ -386,10 +445,11 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 			seed.project_id = o.project_id;
 		}
   		
+		System.out.println("ExecTransfCmd "+transformationName+"("+rArgument+")");
   		API.webCaller.enqueue(seed);
 		
 	}
-	
+
 	public static void prepareProjectOpenedEvent(String dummyLocation, RAAPI raapi, long rEvent) {
 
 		if (!(raapi instanceof TDAKernel))

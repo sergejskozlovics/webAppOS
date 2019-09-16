@@ -91,15 +91,15 @@ public class DialogEngine_webcalls {
 		if (f==null) {
 			f = factory.createFrame();
 			f.setCaption(df.getCaption());
+			f.setIsClosable(true);
 			f.setContentURI("html:DialogEngine.html?frameReference="+f.getRAAPIReference());
 			f.setForm(df);
 			if (modal) {
-				f.setLocation("modalpopup");
+				f.setLocation("modalpopup[0*0]"); // will be resized by DialogEngine
 			}
 			else
 				f.setLocation("popup");
-			//f.setOnFrameActivatedEvent("staticjava:lv.lumii.tda.webde.GraphDiagramEngine_jsonsubmit#onFrameActivatedEvent");
-			f.setOnCloseFrameRequestedEvent("staticjava:lv.lumii.tda.webde.DialogEngine_jsonsubmit#onCloseFrameRequestedEvent");
+			f.setOnCloseFrameRequestedEvent("DE.onCloseFrameRequestedEvent");
 			
 		}
 	}
@@ -162,7 +162,9 @@ public class DialogEngine_webcalls {
 						
 			
 			seed.callingConventions = WebCaller.CallingConventions.TDACALL;
+//			System.out.println("replicate1 "+r);
 			seed.tdaArgument = ((TDAKernel)raapi).replicateEventOrCommand(r);
+//			System.out.println("replicate2 "+seed.tdaArgument);
 			
 			TDAKernel.Owner o = ((TDAKernel)raapi).getOwner();
 

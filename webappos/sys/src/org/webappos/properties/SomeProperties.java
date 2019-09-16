@@ -22,6 +22,8 @@ public class SomeProperties implements Serializable {
 	public List<String> classpaths = new ArrayList<String>();
 	public List<String> webcallsFiles = new ArrayList<String>();
 	
+	public String[] auto_webcalls = {};
+	
 	public SomeProperties(String _id, String fileName) {
 		id = _id;
 		try {

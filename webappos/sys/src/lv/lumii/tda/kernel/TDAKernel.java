@@ -845,6 +845,13 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IEventsComma
 	@Override
 	public boolean setAttributeValue(long rObject, long rAttribute, String value) {
 		String oldValue = getDelegate().getAttributeValue(rObject, rAttribute);
+		if (value==null) {
+			if (oldValue==null)
+				return true;
+		}
+		else
+			if (value.equals(oldValue))
+				return true;
 		boolean retVal = getDelegate().setAttributeValue(rObject, rAttribute, value);
 		if ((retVal) && (synchronizer!=null))
 			synchronizer.syncSetAttributeValue(rObject, rAttribute, value, oldValue);

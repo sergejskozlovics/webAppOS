@@ -1,5 +1,6 @@
 package org.webappos.adapters.webcalls.staticjava;
 
+import java.io.File;
 import java.lang.reflect.Method;
 
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 	
 	
 	@Override
-	public void tdacall(String location, long rObject, RAAPI raapi, String project_id, String appFullName,
+	public void tdacall(String location, String pwd, long rObject, RAAPI raapi, String project_id, String appFullName,
 			String login) {
 		// location must be in the form className#functionName
 		if (location == null)
@@ -25,7 +26,6 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 		if (i<0)
 			return;
 		
-
 		API.classLoader.addClasspathsForPropertiesId(appFullName);
 		
 		Class<?> c = API.classLoader.findClassByName(location.substring(0, i));
@@ -47,6 +47,7 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 				m.invoke(null, raapi, rObject);
 			} catch (Throwable t) {
 				logger.error("tdacall webcall "+location+" invocation exception (2 args)");
+				t.printStackTrace();
 			}
 		}
 		else 
@@ -64,7 +65,7 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 
 
 	@Override
-	public String jsoncall(String location, String argument, String project_id, String appFullName, String login) {
+	synchronized public String jsoncall(String location, String pwd, String argument, String project_id, String appFullName, String login) {
 		
 		// location must be in the form className#functionName
 		if (location == null) {
@@ -76,7 +77,6 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 		}
 		
 		API.classLoader.addClasspathsForPropertiesId(appFullName);
-		
 		
 		Class<?> c = API.classLoader.findClassByName(location.substring(0, i));
 		if (c == null)

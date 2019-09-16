@@ -31,6 +31,7 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 	
 	private static boolean DEBUG_LINKS = false;
 	
+	/*	
 	private String collectClassNames(long rObject) {
 		LinkedList<Long> classes = new LinkedList<Long>();
 		collectDirectObjectClasses(rObject, classes);
@@ -39,7 +40,6 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 			retVal+=getClassName(rCls)+" ";
 		return retVal;
 	}
-	
 	private void debugAction(int i) {
 		double op=mem.actions_get(i);
 		int n = getOpSize(op);
@@ -60,7 +60,7 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 			logger.debug(" no string");
 		
 	}
-	
+*/	
 	public static IRepository create()
 	{
 		return new RepositoryAdapter();
@@ -334,6 +334,29 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 
 	private int findActionWhere(double op, double... arr) {
 		
+		if (arr.length==2) {
+			IARMemory.ActionsIterator it = mem.r2a_get_iterator(arr[0]);
+			if (it==null)
+				return -1;
+			int ai = it.next();
+			while (ai!=-1) {
+				if (mem.actions_get(ai)==op) {
+					int n = opsize[(int)op];
+					boolean ok0=false, ok1=false;
+					for (int i=1; i<=n; i++) {
+						if (mem.actions_get(ai+i)==arr[0])
+							ok0=true;
+						if (mem.actions_get(ai+i)==arr[1])
+							ok1=true;
+					}
+					if (ok0 && ok1)
+						return ai;
+				}
+				ai = it.next();
+			}
+			return -1;
+		}
+		
 		IARMemory.ActionsIterator[] itarr = new IARMemory.ActionsIterator[arr.length];
 		int[] valarr = new int[arr.length];
 		int i;
@@ -359,6 +382,9 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 				
 				if (valarr[i]<curmax)
 					valarr[i] = itarr[i].nextGreaterOrEqual(curmax);
+				
+				if ((valarr[i]!=-1) && (valarr[i]<curmax))
+					valarr[i] = itarr[i].next();
 				
 				if (valarr[i]==-1)
 					return -1;
@@ -398,11 +424,82 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 			}
 		}
 	}	
+
+/*	private int findActionWhere(double op, double... arr) {
+		
+		IARMemory.ActionsIterator[] itarr = new IARMemory.ActionsIterator[arr.length];
+		int[] valarr = new int[arr.length];
+		int i;
+		int curmax=-1;
+		for (i=0; i<arr.length; i++) {
+			itarr[i] = mem.r2a_get_iterator(arr[i]);
+			if (itarr[i]==null)
+				return -1;
+			valarr[i] = itarr[i].next();
+						
+			if (valarr[i] > curmax)
+				curmax = valarr[i];
+		}
+	
+		if (curmax<0)
+			return -1;
+		
+		for (;;) {
+			
+			// moving iterators until all arr elements are found within the same index
+			
+			for (i=0; i<arr.length; i++) {
+				
+				//if (valarr[i]<curmax)
+					//valarr[i] = itarr[i].nextGreaterOrEqual(curmax);
+				
+				if ((valarr[i]!=-1) && (valarr[i]<curmax))
+					valarr[i] = itarr[i].next();
+				
+				if (valarr[i]==-1)
+					return -1;
+			}
+			
+			boolean ok = true;
+			for (i=0; i<arr.length; i++) {
+				if (valarr[i]!=curmax) {
+					ok = false;
+					curmax=valarr[i];
+					break;
+				}
+			}
+			
+			if (ok) {
+				// the final step: checking whether it is the correct action
+				if (mem.actions_get(curmax)==op)
+					return curmax; // found!
+				
+				// update curmax and move all iterators...
+				for (i=0; i<arr.length; i++) {					
+					valarr[i] = itarr[i].next();
+					if (valarr[i]==-1)
+						return -1;
+					if (valarr[i] > curmax)
+						curmax=valarr[i];
+				}
+			}
+			else {
+				// just update curmax...
+				for (i=0; i<arr.length; i++) {
+					if (valarr[i]==-1)
+						return -1;
+					if (valarr[i] > curmax)
+						curmax=valarr[i];
+				}
+			}
+		}
+	}*/	
 	
 	/**
 	 * Searches for the action, where the given op is performed on the given string (e.g., createClass on the given name)
 	 * @param op the operation (e.g., 0x01)
 	 * @param s the string associated with the action (for createAssociation: either "role1/role2", or "role1", or "role2")
+	 * @param isRoleName whether the string to be found is a role name
 	 * @return the action index, or -1 if not found
 	 */
 	private int findActionWhere(double op, String s, boolean isRoleName) {
@@ -464,11 +561,11 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 				int k;
 				while ((k=rait.next())!=-1) { 
 					if (mem.actions_get(k)==0x04) { // attribute value
-						if (attrs.contains(mem.actions_get(k+1)))
+						if (attrs.contains((long)mem.actions_get(k+1)))
 							toDelete.add(k);
 					}
 					if (mem.actions_get(k)==0x06) { // link
-						if (assocEnds.contains(mem.actions_get(k+3)))
+						if (assocEnds.contains((long)mem.actions_get(k+3)))
 							toDelete.add(k);
 					}
 				}
@@ -483,6 +580,18 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 		a.add(rObject);
 		detachObjectFromClass(a, rClass);
 	}
+	
+/*	private List<Integer> r2a_get(double r) {
+		ActionsIterator it = mem.r2a_get_iterator(r);
+		ArrayList<Integer> retVal = new ArrayList<Integer>();
+		int i=it.next();
+		while (i!=-1) {
+			if (mem.actions_get(i)!=0x00)
+				retVal.add(i);
+			i=it.next();
+		}
+		return retVal;
+	}*/
 	
 	// used from: deleteClass, deleteObject
 	private boolean deleteObjectRecursively(double rObject) {
@@ -514,8 +623,10 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 			mem.deleteSimpleAction(i);
 		}
 		
-		for (Double d : linkedToDelete)
+		for (Double d : linkedToDelete) {
 			deleteObjectRecursively(d);
+		}
+		
 		
 		return true;
 	}
@@ -648,7 +759,7 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 		 mem.lock();
 		try {
 			int i = findWhere(rClass);
-			if ((i<0) || (mem.actions_get(i+1)!=0x01))
+			if ((i<0) || (mem.actions_get(i)!=0x01))
 				return false;
 			
 			List<Long> arr = new LinkedList<Long>();
@@ -664,8 +775,10 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 			List<Integer> list = mem.r2a_get_and_remove((double)rClass);
 			if (list==null)
 				return false;
-			for (Integer k : list)
+			for (Integer k : list) {
 				mem.deleteSimpleAction(k);
+			}
+			
 					
 			return true;
 		}
@@ -768,12 +881,13 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 	}
 	
 	@Override
-	synchronized public boolean deleteObject(long rObject) {
+	synchronized public boolean deleteObject(long rObject) {		
 		if (mem==null)
 			return false;
 		 mem.lock();
 		try {
-			return deleteObjectRecursively(rObject);
+			boolean retVal = deleteObjectRecursively(rObject);
+			return retVal;
 		}
 		finally {
 			mem.unlock();
@@ -1034,6 +1148,7 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 				return false;
 			for (Integer k : list)
 				mem.deleteSimpleAction(k);
+			
 			return true;
 		}
 		finally {
@@ -1349,6 +1464,7 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 				return (long)mem.actions_get(i+2);
 			if (mem.actions_get(i+5)==rAssociation)
 				return (long)mem.actions_get(i+1);
+			
 			return 0;
 		}
 		finally {
@@ -1892,7 +2008,8 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 				if (mem.actions_get(i+2)==rObject) {
 					int j = mem.hasMultiTypedObjects()?findActionWhere(0xE2, rObject, (long)mem.actions_get(i+1)):-1;
 					if (j<0) { // this is the first class, and the object has not been excluded from this class 
-						result.add((long)mem.actions_get(i+1));
+						double el = mem.actions_get(i+1);
+						result.add((long)el);
 					}
 				}
 			}
@@ -2055,8 +2172,9 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 			int val2 = it2.next();
 			int val3 = it3.next();
 			
-/* SLOW LINKS, SIMPLE AND CORRECT SOLUTION		
-			for (Integer i : list1) {
+/* SLOW LINKS, SIMPLE AND CORRECT SOLUTION*/
+/*			int i = it1.next();
+			while (i!=-1) {
 				if (mem.actions_get(i)==0x06) {
 					if (mem.actions_get(i+3)==rAssocEnd) {
 						if (mem.actions_get(i+1)==rObject) 
@@ -2068,10 +2186,13 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 							result.add((long)mem.actions_get(i+1));							
 					}
 				}
-			}
-*/			
+				i=it1.next();
+			}*/
+			
+//*/			
 
-// fast links (to be tested?)
+			
+// fast links (should work, but may need more testing)
 //			int i1=0, i2=0, i3=0;
 			while ( (val1!=-1) && ((val2!=-1)||(val3!=-1)) ) {
 				if (val3==-1) {
@@ -2177,6 +2298,7 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 				} // list2 and list3 available
 				
 			}  // fast links
+		
 		}
 	}
 	
@@ -2233,7 +2355,8 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 		try {
 			ArrayList<Long> arr = new ArrayList<Long>();
 			collectDirectObjectClasses(rObject, arr);
-			return new ArrayListIterator(arr).it;		
+			long retVal = new ArrayListIterator(arr).it;
+			return retVal;
 		}
 		finally {
 			mem.unlock();
@@ -2342,6 +2465,7 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 		if (mem==null)
 			return 0;
 		 mem.lock();
+			//mem.rearrange();
 		try {
 			ArrayList<Long> arr = new ArrayList<Long>();
 			collectLinkedObjects(rObject, rAssociation, arr);
@@ -2438,7 +2562,7 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 	@Override
 	synchronized public String serializeReference(long r)
 	{
-		return new Long(r).toString();
+		return Long.valueOf(r).toString();
 	}
 	
 	@Override
@@ -2473,7 +2597,13 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 		if (openRepositoryPath != null)
 			return false; // already open
 		
-		openRepositoryPath = this.readIntoMemory(uri);
+		try {
+			openRepositoryPath = this.readIntoMemory(uri);
+		}
+		catch(Throwable t) {
+			free(true);
+			return false;
+		}
 			
 		
 		return openRepositoryPath!=null;						
@@ -2661,7 +2791,7 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 	}
 
 	@Override
-	public boolean setPredefinedBits(int bitsCount, long bitsValues) {
+	synchronized public boolean setPredefinedBits(int bitsCount, long bitsValues) {
 		if (bitsCount>50)
 			return false;
 		
@@ -2669,12 +2799,12 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 	}
 
 	@Override
-	public int getPredefinedBitsCount() {
+	synchronized public int getPredefinedBitsCount() {
 		return mem.getPredefinedBitsCount();
 	}
 
 	@Override
-	public long getPredefinedBitsValues() {
+	synchronized public long getPredefinedBitsValues() {
 		return mem.getPredefinedBitsValues();
 	}
 

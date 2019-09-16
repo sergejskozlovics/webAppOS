@@ -30,14 +30,9 @@ public class ValidityChecker {
 		}
 		
 		if (login.indexOf(' ')>=0)
-			throw new Exception("Invalid login format - spaces are not allowed!"); // spaces are not allowed
+			throw new Exception("Invalid login format: spaces are not allowed"); // spaces are not allowed
 		
-		try {
-			checkFileName(login); // login can be used as subfolder name
-		}
-		catch(Throwable t){
-			throw new Exception("Invalid login format");
-		}
+		checkFileNameLike(login, "Invalid login format: login cannot be used for directory name"); // login can be used as subfolder name
 		
 		int i=0;
 		for (i=0; i<login.length(); i++) {
@@ -93,31 +88,41 @@ public class ValidityChecker {
 		}
 	}
 	
-	public static void checkToken(String value) throws Exception {
-		if (value==null)
-	    	throw new Exception("Token must be specified");
-		value=value.trim();
-	    if (value.isEmpty())
-	    	throw new Exception("Token must be specified");
+	public static void checkTokenLike(String value, String message, boolean allowEmpty) throws Exception {
+		if (!allowEmpty) {
+			if (value==null)
+				throw new Exception(message);
+			value=value.trim();
+			if (value.isEmpty())
+				throw new Exception(message);
+		}
 	    	    
 		for (int i=0; i<value.length(); i++) {
 			char c=value.charAt(i); 
 			if (Character.isAlphabetic(c)||Character.isDigit(c)||(c=='-')||(c=='_'))
 				continue;
 			else
-				throw new Exception("Invalid token");
+				throw new Exception(message);
 		}
 	}
+	
+	public static void checkToken(String value) throws Exception {
+		checkTokenLike(value, "Ivalid token", false);
+	}
 
-	public static void checkFileName(String name) throws Exception {
+	static void checkFileNameLike(String name, String message) throws Exception {
 		if ((name==null) || (name.indexOf('/')>=0) || (name.indexOf('\\')>=0))			
-			throw new Exception("Unsupported file/folder name");
+			throw new Exception(message);
 		try {
 			checkRelativePath(name, false); // don't allow empty
 		}
 		catch(Throwable t) {
-			throw new Exception("Unsupported file/folder name");
+			throw new Exception(message);
 		}
+	}
+	
+	public static void checkFileName(String name) throws Exception {
+		checkFileNameLike(name, "Unsupported file/folder name");
 	}
 	
 	public static void checkRelativePath(String path, boolean allowEmpty) throws Exception {
@@ -178,8 +183,8 @@ public class ValidityChecker {
 		// TODO: validate checksums in subfolders
 	}
 
-	public static void checkActionName(String name) throws Exception {
-		checkFileName(name);
+	public static void checkWebCallActionName(String name) throws Exception {
+		checkFileNameLike(name, "Illegal web call action name");
 	}
 	
 }

@@ -74,7 +74,6 @@ public abstract class ConfigStatic {
 
 	private static String getSysDir() {
 		 String dir = getClassDirectory(ConfigStatic.class);
-		 System.out.println("DIRR="+dir);
 		 File f = new File(dir);
 		 while (!f.getName().equals("sys")) {
 			 f = f.getParentFile();
@@ -88,7 +87,6 @@ public abstract class ConfigStatic {
 		 //}
 		 //else
 		 
-		System.out.println(f.getAbsolutePath());
 		return f.getAbsolutePath();
 	}
 	

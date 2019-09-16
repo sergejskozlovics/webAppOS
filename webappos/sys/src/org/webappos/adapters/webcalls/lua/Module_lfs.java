@@ -25,7 +25,7 @@ public class Module_lfs extends TwoArgFunction {
     }
 
 	@Override
-	public LuaValue call(LuaValue modName, LuaValue env) {
+	synchronized public LuaValue call(LuaValue modName, LuaValue env) {
 		LuaTable module = new LuaTable(0,30); // I think "new LuaTable()" instead of "(0, 30)" is OK
         module.set("dir2", new dir2());
         module.set("mkdir", new mkdir());
@@ -37,7 +37,7 @@ public class Module_lfs extends TwoArgFunction {
 	public class dir2 extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue path) {
+		synchronized public LuaValue call(LuaValue path) {
 			File f = new File(path.tojstring());			
 			LuaTable t = new LuaTable();
 			int i =1;
@@ -59,7 +59,7 @@ public class Module_lfs extends TwoArgFunction {
 	public class mkdir extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue dirname) {
+		synchronized public LuaValue call(LuaValue dirname) {
 			boolean retval = false;
 			File f = new File(dirname.tojstring());
 			try {
@@ -74,7 +74,7 @@ public class Module_lfs extends TwoArgFunction {
 	
 	public class attributes extends VarArgFunction {
 		
-		public Varargs invoke(Varargs v) {
+		synchronized public Varargs invoke(Varargs v) {
 			LuaValue filepath = v.arg(1);
 			LuaValue aname = v.arg(2);
 			

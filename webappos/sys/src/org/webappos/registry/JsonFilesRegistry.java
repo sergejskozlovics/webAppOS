@@ -163,13 +163,16 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 				
 				JsonObject xuser = null;
 				xuser = fileToJson(DIR_XUSERS+File.separator+id);
-				if (xuser == null)
-					return null;
 				
-				JsonElement el = xuser.get("alias_of");
-				if ((el != null) && (!el.getAsString().isEmpty())) {
-					xuser = fileToJson(DIR_XUSERS+File.separator+el.getAsString());
+				
+				if (xuser != null) {
+					// trying to redirect from alias...				
+					JsonElement el = xuser.get("alias_of");
+					if ((el != null) && (!el.getAsString().isEmpty())) {
+						xuser = fileToJson(DIR_XUSERS+File.separator+el.getAsString());
+					}
 				}
+				
 				if (xuser == null)
 					return null;
 				
@@ -310,8 +313,10 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 						deleteFile(DIR_XUSERS+File.separator+id);
 						return false;
 					}
-					else
+					else {
 						xuser = xuser2;
+						path[1] = xuser2.get("_id").getAsString();
+					}
 				}				
 				
 				doc = xuser;
@@ -368,6 +373,9 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 							}
 						}
 						
+					}
+					else {
+						path[1] = user.get("_id").getAsString();						
 					}
 				}
 				

@@ -16,7 +16,7 @@ import org.webappos.auth.UsersManager;
 import org.webappos.fs.HomeFS;
 import org.webappos.fs.IFileSystem.PathInfo;
 import org.webappos.server.API;
-import org.webappos.server.APIForServerBridge;
+import org.webappos.server.ConfigEx;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -34,8 +34,11 @@ public class FileBrowserServlet extends HttpServlet {
 	
 	
 	private static String getPathMime(String path, boolean isDirectory) {
+		if (!(API.config instanceof ConfigEx))
+			return null;
+		
 		if (isDirectory) {
-			String retVal = APIForServerBridge.configForServerBridge.mimes.get(path);
+			String retVal = ((ConfigEx)API.config).mimes.get(path);
 			return retVal;
 		}
 		int j = path.lastIndexOf('/');
@@ -43,7 +46,7 @@ public class FileBrowserServlet extends HttpServlet {
 		int k = lastName.lastIndexOf('.');
 		String mime = null;
 		if (k>=0) {
-			mime = APIForServerBridge.configForServerBridge.mimes.get(lastName.substring(k+1));
+			mime = ((ConfigEx)API.config).mimes.get(lastName.substring(k+1));
 		}
 		
 		return mime;

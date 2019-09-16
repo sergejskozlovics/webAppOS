@@ -1,12 +1,20 @@
 package org.webappos.adapters.webcalls.lua;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 
+import org.apache.commons.io.IOUtils;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.webappos.properties.AppProperties;
 import org.webappos.server.API;
 import org.webappos.util.StackTrace;
 
@@ -33,7 +41,7 @@ public class Module_lua_java extends TwoArgFunction {
     }
 
 	@Override
-	public LuaValue call(LuaValue modName, LuaValue env) {
+	synchronized public LuaValue call(LuaValue modName, LuaValue env) {
 		LuaTable module = new LuaTable(0,30); // I think "new LuaTable()" instead of "(0, 30)" is OK
         module.set("call_java_through_pipe", new call_java_through_pipe());
         module.set("call_static_class_method", new call_static_class_method());
@@ -53,42 +61,43 @@ public class Module_lua_java extends TwoArgFunction {
 		}
 
 		@Override
-		public final LuaValue call() {
+		synchronized public final LuaValue call() {
 		return call(NIL, NIL, NIL, NIL, NIL);
 		}
 
 		@Override
-		public final LuaValue call(LuaValue arg) {
+		synchronized public final LuaValue call(LuaValue arg) {
 		return call(arg, NIL, NIL, NIL, NIL);
 		}
 
 		@Override
-		public LuaValue call(LuaValue arg1, LuaValue arg2) {
+		synchronized public LuaValue call(LuaValue arg1, LuaValue arg2) {
 		return call(arg1, arg2, NIL, NIL, NIL);
 		}
 
 		@Override
-		public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3) {
+		synchronized public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3) {
 		return call(arg1, arg2, arg3, NIL, NIL);
 		}
 
-		public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3, LuaValue arg4) {
+		synchronized public LuaValue call(LuaValue arg1, LuaValue arg2, LuaValue arg3, LuaValue arg4) {
 		return call(arg1, arg2, arg3, arg4, NIL);
 		}
 
 		@Override
-		public Varargs invoke(Varargs varargs) {
+		synchronized public Varargs invoke(Varargs varargs) {
 			return call(varargs.arg1(), varargs.arg(2), varargs.arg(3), varargs.arg(4), varargs.arg(5));
 		}
 
 	}	
 	
+		
 	// Usage from Lua:
 	// local java_pipe_handle_address, value, err = lua_java.call_java_through_pipe(java_pipe_handle_address, jvm_options, class_name, public_static_method_name, string_arg)
 	
 	public class call_java_through_pipe extends VarArgFunction {	
 		
-		public Varargs invoke(Varargs v) {
+		synchronized public Varargs invoke(Varargs v) {
 
 			String retVal = "";
 			LuaValue err = LuaValue.NIL;
@@ -98,6 +107,72 @@ public class Module_lua_java extends TwoArgFunction {
 			String stringArg = v.arg(5).tojstring();
 			
 			
+			AppProperties props = API.propertiesManager.getAppPropertiesByFullName(appFullName);
+			String dir = API.propertiesManager.getAppDirectory(appFullName);
+			
+			/* variant via true pipe (needs to provide Java7 32-bit in the jre4pipe subdir):
+			File f = new File(dir+File.separator+"jre4pipe");
+			if (f.exists() && f.isDirectory()) {
+				// use pipe
+				System.out.println("Calling via true pipe...");
+				
+				String cmdLine = f.getAbsolutePath()+File.separator+"bin"+File.separator+"java";
+				if (!new File(cmdLine).exists())
+					cmdLine+=".exe";
+				
+				String cp = API.classLoader.getClasspathsForPropertiesId(appFullName);
+				if (cp.length()>0)
+					cmdLine += " -cp "+cp;
+				
+				cmdLine += " JavaClassExecuterPipe";
+				System.out.println("Command line: "+cmdLine);
+				try {
+					Process p = Runtime.getRuntime().exec(cmdLine);
+					
+					
+					p.getOutputStream().write((className+"\0").getBytes("UTF-8"));
+					p.getOutputStream().write((methodName+"\0").getBytes("UTF-8"));
+					p.getOutputStream().write((stringArg+"\0").getBytes("UTF-8"));
+					System.out.println("["+stringArg+"]");
+					p.getOutputStream().flush();
+					p.getOutputStream().close();
+					
+					InputStream is = p.getInputStream();
+					
+					java.util.Scanner scanner = new java.util.Scanner(is, "UTF-8").useDelimiter("\\x00");
+					String result = scanner.next();
+					retVal = scanner.next(); 
+					
+					scanner.close();
+					
+					System.out.println("SCANNER CLOSED result=`"+result+"`");
+					
+					if (!result.endsWith("no_error")) {
+						err = LuaValue.valueOf(retVal); 
+						retVal = null;
+					}
+					
+					
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+				System.out.println("JVM done.");
+				System.out.println("err = "+err);
+				if (err!=LuaValue.NIL)
+					System.out.println("err2 = "+err.tojstring());
+				System.out.println("retVal = "+retVal);
+				
+				
+			    Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
+			    		LuaValue.valueOf(0), // java pipe handle		    		
+			    		LuaValue.valueOf(retVal), 
+			            err});
+
+			    return varargs;
+			}
+			*/
+
+			// simulating the same thing in this Java
 			try {				
 				Class<?> c = null;
 				try {
@@ -108,9 +183,10 @@ public class Module_lua_java extends TwoArgFunction {
 					c = API.classLoader.findClassByName(className);
 				}
 				Method  method = c.getDeclaredMethod (methodName, String.class);
+				System.out.println("Invoking "+className+"."+methodName+"(`"+stringArg+"`)...");
 				retVal = (method.invoke(null, stringArg)).toString();
 			} catch (Throwable t) {
-				
+				t.printStackTrace();
 				err = LuaValue.valueOf(t.toString());
 				
 				logger.error("call_java_through_pipe exception "+t.getMessage()+"\nStackTrace="+StackTrace.get(t));
@@ -163,7 +239,7 @@ public class Module_lua_java extends TwoArgFunction {
 	public class call_static_class_method extends ThreeArgFunction {
 
 		@Override
-		public LuaValue call(LuaValue className, LuaValue methodName, LuaValue stringArg) {
+		synchronized public LuaValue call(LuaValue className, LuaValue methodName, LuaValue stringArg) {
 			
 			String retVal = "";
 			
@@ -188,7 +264,7 @@ public class Module_lua_java extends TwoArgFunction {
 	public class java_pipe_close extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue arg) {
+		synchronized public LuaValue call(LuaValue arg) {
 			//.java_pipe_close(java_pipe_handle_address)
 			// TODO Auto-generated method stub
 			return null;

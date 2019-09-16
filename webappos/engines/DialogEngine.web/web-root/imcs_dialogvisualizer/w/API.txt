@@ -1,0 +1,25 @@
+
+constructor(node - according to MM)
+form constructor(node, divID, iframe, screenWidth, screenHeight)
+combobox constructor(node, groupname)
+
+w.type - string, lower-case
+
+w.setEventHandler(f)
+  f(event)
+    event: {source:node, name:"Click", data:specific}
+
+w.load()
+
+w.reload(node)
+
+<- w.getBounds() according to IMCDialogLaoyout
+
+w.layout(x,y,w,h)
+
+w.destroy()
+
+
+w.readOnly - can be set to true
+
+

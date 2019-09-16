@@ -380,9 +380,9 @@ EditorHandlers = function(actions) {
 
     //finishes on mouse down and mouse move started actions
     stage.on("contentMouseup contentTouchend", function(e) {
-
-        if (actions.state.name != "SwimlaneTextEditing")
-            actions.finish(e);
+        if (actions.state.name != "SwimlaneTextEditing") {
+           actions.finish(e);
+        }
     });
 
     //if mouse leaves the editor and the selection was started

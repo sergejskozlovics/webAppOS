@@ -11,6 +11,9 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Stores webAppOS configuration loaded from webappos/etc/webappos.properties.
@@ -19,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ConfigEx extends ConfigStatic implements Serializable {
 	private static final long serialVersionUID = 1L;
+	private static Logger logger =  LoggerFactory.getLogger(ConfigEx.class);
 	
 	public int free_port = 4572;
 	public Map<String, String> mimes = new ConcurrentHashMap<String, String>(); // extension -> mime
@@ -140,12 +144,12 @@ public class ConfigEx extends ConfigStatic implements Serializable {
 			}
 			catch(Throwable t) {				
 			}
-			
+
+
 			
 		} catch (Throwable t) {
-			System.err
-					.println("Could not load webAppOS properties from file "
-							+ ETC_DIR + File.separator + CONFIG_FILE_NAME);
+			logger.error("Could not load webAppOS properties from file "
+							+ ETC_DIR + File.separator + CONFIG_FILE_NAME, t);
 		}		
 		
 		

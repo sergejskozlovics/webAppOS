@@ -19,12 +19,13 @@ public interface ITdaWebCallsAdapter {
 	 * Performs a web call according to the "tdacall" calling conventions.
 	 * 
 	 * @param resolvedLocation adapter-specific location of code to execute
+	 * @param pwd the directory, where the .webcalls file was located
 	 * @param rObject a repository object (usually, an instance of TDAKernel::Command or TDAKernel::Event)
 	 * @param raapi a pointer to the underlying model repository implementing RAAPI
 	 * @param project_id the current project_id
-	 * @param appFullName the current webAppOS app
+	 * @param appFullName the name of the current app
 	 * @param login the current user login
 	 */
-	public void tdacall(String resolvedLocation, long rObject, RAAPI raapi, String project_id, String appFullName, String login);
+	public void tdacall(String resolvedLocation, String pwd, long rObject, RAAPI raapi, String project_id, String appFullName, String login);
 
 }

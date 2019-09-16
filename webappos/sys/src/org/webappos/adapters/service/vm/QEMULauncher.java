@@ -6,11 +6,14 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.webappos.properties.ServiceProperties;
 import org.webappos.server.ConfigStatic;
 
 public class QEMULauncher {
 	
+	private static Logger logger =  LoggerFactory.getLogger(QEMULauncher.class);
 	
 	private ArrayList<String> args = new ArrayList<String>();
 	private Process javaProcess = null;
@@ -57,7 +60,7 @@ public class QEMULauncher {
 	}
 	
 	public boolean launch(Runnable onStopped, Runnable onHalted) {		
-		System.err.println("Launching QEMULauncher via java: "+args);
+		logger.debug("Launching QEMULauncher via java: "+args);
 		
 		String javapath = System.getProperty("java.home")
                 + File.separator + "bin" + File.separator + "java";
@@ -107,7 +110,7 @@ public class QEMULauncher {
 						
 						if (s==null)
 							s = "HALTED";
-						System.err.println("Child terminated, s="+s);
+						logger.debug("Child terminated, s="+s);
 						if ((onHalted!=null) && "HALTED".equals(s)) {
 							onHalted.run();
 						}
@@ -169,8 +172,6 @@ public class QEMULauncher {
 			return;
 		}
 		
-		System.out.println("OK");
-		
 		final BufferedReader parentReader = new BufferedReader(new InputStreamReader(System.in));
 		
 		final AtomicBoolean stopped = new AtomicBoolean(false);
@@ -190,7 +191,7 @@ public class QEMULauncher {
 					}					
 				}
 				// now either the parent died, or it sent us the system_powerdown signal...
-				System.err.println("now either the parent died, or it sent us the system_powerdown signal...");
+				logger.debug("now either the parent died, or it has sent us the system_powerdown signal...");
 				
 				// sending system_powerdown to the VM
 				String s = "system_powerdown\n";
@@ -204,9 +205,9 @@ public class QEMULauncher {
 				} catch (IOException e) {
 				}
 				
+				logger.debug("system_powerdown sent");
 				System.out.println("STOPPED");
-
-				System.err.println("STOPPED sent");
+				logger.debug("STOPPED sent");
 				
 				
 				if (p.isAlive()) {
@@ -224,16 +225,17 @@ public class QEMULauncher {
 
 		// waiting...
 		while (p.isAlive()) {
-			System.err.println("child OK");
 			try {
 				p.waitFor();
 			} catch (InterruptedException e) {
 			}
 		}
 				
-		System.err.println("child died");
-		if (!stopped.get())
-			System.out.println("HALTED");		
+		if (!stopped.get()) {
+			logger.debug("child died");
+			System.out.println("HALTED");
+			logger.debug("HALTED sent");
+		}
 		
 		
 		for (Thread t : Thread.getAllStackTraces().keySet()) 

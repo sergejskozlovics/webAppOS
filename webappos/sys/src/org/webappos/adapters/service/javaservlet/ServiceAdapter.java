@@ -211,7 +211,6 @@ public class ServiceAdapter implements IServiceAdapter {
 			File f = new File(webroot);
 			if (f.exists() && f.isDirectory()) {
 				// adding web-root handler followed by a servletClass instance...
-				System.err.println("Adding web-root at "+webroot+"...");
 				DefaultServlet defaultServlet = new DefaultServlet();
 				ServletHolder holderPwd = new ServletHolder("default", defaultServlet);
 				holderPwd.setInitParameter("resourceBase", webroot);				
@@ -247,7 +246,6 @@ public class ServiceAdapter implements IServiceAdapter {
 					throw new RuntimeException(e);
 				}
 				contextHandler.addServlet(holder, "/*");
-				System.out.println("SERVLET CLASS "+servletClass.getCanonicalName());
 			}
 			this.onStopped = onStopped;
 	        return contextHandler;

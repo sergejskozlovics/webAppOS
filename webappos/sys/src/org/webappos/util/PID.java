@@ -1,6 +1,7 @@
 package org.webappos.util;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 public class PID {
 	public static long getPID() {
@@ -35,6 +36,27 @@ public class PID {
 		}catch(Throwable t) {
 			return 0;
 		}
+	}
+	
+	public static boolean isRunning(long pid) {		
+		/*
+		 * For Java9+ implementing:
+		 *   return ProcessHandle.of(pid).isPresent();
+		 */
+		try {
+			Class<?> c = Class.forName("java.lang.ProcessHandle");				
+			Method m_of = c.getDeclaredMethod("of");
+			Object obj = m_of.invoke(null, pid);
+	
+			Class<?> o = Class.forName("java.util.Optional");
+			Method m_isPresent = o.getDeclaredMethod("isPresent");
+			boolean result = (boolean)m_isPresent.invoke(obj);
+			return result;
+		}
+		catch(Throwable t) {			
+		}
+		
+		return true; // stub for Java8-
 	}
 	
 	public static void main(String args[]) {

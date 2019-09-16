@@ -8,6 +8,7 @@ import org.webappos.fs.IFileSystem;
 import org.webappos.memory.IMRAM;
 import org.webappos.memory.IMRAMWrapper;
 import org.webappos.memory.MRAM;
+import org.webappos.memory.OfflineMRAM;
 import org.webappos.properties.IPropertiesManager;
 import org.webappos.properties.IPropertiesManagerWrapper;
 import org.webappos.properties.PropertiesManager;
@@ -18,6 +19,7 @@ import org.webappos.registry.JsonFilesRegistry;
 import org.webappos.status.IStatus;
 import org.webappos.status.IStatusWrapper;
 import org.webappos.status.InFileStatus;
+import org.webappos.status.NoStatus;
 import org.webappos.util.PID;
 import org.webappos.util.Ports;
 import org.webappos.webcaller.IWebCaller;
@@ -50,46 +52,39 @@ public class API {
 	 * In addition, initializes APIForServerBridge and Java RMI service for web processors.
 	 */
 	public synchronized static void initAPI() { 
-		APIForServerBridge.configForServerBridge = new ConfigEx();
-		config = APIForServerBridge.configForServerBridge; 
+		config = new ConfigEx(); 
 		
 		try {
-			APIForServerBridge.propertiesManagerForServerBridge = new PropertiesManager();
+			propertiesManager = new PropertiesManager();			
 		} catch (RemoteException e1) {
 		}
-		propertiesManager = APIForServerBridge.propertiesManagerForServerBridge;
 		
 		try {
-			APIForServerBridge.dataMemoryForServerBridge = new MRAM();
+			dataMemory = new MRAM();
 		} catch (RemoteException e) {
 		}
-		dataMemory = APIForServerBridge.dataMemoryForServerBridge;
 		
 		try {
 			if ((config.registry_url!=null) && (!config.registry_url.trim().isEmpty())) {
-				APIForServerBridge.registryForServerBridge = new CouchDBRegistry(config.registry_url);
-				registry = (IRegistry)APIForServerBridge.registryForServerBridge;
+				registry = new CouchDBRegistry(config.registry_url);
 			}
 			else {
-				APIForServerBridge.registryForServerBridge = new JsonFilesRegistry();
-				registry = (IRegistry)APIForServerBridge.registryForServerBridge;
+				registry = new JsonFilesRegistry();
 			}
 		} catch (RemoteException e) {
 		}
 		
 		try {
-			APIForServerBridge.statusForServerBridge = new InFileStatus();
+			status = new InFileStatus();
 		} catch (RemoteException e) {
 		} 
-		status = APIForServerBridge.statusForServerBridge;
 		
 		status.setStatus("server/internal/PID", PID.getPID()+"");
 		
 		try {
-			APIForServerBridge.webCallerForServerBridge = new WebCaller();
+			webCaller = new WebCaller();
 		} catch (RemoteException e) {
 		}
-		webCaller = APIForServerBridge.webCallerForServerBridge;
 		
 		homeFSRoot = HomeFS.ROOT_INSTANCE;
 		emailSender = new TLS_SMTP_EmailSender(API.config.smtp_server, API.config.smtp_auth, API.config.smtp_from, API.config.smtp_from_name);
@@ -97,7 +92,7 @@ public class API {
 		// Creating RMI service
 		if (wpbService == null) {
 			try {
-				APIForServerBridge.wpbServiceForServerBridge = new WebProcessorBusService();			
+				WebProcessorBusService wpbs = new WebProcessorBusService();			
 				
 				int i=0;
 				while ((i<10) && (Ports.portTaken(API.config.web_processor_bus_service_port+i))) {
@@ -107,16 +102,23 @@ public class API {
 				
 
 				Registry registry = LocateRegistry.createRegistry(API.config.web_processor_bus_service_port);
-		        registry.rebind(ConfigStatic.WEB_PROCESSOR_BUS_SERVICE_NAME, APIForServerBridge.wpbServiceForServerBridge);
-		        APIForServerBridge.wpbServiceForServerBridge.webproctabInit();
-		        wpbService = APIForServerBridge.wpbServiceForServerBridge;
+		        registry.rebind(ConfigStatic.WEB_PROCESSOR_BUS_SERVICE_NAME, wpbs);
+		        wpbs.webproctabInit();
 		        status.setStatus("server/internal/web_processor_bus_service_port", API.config.web_processor_bus_service_port+"");
+		        wpbService = wpbs; 
 			}
 			catch(Throwable t) {				
-				APIForServerBridge.wpbServiceForServerBridge = null;
 				status.setStatus("server/internal/web_processor_bus_service_port", "ERROR:"+t.getMessage());
 				return;
 			}
+		}
+		
+		if (config.inline_webcalls) {
+			try { // initializing lua adapter	
+				Class.forName("org.webappos.adapters.webcalls.lua.WebCallsAdapter");
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} 				
 		}
 		
 	}
@@ -155,6 +157,56 @@ public class API {
 		homeFSRoot = HomeFS.ROOT_INSTANCE;
 		emailSender = new TLS_SMTP_EmailSender(API.config.smtp_server, API.config.smtp_auth, API.config.smtp_from, API.config.smtp_from_name);
 	}
+	
+	/**
+	 * Initializes webAppOS API for offline mode, where
+	 * web calls can be called (in inline mode, i.e., without web processors)
+	 * and projects can be opened to perform some maintenance without running the whole webAppOS.
+	 */
+	public synchronized static void initOfflineAPI() {
+		config = new ConfigEx();
+		config.inline_webcalls = true;
+		
+		try {
+			propertiesManager = new PropertiesManager();
+		} catch (RemoteException e1) {
+		}
+		
+		dataMemory = new OfflineMRAM();		
+		
+		try {
+			status = new NoStatus();
+		} catch (RemoteException e) {
+		}		
+		
+		try {
+			webCaller = new WebCaller();
+		} catch (RemoteException e) {
+		}
+
+		try {
+			if ((config.registry_url!=null) && (!config.registry_url.trim().isEmpty())) {
+				registry = new CouchDBRegistry(config.registry_url);
+			}
+			else {
+				registry = new JsonFilesRegistry();
+			}
+		} catch (RemoteException e) {
+		}
+		
+		homeFSRoot = HomeFS.ROOT_INSTANCE;
+		emailSender = new TLS_SMTP_EmailSender(API.config.smtp_server, API.config.smtp_auth, API.config.smtp_from, API.config.smtp_from_name);
+		
+		if (wpbService == null) {
+			try {
+				wpbService = new WebProcessorBusService();							
+			}
+			catch(Throwable t) {				
+			}
+		}
+		
+	}
+	
 	
 	private static Set<IShutDownListener> listeners = ConcurrentHashMap.newKeySet();
 	

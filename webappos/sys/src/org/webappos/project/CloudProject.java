@@ -67,6 +67,7 @@ public class CloudProject implements IProject {
 		
 		System.err.println("SERVER KERNEL "+SERVER_REPOSITORY+":"+folder);
 		tdaKernel = new TDAKernel();
+		
 		if (!tdaKernel.exists(DEFAULT_REPOSITORY+":"+folder) || !tdaKernel.open(SERVER_REPOSITORY+":"+folder)) {
 			logger.error("Could not open the pivot repository in the folder "+folder+" (exists="+tdaKernel.exists(DEFAULT_REPOSITORY+":"+folder)+").");			
 			cleanup(false, true);
@@ -250,6 +251,15 @@ public class CloudProject implements IProject {
 	}
 	
 	private void postOpen(final boolean bootstrap, final String login, RAAPI_Synchronizer sync, IEventsCommandsHook hook) {
+		if (appProps != null) {
+			for (String awc : appProps.auto_webcalls)
+				System.out.println("Executing auto webcall `"+awc+"'...");
+		}
+
+		
+		// sending back the (possibly) updated project_id...
+   		sync.syncRawAction(new double[] {0xFC}, RAAPI_Synchronizer.sharpenString(name));	
+		
 		/*ForegroundThread.runInForegroundThread(new Runnable() {
 
 			@Override
@@ -297,6 +307,14 @@ public class CloudProject implements IProject {
 		}
 		else
 			return false;
+	}
+
+	@Override
+	public String getAppName() {
+		if (appProps!=null)
+			return appProps.app_full_name;
+		else
+			return null;
 	}
 
 	@Override

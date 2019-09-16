@@ -30,4 +30,5 @@ public class WebCallsActions_webcalls {
 	public static String getAvailableWebCalls(String arg) {
 		return processMap(API.webCaller.getWebCalls(null));		
 	}
+	
 }

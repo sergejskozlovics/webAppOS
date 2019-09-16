@@ -1,0 +1,45 @@
+@font-face {
+    font-family: "webAppOS";
+    src: url(fonts/NotoSans-Regular.ttf);
+}
+
+@font-face {
+    font-family: "webAppOS";
+    src: url(fonts/NotoSans-Bold.ttf);
+    font-weight: bold;
+}
+@font-face {
+    font-family: "webAppOS";
+    src: url("fonts/NotoSans-Italic.ttf");
+    font-style: italic;
+}
+@font-face {
+    font-family: "webAppOS";
+    src: url("fonts/NotoSans-BoldItalic.ttf");
+    font-weight: bold;
+    font-style: italic;
+}
+
+/*html, body * {
+   font-family: "webAppOS";
+   font-size: 11pt;
+}*/
+
+
+* {
+  font-family: webAppOS, Verdana, Arial, Helvetica, sans-serif;
+  font-size: 11pt;
+}
+
+
+.virtual_on_top {
+  z-index: 999;
+}
+
+.virtual_on_top:hover {
+  z-index: 999999999;
+}
+
+.always_on_top {
+  z-index: 1000000000 !important;
+}

@@ -2,14 +2,18 @@ package org.webappos.server;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.ServerSocket;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Optional;
+import java.util.Scanner;
 
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.proxy.ProxyServlet;
@@ -33,6 +37,8 @@ import org.webappos.properties.PropertiesManager;
 import org.webappos.properties.EngineProperties;
 import org.webappos.properties.ServiceProperties;
 import org.webappos.webcaller.WebCaller;
+import org.webappos.util.Browser;
+import org.webappos.util.PID;
 import org.webappos.util.Ports;
 
 import com.google.gson.JsonElement;
@@ -54,8 +60,8 @@ public class Gate {
 		try {
 			if (sslContextFactory == null) {		
 				sslContextFactory = new SslContextFactory();
-				logger.info("Loading certs from "+API.config.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_KEY_FILE_NAME +" and "+API.config.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_CHAIN_FILE_NAME);
-				KeyStore keyStore = CertBot4j.PEMToKeyStore(API.config.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_KEY_FILE_NAME, API.config.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_CHAIN_FILE_NAME);
+				logger.info("Loading certs from "+ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_KEY_FILE_NAME +" and "+ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_CHAIN_FILE_NAME);
+				KeyStore keyStore = CertBot4j.PEMToKeyStore(ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_KEY_FILE_NAME, ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_CHAIN_FILE_NAME);
 				sslContextFactory.setKeyStore(keyStore);
 				
 				sslContextFactory.setExcludeCipherSuites("SSL_RSA_WITH_DES_CBC_SHA",
@@ -67,10 +73,10 @@ public class Gate {
 				
 			}
 			else {		 
-				logger.info("Re-loading certs from "+API.config.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_KEY_FILE_NAME +" and "+API.config.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_CHAIN_FILE_NAME);
+				logger.info("Re-loading certs from "+ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_KEY_FILE_NAME +" and "+ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_CHAIN_FILE_NAME);
 				sslContextFactory.reload(newSslContextFactory -> { 
 					try {
-						sslContextFactory.setKeyStore(CertBot4j.PEMToKeyStore(API.config.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_KEY_FILE_NAME, API.config.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_CHAIN_FILE_NAME));
+						sslContextFactory.setKeyStore(CertBot4j.PEMToKeyStore(ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_KEY_FILE_NAME, ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_CHAIN_FILE_NAME));
 					} catch (CertificateException | KeyStoreException | NoSuchAlgorithmException | IOException e) {
 						logger.error("Could not reload certificates: "+e.getMessage());
 					}
@@ -130,6 +136,11 @@ public class Gate {
 	}
 
 	synchronized public static void attachWebAppOrService(String name, String appDir) { // reads app/service config, adds sub-domain and sub-path for the given app/service
+
+		assert API.propertiesManager instanceof PropertiesManager;
+		assert API.webCaller instanceof WebCaller;
+		assert API.config instanceof ConfigEx;
+		
 		if (name==null) {
 			logger.error("Could not attach null app/service.");
 			return;
@@ -145,14 +156,14 @@ public class Gate {
 		
 		if (isApp) {	
 			// app
-			AppProperties appProps = APIForServerBridge.propertiesManagerForServerBridge.loadAppProperties(name, appDir);
+			AppProperties appProps = ((PropertiesManager)API.propertiesManager).loadAppProperties(name, appDir);
 			if (appProps == null) {
 				logger.error("Could not load app "+name+" from "+appDir);
 				API.status.setStatus("apps/"+name, "ERROR:Could not load app properties.");
 				return;
 			}
 			// adding .webcalls functions provided by this app
-			APIForServerBridge.webCallerForServerBridge.loadWebCalls(appProps);
+			((WebCaller)API.webCaller).loadWebCalls(appProps);
 			
 			IAppAdapter appAdapter = getAppAdapter(appProps.app_type);
 			if (appAdapter == null) {
@@ -164,9 +175,9 @@ public class Gate {
 			
 			// loading web calls of required engines
 			for (int i=0; i<appProps.requires_engines.length; i++) {
-				EngineProperties props = APIForServerBridge.propertiesManagerForServerBridge.loadEngineProperties(appProps.requires_engines[i]);
+				EngineProperties props = ((PropertiesManager)API.propertiesManager).loadEngineProperties(appProps.requires_engines[i]);
 				if (props!=null)
-					APIForServerBridge.webCallerForServerBridge.loadWebCalls(props);
+					((WebCaller)API.webCaller).loadWebCalls(props);
 			}
 			
 
@@ -176,29 +187,29 @@ public class Gate {
 				if (appProps.requires_root_url_paths) {
 					// we don't have a domain, only IP, thus we need to launch the app at the specific port...
 					
-					int port = Gate.getFreePort(APIForServerBridge.configForServerBridge.free_port);
+					int port = Gate.getFreePort(((ConfigEx)API.config).free_port);
 					int securePort = -1;
 					if (port < 0) {
-						logger.error("Could not find a suitable port "+APIForServerBridge.configForServerBridge.free_port+"+i for "+name);
+						logger.error("Could not find a suitable port "+((ConfigEx)API.config).free_port+"+i for "+name);
 						API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
 						return;
 					}
 					else
-						APIForServerBridge.configForServerBridge.free_port = port+1;
+						((ConfigEx)API.config).free_port = port+1;
 					
 					
 			        Server portServer = new Server();
 			        
 					HttpConfiguration http_config = new HttpConfiguration();
 					if (API.config.secure) {
-						securePort = Gate.getFreePort(APIForServerBridge.configForServerBridge.free_port);
+						securePort = Gate.getFreePort(((ConfigEx)API.config).free_port);
 						if (securePort < 0) {
-							logger.error("Could not find a suitable secure port "+APIForServerBridge.configForServerBridge.free_port+"+i for "+name);
+							logger.error("Could not find a suitable secure port "+((ConfigEx)API.config).free_port+"+i for "+name);
 							API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
 							return;
 						}
 						else
-							APIForServerBridge.configForServerBridge.free_port = securePort+1;
+							((ConfigEx)API.config).free_port = securePort+1;
 						http_config.setSecureScheme("https");
 						http_config.setSecurePort(securePort);
 					}
@@ -334,14 +345,14 @@ public class Gate {
 		} // if isApp
 		else {			
 			// service
-			ServiceProperties svcProps = APIForServerBridge.propertiesManagerForServerBridge.loadServiceProperties(name, appDir);
+			ServiceProperties svcProps = ((PropertiesManager)API.propertiesManager).loadServiceProperties(name, appDir);
 			if (svcProps == null) {
 				logger.error("Could not load service "+name+" from "+appDir);
 				API.status.setStatus("apps/"+name, "ERROR:Could not load properties.");
 				return;
 			}
 			// adding .webcalls functions provided by this service
-			APIForServerBridge.webCallerForServerBridge.loadWebCalls(svcProps);
+			((WebCaller)API.webCaller).loadWebCalls(svcProps);
 			
 			JsonElement startup_type = API.registry.getValue("apps/"+name+"/startup_type");
 			if (startup_type==null) {
@@ -363,10 +374,10 @@ public class Gate {
 			// Assigning additional ports...
 			for (int k=0; k<svcProps.requires_additional_ports.length; k++) {
 				if (svcProps.requires_additional_ports[k]<0) {
-					int addPort = Gate.getFreePort( APIForServerBridge.configForServerBridge.free_port );
+					int addPort = Gate.getFreePort( ((ConfigEx)API.config).free_port );
 					if (addPort >=0 ) {
 						svcProps.requires_additional_ports[k] = addPort;
-						APIForServerBridge.configForServerBridge.free_port = addPort+1;
+						((ConfigEx)API.config).free_port = addPort+1;
 					}
 				}
 			}			
@@ -482,27 +493,27 @@ public class Gate {
 	        	// the service adapter did not create ports; we need to provide the HTTP (and, perhaps, HTTPS) ports for the handler
 	        						
 	        	// attaching our ports...
-        		svcProps.httpPort = Gate.getFreePort(APIForServerBridge.configForServerBridge.free_port);
+        		svcProps.httpPort = Gate.getFreePort(((ConfigEx)API.config).free_port);
 				if (svcProps.httpPort < 0) {
-					logger.error("Could not find a suitable port "+APIForServerBridge.configForServerBridge.free_port+"+i for "+name);
+					logger.error("Could not find a suitable port "+((ConfigEx)API.config).free_port+"+i for "+name);
 					API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
 					return;
 				}
 				else
-					APIForServerBridge.configForServerBridge.free_port = svcProps.httpPort+1;
+					((ConfigEx)API.config).free_port = svcProps.httpPort+1;
 			
 				Server portServer = null;
 		        portServer = new Server();
 				HttpConfiguration http_config = new HttpConfiguration();
 				if (API.config.secure) {
-					svcProps.httpsPort = Gate.getFreePort(APIForServerBridge.configForServerBridge.free_port);
+					svcProps.httpsPort = Gate.getFreePort(((ConfigEx)API.config).free_port);
 					if (svcProps.httpsPort < 0) {
-						logger.error("Could not find a suitable secure port "+APIForServerBridge.configForServerBridge.free_port+"+i for "+name);
+						logger.error("Could not find a suitable secure port "+((ConfigEx)API.config).free_port+"+i for "+name);
 						API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
 						return;
 					}
 					else
-						APIForServerBridge.configForServerBridge.free_port = svcProps.httpsPort+1;
+						((ConfigEx)API.config).free_port = svcProps.httpsPort+1;
 					http_config.setSecureScheme("https");
 					http_config.setSecurePort(svcProps.httpsPort);
 				}
@@ -606,8 +617,75 @@ public class Gate {
 		return startFrom+i;
 	}
 	
+	private static String TMP_DIR; 
+	static {	
+		try {
+			File tempFile = File.createTempFile("webappos", ".tmp");
+			TMP_DIR = tempFile.getParent();
+			tempFile.delete();
+		} catch (IOException e) {
+			TMP_DIR = ConfigStatic.ROOT_DIR+File.separator+"tmp";
+		}
+	}
+		
+	private static long[] getLastPidAndPort() {
+		try {
+			Scanner scanner = null;
+			try {
+				scanner = new Scanner(new File(TMP_DIR + File.separator + "webappos.pid"));				
+			return new long[] { scanner.nextLong(), scanner.nextInt() };
+			}
+			finally {
+				if (scanner!=null)
+					scanner.close();
+			}
+		}
+		catch(Throwable t) {
+			return null;
+		}
+	}
+	
+	private static void writePidAndPort(long pid, long port) {
+		FileWriter w;
+		try {
+			File f = new File(TMP_DIR + File.separator + "webappos.pid");
+			w = new FileWriter(f);
+			w.write(pid+" "+port);
+			w.close();
+			f.deleteOnExit();
+		} catch (IOException e) {
+		}
+	}
+	
+	private static void configure(int port) {
+		
+		JsonElement el = API.registry.getValue("xusers/admin");
+		if (el == null) {
+			// creating a new admin user
+			//API.registry.setValue("xusers/admin", )
+		}
+		//Browser.openURL("http://localhost:"+pp[1]+"/apps/configuration");
+		
+	}
 
 	public static void main(String[] args) {
+		
+		
+        if ((args.length>0) && (args[0].equals("configure"))) {
+        	// check if already running...
+        	long[] pp = getLastPidAndPort();
+        	
+        	if (pp != null) {        			
+    			if (PID.isRunning(pp[0]) && Ports.portTaken((int)pp[1])) {
+    				// some webAppOS instance is running; opening the configuration app within the web browser...
+    				
+    				API.initOfflineAPI(); // we need it for accessing the registry
+
+    				configure((int)pp[1]);
+    				return;
+    			}
+        	}
+        }
 		
 		API.initAPI();
 		
@@ -623,8 +701,12 @@ public class Gate {
 			logger.error("Could not find a suitable port "+API.config.port+"+i.");
 			return;
 		}
-			
+							
 		API.config.port += i;
+		
+		// storing pid and port
+		writePidAndPort(PID.getPID(), API.config.port);
+
 
 		i=0;
 		while ((i<10) && ((API.config.port==API.config.secure_port+i) || (Ports.portTaken(API.config.secure_port+i)))) {
@@ -688,6 +770,7 @@ public class Gate {
 			holder.setInitParameter("useFileMappedBuffer", "false");
 			holder.setInitParameter("cacheControl", "max-age=0, public");
 			mainContext.addServlet(holder, "/");
+			mainContext.getMimeTypes().addMimeMapping("mjs", "application/javascript");
 			
 			
 			ContextHandler mainContextHandler;
@@ -790,10 +873,26 @@ public class Gate {
 	        
 	        wsContextHandler.start();
 
-			
+
+	        if ((args.length>0) && (args[0].equals("configure"))) {
+		        int tries = 100;
+				while (tries>0 && !webServer.isStarted()) {
+					tries--;
+					Thread.sleep(100);
+				}
+				
+				if (!webServer.isStarted()) {
+					System.err.println("webAppOS server could not be started");
+					System.exit(-1);
+				}
+				
+				configure(API.config.port);				
+	        }
+	        
 		} catch (Throwable e) {
+			System.err.println("Error initializing webAppOS");
 			e.printStackTrace();
-			return;
+			System.exit(-1);
 		}
 		
 

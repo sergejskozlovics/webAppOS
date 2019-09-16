@@ -111,8 +111,15 @@ public class LegacyToCloudProjectConverter {
 	 */
 	public static String convert(String legacyProjectDirOrFile, String targetDir)
 	{
+		if (!System.getProperty("os.name").contains("Windows")) {
+			System.err.println("Legacy projects can be converted only in Windows.");
+			return null;			
+		}
+		
 		if (!"32".equals(System.getProperty("sun.arch.data.model"))) {
-			System.out.println("Not 32-bit JVM. Executing another JVM...");
+			System.out.println("A 32-bit Java Virtual Machine is required to convert legacy projects.");
+			return null;
+		/*	System.out.println("Not 32-bit JVM. Executing another JVM...");
 			// TODO: COMSPEC
 			String cmdLine = ConfigStatic.BIN_DIR+File.separator+"legacy2cloud.bat \""+legacyProjectDirOrFile+"\"";
 			System.out.println("Command line: "+cmdLine);
@@ -131,7 +138,7 @@ public class LegacyToCloudProjectConverter {
 			if (new File(targetDir).exists())
 				return targetDir;
 			else
-				return null;
+				return null;*/
 		}
 				
 		File ff = new File(legacyProjectDirOrFile);
@@ -326,7 +333,7 @@ public class LegacyToCloudProjectConverter {
 			return null;
 		}
 		
-		b = lv.lumii.tda.kernel.TDACopier.makeCopy(k1, k2, true);
+		b = lv.lumii.tda.kernel.TDACopier.makeCopy(k1, k2, !true);
 		if (!b) {
 			System.err.println("Copy failed at step 1.");			
 			k1.close();
@@ -344,7 +351,7 @@ public class LegacyToCloudProjectConverter {
 		
 		TDAKernel kHelper = new TDAKernel(); // deletes undo history
 		
-		String classDir = ConfigStatic.SYS_DIR+"/kernel/project/org/webappos/project"; // TODO?
+		String classDir = ConfigStatic.SYS_DIR+"/src/org/webappos/project"; // TODO?
 		
 		String helperLocation = "ecore:file:///"+classDir.replace('\\', '/')+"/convert_to_tda2_helper.xmi";
 		b = kHelper.exists(helperLocation);
@@ -513,6 +520,26 @@ public class LegacyToCloudProjectConverter {
 	}
 
 	public static void main(String[] args) {
+		
+/*
+  test ecore open...		
+		TDAKernel kHelper = new TDAKernel(); // deletes undo history
+		
+		String classDir = ConfigStatic.SYS_DIR+"/src/org/webappos/project"; // TODO?
+		
+		String helperLocation = "ecore:file:///"+classDir.replace('\\', '/')+"/convert_to_tda2_helper.ecore";
+		boolean b = kHelper.exists(helperLocation);
+		if (!b) {
+			System.err.println("ecore helper does not exist at location "+helperLocation);
+			return;
+		}
+		b = kHelper.open(helperLocation);		                                                                                                           
+		if (!b) {
+			System.err.println("ecore helper could not be opened from the location "+helperLocation);
+			return;
+		}
+*/
+				
 		if (!System.getProperty("os.name").contains("Windows")) {
 			System.err.println("LegacyProjectConverter can be used only in Windows.");
 			return;			
@@ -522,7 +549,6 @@ public class LegacyToCloudProjectConverter {
 			System.out.println("Usage: LegacyProjectConverter <TDA-1-project-folder-or-zip-file> [<target-ar-folder>]");
 			return;
 		}
-		
 		
 		String legacyProjectDir = args[0];
 		String targetDir = null;

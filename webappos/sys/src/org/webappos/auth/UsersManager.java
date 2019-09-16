@@ -88,7 +88,9 @@ public class UsersManager {
 	}
 	
 	public static boolean passwordOK(String emailOrLogin, String password, boolean checkIfExpired) {
-		JsonElement sha1_expire_time = API.registry.getValue("users/"+emailOrLogin+"/tokens/hashed/"+DigestUtils.sha1Hex(password));
+		JsonElement _salt = API.registry.getValue("xusers/"+emailOrLogin+"/salt");
+		String salt = _salt==null?"":_salt.getAsString();
+		JsonElement sha1_expire_time = API.registry.getValue("xusers/"+emailOrLogin+"/tokens/hashed/"+DigestUtils.sha1Hex(password+salt));
 		if (sha1_expire_time==null)
 			return false;
 
@@ -99,7 +101,7 @@ public class UsersManager {
 	}
 	
 	public static boolean ws_token_OK(String emailOrLogin, String ws_token, boolean checkIfExpired) {		
-		JsonElement sha1_expire_time = API.registry.getValue("users/"+emailOrLogin+"/tokens/ws/"+ws_token);
+		JsonElement sha1_expire_time = API.registry.getValue("xusers/"+emailOrLogin+"/tokens/ws/"+ws_token);
 		if (sha1_expire_time==null)
 			return false;
 
@@ -144,4 +146,30 @@ public class UsersManager {
 			return true;
 	}
 	
+	public static boolean userInGroup(String emailOrLogin, String group) {
+		
+		String login = getUserLogin(emailOrLogin);
+		
+		if (group==null)
+			return false;
+
+    	JsonElement el = API.registry.getValue("xusers/"+login+"/groups");
+    	if (el!=null) {
+    		try {
+    			JsonObject obj = el.getAsJsonObject();
+    			for (Entry<String, JsonElement> entry : obj.entrySet()) {
+    				if (group.equals(entry.getKey())) {
+    					return true;
+    				}
+    				
+    			}
+    		}
+    		catch(Throwable t) {    			
+    		}
+    		
+    	}
+
+    	return false;
+	}	
+
 }

@@ -20,6 +20,7 @@ public class AppAdapter implements IAppAdapter {
 		WebAppContext appContext = new WebAppContext();
 		appContext.setWar(ConfigStatic.APPS_DIR+File.separator+appProps.app_full_name+File.separator+"web-root");
 		appContext.setContextPath("/");		
+		appContext.getMimeTypes().addMimeMapping("mjs", "application/javascript");
 		
 		ArrayList<String> arr = new ArrayList<String>();
 		

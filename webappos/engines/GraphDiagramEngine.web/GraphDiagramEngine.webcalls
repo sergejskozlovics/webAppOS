@@ -1,5 +1,7 @@
 tdacall\ ActiveDgrCmd=staticjava:lv.lumii.tda.webgde.GraphDiagramEngine_webcalls#prepareCommand
 tdacall\ continueActiveDgrCmd=clientjs:executeActiveDgrCmd
+tdacall\ CloseDgrCmd=staticjava:lv.lumii.tda.webgde.GraphDiagramEngine_webcalls#prepareCommand
+tdacall\ continueCloseDgrCmd=clientjs:executeCloseDgrCmd
 tdacall\ ActiveDgrViewCmd=staticjava:lv.lumii.tda.webgde.GraphDiagramEngine_webcalls#prepareCommand
 tdacall\ continueActiveDgrViewCmd=clientjs:executeActiveDgrViewCmd
 tdacall\ OkCmd=staticjava:lv.lumii.tda.webgde.GraphDiagramEngine_webcalls#prepareCommand

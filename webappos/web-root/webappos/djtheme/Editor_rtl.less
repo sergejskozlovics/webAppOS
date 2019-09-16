@@ -1,0 +1,16 @@
+/* Editor */
+
+@import "variables";
+
+.webappos .dijitEditorRtl .dijitEditorIFrameContainer {
+	padding: 3px 10px 1px 3px;
+}
+
+.dj_ie6 .webappos .dijitEditorRtl .dijitEditorIFrameContainer,
+.dj_ie7 .webappos .dijitEditorRtl .dijitEditorIFrameContainer,
+.dj_ie8 .webappos .dijitEditorRtl .dijitEditorIFrameContainer {
+	// remove excessive right margin (due to IE bug)
+	padding: 3px 0px 1px 10px;
+	margin-right: 0px;
+	border: 0px solid #d3d3d3;
+}

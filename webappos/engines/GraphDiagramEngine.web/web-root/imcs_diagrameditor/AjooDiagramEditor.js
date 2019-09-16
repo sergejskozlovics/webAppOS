@@ -978,7 +978,7 @@ function AjooDiagramEditor(settings) { // class
 
       //Clicks
       mouseDown: function (data) {
-        console.log("on mousedown", data,)
+//        console.log("on mousedown", data,)
         if (!settings.onSelectionChange)
           return;
 
@@ -1004,7 +1004,7 @@ function AjooDiagramEditor(settings) { // class
       },
 
       clickedOnDiagram: function (data) {
-        console.log("on clicked on diagram", data)
+//        console.log("on clicked on diagram", data)
         _EDITOR.unSelectElements(_EDITOR.getSelectedElements());
         _EDITOR.selectElements([]);
         if (settings.onDiagramClick)
@@ -1027,7 +1027,7 @@ function AjooDiagramEditor(settings) { // class
           myThis.lastClickedElementReference = 0;
 
         if (myThis.lastClickedElementReference && settings.onElementClick)
-          settings.onElementClick(myThis.lastClickedElementReference);
+          settings.onElementClick(_EDITOR, myThis.lastClickedElementReference);
       },
       dbClickOnSwimlane: function (data) {
         if (Object.keys(_EDITOR.getSelectedElements()).length != 1)
@@ -1036,7 +1036,7 @@ function AjooDiagramEditor(settings) { // class
         if (myThis.lastClickedElementReference) {
 
           if (settings.onElementDoubleClick)
-            settings.onElementDoubleClick(myThis.lastClickedElementReference);
+            settings.onElementDoubleClick(_EDITOR, myThis.lastClickedElementReference);
         }
       },
 
@@ -1050,7 +1050,7 @@ function AjooDiagramEditor(settings) { // class
           return;
         _EDITOR.lastRClickTime = now();
         if (settings.onDiagramRightClick)
-          settings.onDiagramRightClick();
+          settings.onDiagramRightClick(_EDITOR);
       },
 
       rClickedOnElement: function (data) {
@@ -1067,7 +1067,7 @@ function AjooDiagramEditor(settings) { // class
         }
 
         if (r && settings.onElementRightClick)
-          settings.onElementRightClick(r);
+          settings.onElementRightClick(_EDITOR, r);
       },
 
       rClickedOnCollection: function (data) {
@@ -1075,7 +1075,7 @@ function AjooDiagramEditor(settings) { // class
           return;
         _EDITOR.lastRClickTime = now();
 
-        console.log("TODO: on rclicked on collection ", data)
+//        console.log("TODO: on rclicked on collection ", data)
       },
 
       /*TODO                      keystrokes: function(data) {
@@ -1096,7 +1096,7 @@ function AjooDiagramEditor(settings) { // class
           _EDITOR.unSelectElements([data], true);
           _EDITOR.removeElements([data._id], true);
           if (settings.onNewBox) {
-            settings.onNewBox({
+            settings.onNewBox(_EDITOR, {
               reference: rPaletteElement
             }, x, y, w, h);
           }
@@ -1127,7 +1127,7 @@ function AjooDiagramEditor(settings) { // class
           _EDITOR.unSelectElements([data], true);
           _EDITOR.removeElements([data._id], true);
           if (settings.onNewLine) {
-            settings.onNewLine({
+            settings.onNewLine(_EDITOR, {
                 reference: rPaletteElement
               }, {
                 reference: rStart
@@ -1146,7 +1146,7 @@ function AjooDiagramEditor(settings) { // class
         var data = {
           boxes: [el.elementId]
         };
-        console.log("in element resized ", data)
+//        console.log("in element resized ", data)
         if (settings.onElementsChange) {
           var arr = [];
           var elms = _EDITOR.getElements();
@@ -1169,7 +1169,7 @@ function AjooDiagramEditor(settings) { // class
       },
 
       collectionPositionChanged: function (data) {
-        console.log("in collection position changed ", data);
+//        console.log("in collection position changed ", data);
 
         if (settings.onElementsChange) {
           var arr = [];

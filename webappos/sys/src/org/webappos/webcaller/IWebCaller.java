@@ -40,6 +40,7 @@ public interface IWebCaller {
 		// other known info:
 		public String login = null;
   		public String project_id = null;
+  		public String fullAppName = null;
   		
   		// time-to-live: (how many times this seed can be enqueued)
   		public int timeToLive = 10;
@@ -69,6 +70,7 @@ public interface IWebCaller {
 			this.tdaArgument = seed.tdaArgument;
 			this.login = seed.login;
 			this.project_id = seed.project_id;
+			this.fullAppName = seed.fullAppName;
 			this.timeToLive = seed.timeToLive;
 	  		if (seed instanceof SyncedWebCallSeed)
 	  			this.singleSynchronizer = ((SyncedWebCallSeed) seed).singleSynchronizer;
@@ -83,18 +85,21 @@ public interface IWebCaller {
 	public static class WebCallDeclaration implements Serializable {
 		private static final long serialVersionUID = 1L;
 		
-		public WebCallDeclaration(String location) {
+		public WebCallDeclaration(String location, String _pwd) {
+			pwd = _pwd;
 			if (location == null)
 				return;
 			int i = location.indexOf(':');
 			if (i<0)
 				return;
 			resolvedInstructionSet = location.substring(0, i);
-			resolvedLocation = location.substring(i+1);
+			resolvedLocation = location.substring(i+1).replace("$PWD", pwd);
 			
 			if (resolvedInstructionSet.indexOf("client")>=0)
 				isClient = true;
 		}
+		
+		public String pwd = null; // the directory, where the web call declared (the location of the .webcall file)
 		
 		public boolean isPublic = false;
 		public boolean isStatic = false;
@@ -124,9 +129,17 @@ public interface IWebCaller {
 	
 	/**
 	 * Enqueues a web call.
-	 * @param seed full information required to make a web call
+	 * @param seed the information required to make a web call
 	 */
 	public void enqueue(final WebCallSeed seed);
+	
+	/**
+	 * Tries to invoke the given web call in the current web processor, bypassing the bridge.
+	 * @param seed the information required to make a web call
+	 * @return whether the operation succeeded (i.e., the adapter found and the call was made)
+	 */
+	public boolean invokeNow(final WebCallSeed seed);
+	
 	/**
 	 * Checks whether the given web call action exists.
 	 * @param actionName web call action name to check

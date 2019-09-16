@@ -199,6 +199,7 @@ public class ProjectCache {
 	public static void deleteProjectCache(String project_id, String uuid) {
 		API.registry.setValue("projects/"+project_id, null); 		
 		API.registry.setValue("projects/"+uuid, null);
+		System.out.println("Deleting cache "+ConfigStatic.PROJECTS_CACHE_DIR+File.separator+uuid);
 		try {
 			FileUtils.deleteDirectory(new File(ConfigStatic.PROJECTS_CACHE_DIR+File.separator+uuid));
 		} catch (Throwable t) {

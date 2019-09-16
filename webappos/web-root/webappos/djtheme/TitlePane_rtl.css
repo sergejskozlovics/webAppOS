@@ -1,0 +1,5 @@
+/* TitlePane */
+.webappos .dijitTitlePaneRtl .dijitClosed .dijitArrowNode,
+.webappos .dijitFieldsetRtl .dijitFieldsetTitleClosed .dijitArrowNode {
+  background-position: -7px 0;
+}

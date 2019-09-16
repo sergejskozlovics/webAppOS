@@ -58,4 +58,6 @@ public interface IARMemory {
 	public double getMemoryUsageFactor();
 	public boolean memoryFault();
 	
+	public void rearrange();
+	
 }

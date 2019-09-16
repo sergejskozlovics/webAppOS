@@ -101,6 +101,47 @@ public class PropertiesClassLoader extends URLClassLoader  {
 		
 	}
 
+	/**
+	 * Returns a string of classpaths configured for the given app, service or engine. The string can be passed to JVM. 
+	 * @param id [appName].app or [serviceName].service or [engineName].engine
+	 * @return a string of classpaths that can be directly passed to JVM
+	 */
+	public String getClasspathsForPropertiesId(String id) {
+		
+		String retVal="";
+		if (id==null)
+			return "";
+		SomeProperties props = API.propertiesManager.getPropertiesById(id);
+		if (props == null)
+			return "";
+		
+		// adding classpaths...
+		for (String cp : props.classpaths) {
+				if (retVal.length()>0)
+					retVal += File.pathSeparator;
+				retVal += new File(cp).getAbsolutePath();
+		}
+		
+		// if app, adding also classpaths for required engines
+		
+		if (props instanceof AppProperties) {
+			
+			for (String engineName : ((AppProperties)props).requires_engines) {
+					EngineProperties eprops = API.propertiesManager.getEnginePropertiesByEngineName(engineName);
+					if (eprops!=null) {
+						for (String cp : eprops.classpaths) {
+								if (retVal.length()>0)
+									retVal += File.pathSeparator;
+								retVal += new File(cp).getAbsolutePath();
+						}
+					}
+			}
+			
+		}
+		
+		return retVal;		
+	}
+
 	private static Set<String> luaDirsLoaded = new HashSet<String>();
 	
 	public void loadLuaClasses(String path) {

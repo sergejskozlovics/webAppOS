@@ -20,6 +20,8 @@ import org.webappos.antiattack.ValidityChecker;
 import org.webappos.properties.AppProperties;
 import org.webappos.properties.PropertiesManager;
 import org.webappos.server.API;
+import org.webappos.webcaller.IWebCaller;
+import org.webappos.webcaller.WebCaller;
 
 import lv.lumii.tda.kernel.IEventsCommandsHook;
 import lv.lumii.tda.kernel.TDAKernel;
@@ -39,6 +41,8 @@ public class ZippedProject implements IProject {
 	//private String toolName = null;
 	private AppProperties appProps = null;
 	private TDAKernel tdaKernel = null;
+	
+	private String offeredName = null;
 	
 	public ZippedProject(boolean _offline) {
 		offline = _offline;
@@ -324,6 +328,22 @@ public class ZippedProject implements IProject {
 	
 	private boolean postOpen(boolean bootstrap, String login, RAAPI_Synchronizer sync, IEventsCommandsHook hook)
 	{
+		if (appProps != null) {
+			for (String awc : appProps.auto_webcalls) {
+				
+				System.out.println("Executing auto webcall `"+awc+"'... ["+this.getName()+"]");
+				IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
+				
+				seed.actionName = awc;
+				seed.project_id = this.getName();
+				
+				seed.callingConventions = WebCaller.CallingConventions.TDACALL;
+				seed.tdaArgument = 0;			
+		
+		  		API.webCaller.enqueue(seed);
+			}
+		}
+		
 		if (offline) {
 			return true; // do not call post-open for offline projects
 		}
@@ -357,21 +377,42 @@ public class ZippedProject implements IProject {
 
 	@Override
 	public String getName() {
+		if (offeredName != null)
+			return offeredName;
 		if (zipFolder == null)
 			return null;
 		File f = zipFolder.getFile();
 		if (f == null)
-			return null;
+			return "unnamed";
 		return f.getAbsolutePath();
 	}
 
 	@Override
 	public boolean setName(String _name) {
-		return zipFolder.setFile(new File(_name));
+		if (zipFolder!=null)
+			return zipFolder.setFile(new File(_name));
+		else {
+			offeredName = _name;
+			return true;
+		}
+	}
+
+	@Override
+	public String getAppName() {
+		if (appProps!=null)
+			return appProps.app_full_name;
+		else
+			return null;
 	}
 
 	@Override
 	public boolean save() {
+		if ((offeredName!=null) && (zipFolder!=null)) {
+			if (!zipFolder.setFile(new File(offeredName)))
+				return false;
+			offeredName = null;
+		}
+		
 		if (getName()==null)
 			return false;
 		
@@ -417,6 +458,7 @@ public class ZippedProject implements IProject {
 		tdaKernel = null;
 		zipFolder = null;
 		appProps = null;		
+		offeredName = null;
 	}
 
 	@Override

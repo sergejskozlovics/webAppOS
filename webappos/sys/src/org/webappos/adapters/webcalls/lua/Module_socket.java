@@ -15,7 +15,7 @@ public class Module_socket extends TwoArgFunction {
     }
 
 	@Override
-	public LuaValue call(LuaValue modName, LuaValue env) {
+	synchronized public LuaValue call(LuaValue modName, LuaValue env) {
 		LuaTable module = new LuaTable(0,30); // I think "new LuaTable()" instead of "(0, 30)" is OK
 //        module.set("dir2", new dir2());
         return module;		
@@ -25,7 +25,7 @@ public class Module_socket extends TwoArgFunction {
 /*	public class dir2 extends OneArgFunction {		
 
 		@Override
-		public LuaValue call(LuaValue path) {
+		synchronized public LuaValue call(LuaValue path) {
 			File f = new File(path.tojstring());			
 			LuaTable t = new LuaTable();
 			int i =1;

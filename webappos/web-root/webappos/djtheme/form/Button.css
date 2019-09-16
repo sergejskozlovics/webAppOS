@@ -1,0 +1,157 @@
+/* Button | DropDownButton | ComboButton | ToggleButton
+ * 
+ * Styling Buttons mainly includes:
+ * 
+ * 1. Containers
+ * 		.dijitButton
+ * 		.dijitDropDownButton
+ * 		.dijitComboButton
+ * 		.dijitButtonNode - common button/arrow wrapper shared across all three button types 
+ *
+ * 2. Button text
+ * 		.dijitButtonText
+ * 
+ * 3. Arrows - only for DropDownButton and ComboButton
+ * 	     There are total four directions arrows - down, left, right, up:
+ * 		.dijitArrowButtonInner - down arrow by default
+ *      .dijitLeftArrowButton .dijitArrowButtonInner - left arrow
+ *      .dijitRightArrowButton .dijitArrowButtonInner - right arrow
+ *      .dijitUpArrowButton .dijitArrowButtonInner - up arrow
+ * 
+ * 4. States - Hover, Active, Disabled, e.g.
+ * 		.dijitButtonHover .dijitButtonNode
+ * 		.dijitButtonActive .dijitButtonNode
+ * 		.dijitButtonDisabled .dijitButtonNode
+ *      
+ *      .dijitDisabled .dijitArrowButtonInner  - disabled arrow states 
+ */
+.webappos .dijitButtonNode {
+  /* rules for dijit.form.*Button widgets and arrow nodes on ComboBox, Spinner etc. */
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease 0s;
+}
+.webappos .dijitButton .dijitButtonNode,
+.webappos .dijitDropDownButton .dijitButtonNode,
+.webappos .dijitComboButton .dijitButtonNode,
+.webappos .dijitToggleButton .dijitButtonNode {
+  /* rules for the dijit.form.*Button widgets (see also ComboButton section below) */
+  border: 1px solid #759dc0;
+  padding: 2px 4px 4px 4px;
+  background-color: #00aaff;
+  color: white;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+.webappos .dijitToolbar .dijitButtonNode {
+  color: #000000;
+}
+.webappos .dijitComboButton .dijitArrowButton {
+  border-left-width: 0;
+  padding: 4px 2px 4px 2px;
+  /* TODO: still needed? */
+}
+/*arrow styles for down/up/left/right directions*/
+.webappos .dijitArrowButtonInner {
+  width: 15px;
+  height: 15px;
+  margin: 0 auto;
+  background-image: url("../form/images/buttonArrows.png");
+  background-repeat: no-repeat;
+  background-position: -51px 53%;
+}
+.webappos .dijitLeftArrowButton .dijitArrowButtonInner {
+  background-position: -77px 53%;
+}
+.webappos .dijitRightArrowButton .dijitArrowButtonInner {
+  background-position: -26px 53%;
+}
+.webappos .dijitUpArrowButton .dijitArrowButtonInner {
+  background-position: 0 53%;
+}
+.webappos .dijitDisabled .dijitArrowButtonInner {
+  background-position: -151px 53%;
+}
+.webappos .dijitDisabled .dijitLeftArrowButton .dijitArrowButtonInner {
+  background-position: -177px 53%;
+}
+.webappos .dijitDisabled .dijitRightArrowButton .dijitArrowButtonInner {
+  background-position: -126px 53%;
+}
+.webappos .dijitDisabled .dijitUpArrowButton .dijitArrowButtonInner {
+  background-position: -100px 53%;
+}
+.webappos .dijitButtonText {
+  padding: 0 0.3em;
+  text-align: center;
+}
+/* hover status */
+.webappos .dijitButtonHover .dijitButtonNode,
+.webappos .dijitDropDownButtonHover .dijitButtonNode,
+.webappos .dijitComboButton .dijitButtonNodeHover,
+.webappos .dijitComboButton .dijitDownArrowButtonHover,
+.webappos .dijitToggleButtonHover .dijitButtonNode {
+  background-color: #00ccff;
+  box-shadow: 0px 15px 20px rgba(0, 170, 255, 0.4);
+  color: #fff;
+}
+/* active, checked status */
+.webappos .dijitButtonActive .dijitButtonNode,
+.webappos .dijitDropDownButtonActive .dijitButtonNode,
+.webappos .dijitComboButtonActive .dijitButtonNode,
+.webappos .dijitToggleButtonActive .dijitButtonNode,
+.webappos .dijitToggleButtonChecked .dijitButtonNode {
+  background-color: #86bdf2;
+  -webkit-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.2);
+  -webkit-transition-duration: 0.1s;
+  -moz-transition-duration: 0.1s;
+  transition-duration: 0.1s;
+  color: #fff;
+}
+/* disabled status */
+.webappos .dijitButtonDisabled,
+.webappos .dijitDropDownButtonDisabled,
+.webappos .dijitComboButtonDisabled,
+.webappos .dijitToggleButtonDisabled {
+  background-image: none;
+  outline: none;
+}
+.webappos .dijitButtonDisabled .dijitButtonNode,
+.webappos .dijitDropDownButtonDisabled .dijitButtonNode,
+.webappos .dijitComboButtonDisabled .dijitButtonNode,
+.webappos .dijitToggleButtonDisabled .dijitButtonNode {
+  background-color: #efefef;
+  border: solid 1px #d3d3d3;
+  color: #818181;
+  -webkit-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  -moz-box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  background-image: url("images/buttonDisabled.png");
+  background-image: -moz-linear-gradient(#ffffff 0%, rgba(255, 255, 255, 0) 40%);
+  background-image: -webkit-linear-gradient(#ffffff 0%, rgba(255, 255, 255, 0) 40%);
+  background-image: -o-linear-gradient(#ffffff 0%, rgba(255, 255, 255, 0) 40%);
+  background-image: linear-gradient(#ffffff 0%, rgba(255, 255, 255, 0) 40%);
+  _background-image: none;
+}
+.webappos .dijitComboButtonDisabled .dijitArrowButton {
+  border-left-width: 0;
+}
+/* for ComboButton */
+.webappos table.dijitComboButton {
+  border-collapse: separate;
+  /* override dijit.css so that ComboBox rounded corners work */
+}
+.webappos .dijitComboButton .dijitStretch {
+  -moz-border-radius: 4px 0 0 4px;
+  border-radius: 4px 0 0 4px;
+}
+.webappos .dijitComboButton .dijitArrowButton {
+  -moz-border-radius: 0 4px 4px 0;
+  border-radius: 0 4px 4px 0;
+}

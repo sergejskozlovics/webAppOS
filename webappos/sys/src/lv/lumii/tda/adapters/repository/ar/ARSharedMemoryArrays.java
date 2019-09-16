@@ -498,9 +498,11 @@ public class ARSharedMemoryArrays implements IARMemory {
 			while (s2a_a.get(hash1) != 0) {
 				si = s2a_s.get(hash1); // string index
 				ssi = strings_get(si);
-				if ((ssi != null) && (ssi.endsWith(s1) || ssi.startsWith(s2)))
-					if (s2a_a.get(hash1)>0)
+				if ((ssi != null) && (ssi.endsWith(s1) || ssi.startsWith(s2))) {
+					int index = s2a_a.get(hash1);
+					if ((index>0) && (actions.get(index)!=0x00))
 						retVal.add(s2a_a.get(hash1));
+				}
 				hash1 = hash1 + hash2;
 				if (hash1 >= s2a_a.limit())
 					hash1 -= s2a_a.limit();
@@ -509,9 +511,11 @@ public class ARSharedMemoryArrays implements IARMemory {
 			int si;
 			while (s2a_a.get(hash1) != 0) {
 				si = s2a_s.get(hash1); // string index
-				if (s.equals(strings_get(si)))
-					if (s2a_a.get(hash1)>0)
+				if (s.equals(strings_get(si))) {
+					int index=s2a_a.get(hash1);
+					if ((index>0) && (actions.get(index)!=0x00))
 						retVal.add(s2a_a.get(hash1));
+				}
 				hash1 = hash1 + hash2;
 				if (hash1 >= s2a_a.limit())
 					hash1 -= s2a_a.limit();
@@ -544,7 +548,7 @@ public class ARSharedMemoryArrays implements IARMemory {
 		String ssi;
 		ArrayList<String> arr = new ArrayList<String>();
 		ArrayList<Integer> arr2 = new ArrayList<Integer>();
-		while ((s2a_a.get(hash1)!=0)&&(s2a_a.get(hash1)!=-1)) {  // !=0 and !=-1
+		while (s2a_a.get(hash1)!=0) {//&&(s2a_a.get(hash1)!=-1)) {  // !=0 and !=-1
 			if (firstOur==-1) {
 				_si = s2a_s.get(hash1);
 				ssi = strings_get(_si);
@@ -604,7 +608,7 @@ public class ARSharedMemoryArrays implements IARMemory {
 					hash1-=s2a_a.limit();
 				ourLen++;
 
-				while ((s2a_a.get(hash1) != 0) && (s2a_a.get(hash2)!=-1)) {  // !=0 and !=-1
+				while (s2a_a.get(hash1) != 0) { // && (s2a_a.get(hash2)!=-1)) {  // !=0 and !=-1
 					ourLen++;
 					hash1 = hash1+hash2;
 					if (hash1>=s2a_a.limit())
@@ -722,12 +726,14 @@ public class ARSharedMemoryArrays implements IARMemory {
 			while (r2a_a.get(hash1) != 0) {
 				len--;
 				if (r2a_r.get(hash1) == r) {
-					if (r2a_a.get(hash1)>=0) { // negative numbers specify the skip length or deleted elements						
+					if (r2a_a.get(hash1)>0) { // negative numbers specify the skip length or deleted elements						
 						int tmp = r2a_a.get(hash1);
-						hash1 = hash1+hash2;
-						if (hash1>=r2a_a.limit())
-							hash1-=r2a_a.limit();
-						return tmp;
+						if (actions.get(tmp)!=0x00) {
+							hash1 = hash1+hash2;
+							if (hash1>=r2a_a.limit())
+								hash1-=r2a_a.limit();
+							return tmp;
+						}
 					}
 				}
 				hash1 = hash1+hash2;
@@ -739,10 +745,15 @@ public class ARSharedMemoryArrays implements IARMemory {
 		}
 		
 		private int get(int index) {
+			if ((index < 0) || (index>=len))
+				return -1;
 			int h = (int) (((long)hash1+(long)hash2*(long)index)%(long)r2a_a.limit()); // !handling overflow via long
 			
-			if ((r2a_r.get(h) == r) && (r2a_a.get(h)>=0)) 			
-				return r2a_a.get(h);
+			if (r2a_r.get(h) == r) {
+				int index2 = r2a_a.get(h);
+				if ( (index2>0) && (actions.get(index2)!=0x00) ) 			
+					return r2a_a.get(h);
+			}
 			
 			return -1;
 		}
@@ -904,7 +915,7 @@ public class ARSharedMemoryArrays implements IARMemory {
 				
 		// searching for the first our cell...
 		
-		while ((r2a_a.get(hash1)!=0)&&(r2a_a.get(hash1)!=-1)) {  // !=0 and !=-1
+		while (r2a_a.get(hash1)!=0) { 
 			if (r2a_r.get(hash1)==r) {
 				// this is the first "our" cell...
 				if (r2a_a.get(hash1)<-1) {
@@ -914,7 +925,12 @@ public class ARSharedMemoryArrays implements IARMemory {
 					return new R2AImpl(r, hash1, hash2, ourLen+1);
 				}
 				else {
-					return new SingleActionIterator(r2a_a.get(hash1));
+					int index = r2a_a.get(hash1);
+					if ((index<=0) || (actions.get(index)==0x00)) {
+						return EmptyActionsIterator.INSTANCE;
+					}
+					else
+						return new SingleActionIterator(index);
 				}
 			}
 			else {				
@@ -942,8 +958,10 @@ public class ARSharedMemoryArrays implements IARMemory {
 
 		while (r2a_a.get(hash1) != 0) {
 			if (r2a_r.get(hash1) == r) {
-				if (r2a_a.get(hash1)>=0) { // negative numbers specify the skip length or deleted elements
-					return r2a_a.get(hash1);
+				int index=r2a_a.get(hash1);
+				if (index>0) { // negative numbers specify the skip length or deleted elements
+					if (actions.get(index)!=0x00)
+						return index;
 				}
 			}
 			hash1 = hash1+hash2;
@@ -965,10 +983,13 @@ public class ARSharedMemoryArrays implements IARMemory {
 
 		while (r2a_a.get(hash1) != 0) {
 			if (r2a_r.get(hash1) == r) {
-				if (r2a_a.get(hash1) >= 0) // negative numbers specify the skip
-											// length or deleted elements
-					retVal.add(r2a_a.get(hash1));
-				r2a_a.put(hash1, -1); // removed
+				int index=r2a_a.get(hash1);
+				if (index > 0) { // negative numbers specify the skip
+							   // length or deleted elements
+					if (actions.get(index)!=0x00)
+						retVal.add(r2a_a.get(hash1));
+					r2a_a.put(hash1, -1); // removed
+				}
 			}
 			hash1 = hash1 + hash2;
 			if (hash1 >= r2a_a.limit())
@@ -993,7 +1014,7 @@ public class ARSharedMemoryArrays implements IARMemory {
 		int ourLen = 0;
 		// searching for the first empty cell...
 		
-		while ((r2a_a.get(hash1)!=0)&&(r2a_a.get(hash1)!=-1)) {  // !=0 and !=-1
+		while (r2a_a.get(hash1)!=0) {
 			if (firstOur==-1) {
 				if (r2a_r.get(hash1)==d) {
 					// this is the first "our" cell...
@@ -1633,7 +1654,7 @@ public class ARSharedMemoryArrays implements IARMemory {
 	}
 
 	@Override
-	public boolean tryLock() {				
+	synchronized public boolean tryLock() {				
 
 			boolean wait = true;
 			
@@ -1695,7 +1716,7 @@ public class ARSharedMemoryArrays implements IARMemory {
 	
 
 	@Override
-	public void lock() {
+	synchronized public void lock() {
 		
 		while (!tryLock()) {
 			Thread.yield();
@@ -1705,15 +1726,21 @@ public class ARSharedMemoryArrays implements IARMemory {
 
 
 	@Override
-	public void unlock() {
+	synchronized public void unlock() {
 		int flag = common.get(I_LOCK_FLAG);
 		if (isShmServer) {
-			if (flag == 2)
+			if (flag == 2) {
 				common.put(I_LOCK_FLAG, 1);
+				while (common.get(I_LOCK_FLAG)!=1)
+					Thread.yield();				
+			}
 		}
 		else {
-			if (flag == 3)
+			if (flag == 3) {
 				common.put(I_LOCK_FLAG, 1);
+				while (common.get(I_LOCK_FLAG)!=1)
+					Thread.yield();
+			}
 		}
 		
 	}
@@ -1729,6 +1756,13 @@ public class ARSharedMemoryArrays implements IARMemory {
 	
 	public boolean memoryFault() {
 		return memoryFault;
+	}
+
+
+	@Override
+	public void rearrange() {
+		this.rearrangeActions(0);
+		this.rearrangeStrings(0);
 	}
 	
 }

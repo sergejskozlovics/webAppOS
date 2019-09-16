@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Map.Entry;
 
 import org.webappos.server.API;
-import org.webappos.server.APIForServerBridge;
+import org.webappos.server.ConfigEx;
 import org.webappos.server.ConfigStatic;
 
 public class ServiceProperties extends SomeProperties {
@@ -103,13 +103,8 @@ public class ServiceProperties extends SomeProperties {
 			}
 			
 
-/*			try {
-				suid = Boolean.parseBoolean(properties.getProperty("suid", suid+""));
-			}
-			catch(Throwable t) {				
-			}*/
-			
-			APIForServerBridge.configForServerBridge.addMimes(properties.getProperty("mimes"));
+			if (API.config instanceof ConfigEx)
+				((ConfigEx)API.config).addMimes(properties.getProperty("mimes"));
 			
 		} catch (Throwable t) {
 		}		

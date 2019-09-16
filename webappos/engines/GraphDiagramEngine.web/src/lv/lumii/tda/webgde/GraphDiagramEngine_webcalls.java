@@ -37,6 +37,10 @@ public class GraphDiagramEngine_webcalls {
 		
 		lv.lumii.tda.ee.mm.FrameActivatedEvent ev = (lv.lumii.tda.ee.mm.FrameActivatedEvent)eeFactory.findOrCreateRAAPIReferenceWrapper(r, false); 
 		lv.lumii.tda.ee.mm.Frame frame = ev.getFrame();
+		if (frame==null) {
+			eeFactory.unsetRAAPI();
+			return false;
+		}
 		lv.lumii.tda.webgde.mm.Frame frame2 = (lv.lumii.tda.webgde.mm.Frame)gdeFactory.findOrCreateRAAPIReferenceWrapper(frame.getRAAPIReference(), false);
 		
 		lv.lumii.tda.webgde.mm.CurrentDgrPointer ptr = lv.lumii.tda.webgde.mm.CurrentDgrPointer.firstObject(gdeFactory);
@@ -224,6 +228,7 @@ public class GraphDiagramEngine_webcalls {
 			try {
 				factory.setRAAPI(raapi, "", false);
 			} catch (lv.lumii.tda.webgde.mm.GraphDiagramEngineMetamodelFactory.ElementReferenceException e) {
+				e.printStackTrace();
 				return;
 			}
 			
@@ -267,8 +272,15 @@ public class GraphDiagramEngine_webcalls {
 									
 				}
 				
-				if (gd != null)
+				if (gd != null) {
+					// do not execute UpdateDgrCmd before ActiveDgrCmd
+					if ((cmd instanceof lv.lumii.tda.webgde.mm.UpdateDgrCmd) && gd.getFrame().isEmpty()) {
+						System.out.println("ignoring UpdateDgrCmd before activating");
+						return;
+					}
+					
 					ensureFrame(factory, gd);
+				}
 				
 				if ((gd != null)&&(cmd instanceof lv.lumii.tda.webgde.mm.ActiveElementCmd)) {
 					gd.getCollection().clear();
@@ -277,7 +289,22 @@ public class GraphDiagramEngine_webcalls {
 					gd.getCollection().add(c);
 				}
 			}
-							
+			else
+			if 	(cmd instanceof lv.lumii.tda.webgde.mm.CloseDgrCmd) {
+				lv.lumii.tda.webgde.mm.GraphDiagram gd = cmd.getGraphDiagram().get(0);
+				if (gd == null) {
+					System.out.println("CloseDgrCmd with no diagram called");
+					return;
+				}
+				else {
+					System.out.println("CloseDgrCmd gd="+gd.getRAAPIReference());
+					if (gd.getFrame().isEmpty())
+						System.out.println(" no frame specified");
+					else
+						System.out.println(" frame="+gd.getFrame().get(0).getRAAPIReference());
+				}
+			}
+
 			
 			
 			if (!(raapi instanceof TDAKernel))
@@ -290,6 +317,7 @@ public class GraphDiagramEngine_webcalls {
 			seed.callingConventions = WebCaller.CallingConventions.TDACALL;
 			seed.tdaArgument = ((TDAKernel)raapi).replicateEventOrCommand(r);
 			
+			
 			TDAKernel.Owner o = ((TDAKernel)raapi).getOwner();
 
 			if (o != null) {
@@ -297,10 +325,11 @@ public class GraphDiagramEngine_webcalls {
 				seed.project_id = o.project_id;
 			}
 	  		
-	  		API.webCaller.enqueue(seed);
+	  		API.webCaller.invokeNow(seed);//.enqueue(seed);
 			
-		} catch (Throwable e) {
+		} catch (Throwable e) {			
 			logger.error(e.toString()+", "+e.getMessage());
+			e.printStackTrace();
 		}			
 		finally {
 			if (factory != null)

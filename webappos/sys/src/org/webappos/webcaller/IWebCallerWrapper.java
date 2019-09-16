@@ -30,6 +30,23 @@ public class IWebCallerWrapper implements IWebCaller {
 		}
 	}
 
+	@Override
+	public boolean invokeNow(WebCallSeed seed) {
+		if (seed.project_id!=null) {
+			TDAKernel kernel = API.dataMemory.getTDAKernel(seed.project_id);
+			if (kernel!=null) {
+				RAAPI_Synchronizer s = kernel.getSynchronizer();
+				if (s!=null)
+					s.flush();
+			}
+		}
+		try {
+			return delegate.invokeNow_R(seed);
+		} catch (RemoteException e) {
+			return false;
+		}
+	}
+	
 	public boolean webCallExists(String actionName){
 		try {
 			return delegate.webCallExists_R(actionName);
@@ -55,5 +72,6 @@ public class IWebCallerWrapper implements IWebCaller {
 			return null;
 		}
 	}
+
 
 }

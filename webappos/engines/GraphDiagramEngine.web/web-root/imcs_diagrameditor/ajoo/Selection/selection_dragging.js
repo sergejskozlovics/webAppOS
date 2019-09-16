@@ -419,7 +419,7 @@ SelectionDragging.prototype = {
 						groupIndex[g.placement.group._id]++;
 					var dx = g.placement.group.children[groupIndex[g.placement.group._id]].attrs.x;
 					var dy = g.placement.group.children[groupIndex[g.placement.group._id]].attrs.y;
-					_EDITOR.onLabelMoved(g._id, g.placement.group.x()+dx-2,g.placement.group.y()+dy-4,g.placement.width,g.placement.group.children[groupIndex[g.placement.group._id]].textHeight);
+					_EDITOR.onLabelMoved(_EDITOR, g._id, g.placement.group.x()+dx-2,g.placement.group.y()+dy-4,g.placement.width,g.placement.group.children[groupIndex[g.placement.group._id]].textHeight);
 				}
 			}
 		}
@@ -436,7 +436,7 @@ SelectionDragging.prototype = {
 						groupIndex[g.placement.group._id]++;
 					var dx = g.placement.group.children[groupIndex[g.placement.group._id]].attrs.x;
 					var dy = g.placement.group.children[groupIndex[g.placement.group._id]].attrs.y;
-					_EDITOR.onLabelMoved(g._id, g.placement.group.x()+dx-2,g.placement.group.y()+dy-4,g.placement.width,g.placement.group.children[groupIndex[g.placement.group._id]].textHeight);
+					_EDITOR.onLabelMoved(_EDITOR, g._id, g.placement.group.x()+dx-2,g.placement.group.y()+dy-4,g.placement.width,g.placement.group.children[groupIndex[g.placement.group._id]].textHeight);
 				}
 			}
 		}

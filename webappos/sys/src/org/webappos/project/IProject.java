@@ -86,6 +86,11 @@ public interface IProject {
 	 */
 	public boolean setName(String _name);	
 
+	/**
+	 * Returns the app name that has to be used to open this project.
+	 * @return full app name
+	 */
+	public String getAppName();
 	
 	/**
 	 * Saves the project. For cloud projects: saves the repository; for zipped project: saves the repository and zips the file.

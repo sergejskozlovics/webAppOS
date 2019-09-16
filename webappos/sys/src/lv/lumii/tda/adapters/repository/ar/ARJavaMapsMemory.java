@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 
@@ -31,7 +32,7 @@ public class ARJavaMapsMemory implements IARMemory {
 
 	private Map<String, ArrayList<Integer> > whereStringMap = new HashMap<String, ArrayList<Integer> >(); // string -> array of action indices
 	private Map<Double, ArrayList<Integer> > whereReferenceMap = new HashMap<Double, ArrayList<Integer> >(); // reference -> array of action indices
-	private Map<Integer, Integer> a2sMap = new HashMap<Integer, Integer>(); // action index -> string index (for string actions)
+	private Map<Integer, Integer> a2sMap = new TreeMap<Integer, Integer>(); // action index -> string index (for string actions)
 	
 	// TODO:
 	// s2a  string index -> action index
@@ -42,11 +43,11 @@ public class ARJavaMapsMemory implements IARMemory {
 	}
 	
 	@Override
-	public boolean reallocateFromCache() {
+	synchronized public boolean reallocateFromCache() {
 		return false;
 	}
 	
-	public boolean reallocate(int nActions, int nStrings) {
+	synchronized public boolean reallocate(int nActions, int nStrings) {
 		
 		int nSize = INITIAL_N;
 		while (nActions > nSize) {
@@ -77,47 +78,95 @@ public class ARJavaMapsMemory implements IARMemory {
 		return true;
 	}
 	
-	public void free(boolean clearCache) {
+	synchronized public void free(boolean clearCache) {
 		reallocate(0, 0);
 	}
 	
+//	private long lastId=0;
 	
-	public ActionsIterator s2a_get(String s, boolean isRoleName) {
+	synchronized public ActionsIterator s2a_get(String s, boolean isRoleName) {
+		/*try {
+			Thread.sleep(1);
+		} catch (InterruptedException e) {
+		}*/		
+		
 		ArrayList<Integer> list = whereStringMap.get(s);
+		
+	/*	if (lastId!=Thread.currentThread().getId()) {
+			System.out.println("THREADGET "+lastId+"->"+Thread.currentThread().getId()+" "+(list==null?"null":list.size()));
+			lastId = Thread.currentThread().getId();
+		}*/
 		if (list==null)
 			return null;
-		return new ActionsIteratorOverArrayList(list);		
+		
+		ArrayList<Integer> list2 = new ArrayList<Integer>();
+		for (Integer ii : list) {
+			if (actions[ii]!=0x00) {// not deleted
+				
+				Integer si = a2sMap.get(ii);
+				if (isRoleName) {
+					if ((si!=null) && (si>=0) && (si<curmaxS) && (strings[si]!=null))
+						if (strings[si].equals(s) || strings[si].startsWith(s+"/") || strings[si].endsWith("/"+s))
+							list2.add(ii);
+				}
+				else {
+					if ((si!=null) && (si>=0) && (si<curmaxS) && (strings[si]!=null) && (strings[si].equals(s)))
+						list2.add(ii);
+				}
+			}
+		}
+		return new ActionsIteratorOverArrayList(list2);		
 	}
 	
-	public int a2s_get(int index) {
+	synchronized public int a2s_get(int index) {
 		Integer si = a2sMap.get(index);
-		if (si==null)
+		if ((si==null) || (si<0) || (si>=curmaxS))
 			return -1;
 		else
 			return si;
 	}
 	
 	
-	public ActionsIterator r2a_get_iterator(double r) {
+	synchronized public ActionsIterator r2a_get_iterator(double r) {
 		ArrayList<Integer> list = whereReferenceMap.get((double)r);
 		if (list==null)
 			return null;
-		return new ActionsIteratorOverArrayList(list);		
+		ArrayList<Integer> list2 = new ArrayList<Integer>();
+		for (Integer i : list) {
+			if (actions[i]!=0x00) {// not deleted
+				list2.add(i);
+			}
+		}
+		return new ActionsIteratorOverArrayList(list2);		
 	}
 	
-	public ArrayList<Integer> r2a_get(double r) {
+	synchronized public ArrayList<Integer> r2a_get(double r) {
 		return whereReferenceMap.get((double)r);
 	}
 	
-	public int r2a_get_first(double r) {
+	synchronized public int r2a_get_first(double r) {
 		ArrayList<Integer> a = whereReferenceMap.get((double)r);
 		if ((a==null) || a.isEmpty())
 			return -1;
-		return a.get(0);
+		for (Integer i : a)
+			if (actions[i]!=0x00)
+				return i;
+		
+		return -1;
+		//return a.get(0);
 	}
 	
-	public ArrayList<Integer> r2a_get_and_remove(double r) {
-		return whereReferenceMap.remove((double)r);
+	synchronized public ArrayList<Integer> r2a_get_and_remove(double r) {
+		//ArrayList<Integer> list = whereReferenceMap.remove((double)r);
+		//return list;
+		return null;
+/*		ArrayList<Integer> list2 = new ArrayList<Integer>();
+		for (Integer i : list) {
+			if (actions[i]!=0x00) {// not deleted
+				list2.add(i);
+			}
+		}
+		return list2;*/
 	}
 	
 	private void putWhereString(String s, int i) {		
@@ -153,7 +202,7 @@ public class ARJavaMapsMemory implements IARMemory {
 		}
 	}
 
-	public void r2a_add(double d, int i) {		
+	synchronized public void r2a_add(double d, int i) {		
 		ArrayList<Integer> arr = whereReferenceMap.get(d);
 		if (arr == null) {
 			arr = new ArrayList<Integer>();
@@ -222,6 +271,9 @@ public class ARJavaMapsMemory implements IARMemory {
 					}
 				}
 				int si = a2sMap.remove(j);
+				assert !a2sMap.containsKey(j);
+				assert !a2sMap.keySet().contains(j);
+
 				addWhereString(strings[si], i, old[j]==0x05 || old[j]==0x15 || old[j]==0x25);
 				a2sMap.put(i, si);
 				
@@ -247,7 +299,7 @@ public class ARJavaMapsMemory implements IARMemory {
 			j++;
 		}
 		curmaxN = i;
-		deletedN = 0;
+		deletedN = 0;		
 	}
 	
 	
@@ -263,6 +315,19 @@ public class ARJavaMapsMemory implements IARMemory {
 			if (curmaxS+additionalS < strings.length)
 				return; // room ok
 			
+			if (curmaxS-deletedS+additionalS < strings.length) {
+				if (deletedS>strings.length/4) {			
+					if (curmaxS-deletedS+additionalS <= strings.length/4) {
+						// decrease memory before rearrange...
+						strings = new String[strings.length/2];
+					}
+				}
+			}
+			else {
+				// increase memory before rearrange
+				strings = new String[strings.length*2];
+			}
+			/*
 			if ((deletedS>strings.length/4) && (curmaxS-deletedS+additionalS < strings.length)) {			
 				if (curmaxS-deletedS+additionalS <= strings.length/4) {
 					// decrease memory before rearrange...
@@ -272,15 +337,20 @@ public class ARJavaMapsMemory implements IARMemory {
 			else {
 				// increase memory before rearrange
 				strings = new String[strings.length*2];
-			}
+			}*/
+			
+			
 		}
+		
+		
 		
 		Map<Integer, Integer> inv = new HashMap<Integer, Integer>();
 		for (Integer k : a2sMap.keySet())
 			inv.put(a2sMap.get(k), k);		
-		
+				
 		// rearrange
 		int i=0; int j=0;
+		//System.out.println("rearrange strings");
 		while (j<curmaxS) {
 			if (old[j] == null) { // deleted string
 				j++; // skip this string
@@ -289,15 +359,19 @@ public class ARJavaMapsMemory implements IARMemory {
 			
 			// non-deleted string
 			strings[i] = old[j]; // move string...
+			//if (i!=j)
+				//System.out.print(" "+i+"<-"+j+"["+strings[i]+"]");
 
 			// remove ai->j, put ai->i
-			a2sMap.put(inv.get(j), i);
+			if (i!=j)
+				a2sMap.put(inv.get(j), i);
 
 			
 			i++;
 			j++;
 		}
-		curmaxS = i;
+		//System.out.println();
+		curmaxS = i;		
 		deletedS = 0;		
 	}
 	
@@ -318,7 +392,7 @@ private double firstActionWhere(double r) {
 	
 
 	
-	public int addAction(double... arr) {
+	synchronized public int addAction(double... arr) {
 		rearrangeActions(arr.length);
 		int retVal = curmaxN;		
 		actions[retVal] = arr[0];
@@ -334,7 +408,38 @@ private double firstActionWhere(double r) {
 		return retVal;
 	}
 	
-	public int addStringAction(String s, double... arr) {
+	synchronized public int addStringAction(String s, double... arr) {
+		if (s==null)
+			s="";
+		rearrangeActions(arr.length);
+		int retVal = curmaxN;
+		actions[retVal] = arr[0];
+		for (int i=1; i<arr.length; i++) {
+			actions[retVal+i] = arr[i];
+			if (arr[i]>RepositoryAdapter.MAX_PRIMITIVE_REFERENCE)
+				r2a_add(arr[i], retVal);
+		}
+		curmaxN+=arr.length;
+		
+		rearrangeStrings(1);
+		a2sMap.put(retVal, curmaxS);
+		addWhereString(s, retVal, arr[0]==0x05 || arr[0]==0x15 || arr[0]==0x25);
+		strings[curmaxS++] = s;
+
+		
+		if (arr[0]==0x01) { // createClass
+			allClasses.add((long)arr[1]);			
+		}
+		if (arr[0]==0x25) { // createAdvancedAssociation
+			boolean associationClass = arr[2]==1.0;
+			if (associationClass)
+				allClasses.add((long)arr[3]);			
+		}
+		
+		return retVal;
+	}
+
+	synchronized public int addRoleStringAction(String s, double... arr) {
 		if (s==null)
 			s="";
 		rearrangeActions(arr.length);
@@ -364,39 +469,9 @@ private double firstActionWhere(double r) {
 		return retVal;
 	}
 
-	public int addRoleStringAction(String s, double... arr) {
-		if (s==null)
-			s="";
-		rearrangeActions(arr.length);
-		int retVal = curmaxN;
-		actions[retVal] = arr[0];
-		for (int i=1; i<arr.length; i++) {
-			actions[retVal+i] = arr[i];
-			if (arr[i]>RepositoryAdapter.MAX_PRIMITIVE_REFERENCE)
-				r2a_add(arr[i], retVal);
-		}
-		curmaxN+=arr.length;
-		
-		rearrangeStrings(1);
-		a2sMap.put(retVal, curmaxS);
-		addWhereString(s, retVal, arr[0]==0x05 || arr[0]==0x15 || arr[0]==0x25);
-		strings[curmaxS++] = s;
-		
-		if (arr[0]==0x01) { // createClass
-			allClasses.add((long)arr[1]);			
-		}
-		if (arr[0]==0x25) { // createAdvancedAssociation
-			boolean associationClass = arr[2]==1.0;
-			if (associationClass)
-				allClasses.add((long)arr[3]);			
-		}
-		
-		return retVal;
-	}
-
-	public void deleteSimpleAction(int index) {
+	synchronized public void deleteSimpleAction(int index) {
 	
-		if (actions[index]==0)
+		if (actions[index]==0x00)
 			return; // already deleted
 		
 		if (actions[index]==0x01) { // addClass
@@ -415,13 +490,16 @@ private double firstActionWhere(double r) {
 		deletedN++;
 		
 		Integer si = a2sMap.remove(index);
-		if (si != null) {
+		assert !a2sMap.containsKey(index);
+		assert !a2sMap.keySet().contains(index);
+		if ((si != null) && (si>=0) && (si<curmaxS) && (strings[si]!=null)) {
 			// whereReferenceMap, whereStringMap - do not modify, it will be modified during re-arranging actions
 			strings[si] = null;
+			deletedS++;
 		}
 	}
 	
-	public long[] getAllClasses() {
+	synchronized public long[] getAllClasses() {
 		long[] listCopy = new long[allClasses.size()];
 		int i = 0;
 		for (Long l : allClasses) {
@@ -430,13 +508,13 @@ private double firstActionWhere(double r) {
 		return listCopy;
 	}
 
-	public void storeActions(DataOutputStream fw1) throws IOException {
+	synchronized public void storeActions(DataOutputStream fw1) throws IOException {
 	      rearrangeActions(0);
 	      for (int i=0; i<curmaxN; i++)
 	    	  fw1.writeDouble(actions[i]);	      
 	}
 	
-	public void storeStrings(BufferedWriter fw2) throws IOException {
+	synchronized public void storeStrings(BufferedWriter fw2) throws IOException {
 		rearrangeStrings(0);
 	      boolean first = true;
 	      for (int i=0; i<curmaxS; i++) {
@@ -450,7 +528,7 @@ private double firstActionWhere(double r) {
 	}
 
 	@Override
-	public void syncAllEx(RAAPI_Synchronizer synchronizer, int bitsCount, long bitsValues) {
+	synchronized public void syncAllEx(RAAPI_Synchronizer synchronizer, int bitsCount, long bitsValues) {
 		if (synchronizer == null)
 			return;
 	    rearrangeActions(0);
@@ -461,40 +539,40 @@ private double firstActionWhere(double r) {
 	}
 
 	@Override
-	public double actions_get(int i) {
+	synchronized public double actions_get(int i) {
 		return actions[i];
 	}
 
 	@Override
-	public String strings_get(int i) {
+	synchronized public String strings_get(int i) {
 		return strings[i];
 	}
 	
 	@Override
-	public boolean tryLock() {
+	synchronized public boolean tryLock() {
 		return true;
 	}
 	
 	@Override
-	public void lock() {
+	synchronized public void lock() {
 		// do nothing
 	}
 
 	@Override
-	public void unlock() {
+	synchronized public void unlock() {
 		// do nothing
 	}
 
 	private boolean multiClasses = false;
 	@Override
-	public boolean hasMultiTypedObjects() {
+	synchronized public boolean hasMultiTypedObjects() {
 		return multiClasses;
 	}
 	
 	private long maxReference = -1;
 
 	@Override
-	public long getMaxReference() {
+	synchronized public long getMaxReference() {
 		if (maxReference < 0) {
 			long rMax = RepositoryAdapter.MAX_PRIMITIVE_REFERENCE;
 	
@@ -509,7 +587,7 @@ private double firstActionWhere(double r) {
 	}
 	
 	@Override
-	public boolean setMaxReference(long ref) {
+	synchronized public boolean setMaxReference(long ref) {
 		maxReference = ref;
 		return true;
 	}
@@ -518,36 +596,42 @@ private double firstActionWhere(double r) {
 	private long predefinedBitsValues = 0;
 
 	@Override
-	public boolean setPredefinedBits(int bitsCount, long bitsValues) {
+	synchronized public boolean setPredefinedBits(int bitsCount, long bitsValues) {
 		predefinedBitsCount = bitsCount;
 		predefinedBitsValues = (bitsValues & ((1<<bitsCount)-1)); // keeping only lowest bitsCount bits
 		return true;
 	}
 
 	@Override
-	public int getPredefinedBitsCount() {
+	synchronized public int getPredefinedBitsCount() {
 		return predefinedBitsCount;
 	}
 
 	@Override
-	public long getPredefinedBitsValues() {
+	synchronized public long getPredefinedBitsValues() {
 		return predefinedBitsValues;
 	}
 
 	@Override
-	public long newReference() {
+	synchronized public long newReference() {
 		maxReference = (((maxReference>>predefinedBitsCount)+1) << predefinedBitsCount) | predefinedBitsValues;
 		return maxReference;
 	}
 
 	@Override
-	public double getMemoryUsageFactor() {
+	synchronized public double getMemoryUsageFactor() {
 		return 0.0;
 	}
 
 	@Override
-	public boolean memoryFault() {
+	synchronized public boolean memoryFault() {
 		return false;
+	}
+
+	@Override
+	synchronized public void rearrange() {
+		//this.rearrangeActions(0);
+		this.rearrangeStrings(0);
 	}
 	
 

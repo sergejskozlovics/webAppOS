@@ -4,24 +4,6 @@ plugins {
 }
 
 repositories {
-    ivy {
-      url "https://download.eclipse.org/acceleo/updates/releases/3.7/R201812041426/plugins"
-      patternLayout {
-            artifact "[artifact]_[revision].[ext]"
-      }
-    }
-    ivy {
-      url "https://download.eclipse.org/eclipse/updates/4.11milestones/S-4.11M1-201901091800/plugins"
-      patternLayout {
-            artifact "[artifact]_[revision].[ext]"
-      }
-    }
-    ivy {
-      url "https://download.eclipse.org/modeling/mdt/ocl/updates/releases/6.6.0/plugins"
-      patternLayout {
-            artifact "[artifact]_[revision].[ext]"
-      }
-    }
     jcenter()
     mavenCentral()
 }
@@ -29,13 +11,20 @@ repositories {
 dependencies {
 // slf4j used everywhere
     implementation 'org.slf4j:slf4j-api:1.7.25'
-    implementation 'org.slf4j:slf4j-simple:1.7.25'
+    //implementation 'org.slf4j:slf4j-simple:1.7.25'
+
+// log4j2 as underlying implementation for slf4j
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.2'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.2'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.2'
 
 // jetty server
     implementation 'org.eclipse.jetty:jetty-server:9.4.14.v20181114'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.14.v20181114'
     implementation 'org.eclipse.jetty:jetty-webapp:9.4.14.v20181114'
     implementation 'org.eclipse.jetty:jetty-proxy:9.4.14.v20181114'
+    implementation 'org.eclipse.jetty.fcgi:fcgi-client:9.4.14.v20181114'
+    implementation 'org.eclipse.jetty.fcgi:fcgi-server:9.4.14.v20181114'
     implementation 'org.eclipse.jetty.websocket:websocket-api:9.4.14.v20181114'
     implementation 'org.eclipse.jetty.websocket:websocket-common:9.4.14.v20181114'
     implementation 'org.eclipse.jetty.websocket:websocket-servlet:9.4.14.v20181114'
@@ -85,6 +74,9 @@ else {
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'org.codehaus.jettison:jettison:1.4.0'
 
+// Google Guava (for MultiSet)
+    compile 'com.google.guava:guava:27.1-jre'
+
 // lightcouch (for couchdb registry)
     implementation 'org.lightcouch:lightcouch:0.2.0'
 
@@ -101,9 +93,9 @@ else {
 // currently, we exclude it from packages, since LuaJ 2.0.3 sources are bundled into webAppOS sys
 
 // for ecore repository adapter
-    implementation 'org.eclipse.emf:org.eclipse.emf.common:2.15.0.v20181220-0846'
-    implementation 'org.eclipse.emf:org.eclipse.emf.ecore:2.17.0.v20181231-1705'
-    implementation 'org.eclipse.emf:org.eclipse.emf.ecore.xmi:2.15.0.v20180706-1146'
+    implementation group: 'org.eclipse.emf', name: 'org.eclipse.emf.common', version: '2.15.0'
+    implementation group: 'org.eclipse.emf', name: 'org.eclipse.emf.ecore', version: '2.15.0'
+    implementation group: 'org.eclipse.emf', name: 'org.eclipse.emf.ecore.xmi', version: '2.15.0'
 
 }
 
@@ -114,8 +106,12 @@ sourceSets {
     java.outputDir = file('webappos/sys/bin')
   }
 }
+
 // Define the main class for the application
-mainClassName = 'org.webappos.server.Gate'
+application {
+  mainClassName = 'org.webappos.server.Gate'
+  applicationDefaultJvmArgs = ['-Dlog4j.configurationFile=LOG4J_CONF_PLACEHOLDER','-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog']
+}
 
 distZip.enabled = false
 distTar.enabled = false
@@ -127,7 +123,13 @@ startScripts {
     def windowsScriptFile = file getWindowsScript()
     def unixScriptFile    = file getUnixScript()
     windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\BIN_PLACEHOLDER', '%APP_HOME%\\sys\\bin')
+    windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\webappos.jar', '%APP_HOME%\\sys\\bin')
+
     unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/BIN_PLACEHOLDER', '$APP_HOME/sys/bin')
+    unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/webappos.jar', '$APP_HOME/sys/bin')
+    windowsScriptFile.text = windowsScriptFile.text.replace('LOG4J_CONF_PLACEHOLDER', '%APP_HOME%\\etc\\log4j2.properties')
+    unixScriptFile.text  = unixScriptFile.text.replace('LOG4J_CONF_PLACEHOLDER', '$APP_HOME/etc/log4j2.properties')
+
   }
 }
 
@@ -150,5 +152,11 @@ installDist {
         include 'var/**'
         include 'web-root/**'
   })
+  doLast {
+    delete fileTree('webappos/bin').matching {
+        include "webappos.org"
+        include "webappos.org.bat"
+    }
+  }
 }
 

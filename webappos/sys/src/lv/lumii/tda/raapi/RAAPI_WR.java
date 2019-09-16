@@ -38,23 +38,25 @@ public interface RAAPI_WR extends RAAPI {
 			boolean associationClass, long r);
 	
 	default boolean setSynchronizedAttributeValue(long rObject, long rAttribute, String value, String oldValue) {
-		// assigns min(current value, synced value)
-		String curValue = getAttributeValue(rObject, rAttribute);
-		if (curValue == null) {
-			if (oldValue == null)
-				return setAttributeValue(rObject, rAttribute, value);
-			else
-				return false; // keeping null, since null<value
-		}
-		else {
-			if (curValue.equals(oldValue))
-				return setAttributeValue(rObject, rAttribute, value);
-			else
-				if (value.compareTo(curValue)<0)
+		synchronized (this) {
+			// assigns min(current value, synced value)
+			String curValue = getAttributeValue(rObject, rAttribute);
+			if (curValue == null) {
+				if (oldValue == null)
 					return setAttributeValue(rObject, rAttribute, value);
 				else
-					return false; // keeping curValue
-		}							
+					return false; // keeping null, since null<value
+			}
+			else {
+				if (curValue.equals(oldValue))
+					return setAttributeValue(rObject, rAttribute, value);
+				else
+					if (value.compareTo(curValue)<0)
+						return setAttributeValue(rObject, rAttribute, value);
+					else
+						return false; // keeping curValue
+			}					
+		}
 	}
 	
 }

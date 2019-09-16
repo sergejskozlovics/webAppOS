@@ -13,6 +13,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -142,9 +143,9 @@ public class LoginServlet extends HttpServlet
 			path2 = path2.substring(i+1);
 			
 			ValidityChecker.checkLogin(login, false); // no standalone
-			ValidityChecker.checkToken(path2);
+			ValidityChecker.checkTokenLike(path2, "Illegal token provided", false);
 			
-			String registryPath = "users/"+login+"/tokens/emailed/"+path2;
+			String registryPath = "xusers/"+login+"/tokens/emailed/"+path2;
 			JsonElement el = API.registry.getValue(registryPath);
 			
 			if (el == null)
@@ -153,7 +154,7 @@ public class LoginServlet extends HttpServlet
 			if (UTCDate.expired(el.toString()))
 				throw new RuntimeException("Token expired "+el.toString());
 			
-			API.registry.setValue("users/"+login+"/tokens/emailed/"+path2, null);
+			API.registry.setValue("xusers/"+login+"/tokens/emailed/"+path2, null);
 			API.registry.setValue("xusers/"+login+"/verified", true);
 			
 			response.sendRedirect("/apps/login/signup_ok.html");
@@ -198,9 +199,7 @@ public class LoginServlet extends HttpServlet
         }
     }
 		
-	private static boolean captchaSolved(String recaptcha_response) {
-		System.err.println("CAPTCHA `"+properties.getProperty("recaptcha_site_key","")+"`");
-		
+	private static boolean captchaSolved(String recaptcha_response) {		
 		if (properties.getProperty("recaptcha_site_key","").isEmpty())
 			return true; // no captcha required
 		
@@ -270,7 +269,6 @@ public class LoginServlet extends HttpServlet
 					password = s.substring("password=".length());
 				}
 				if (s.startsWith("remember=")) {
-					System.err.println("GOT "+s);
 					remember = s.substring("remember=".length()).equals("true");
 				}
 			}
@@ -282,15 +280,15 @@ public class LoginServlet extends HttpServlet
 				throw new RuntimeException("Login or password incorrect");
 			
 			String redirect = request.getQueryString(); // not encoded
+			
+			JsonElement _salt = API.registry.getValue("xusers/"+login+"/salt");
+			String salt = _salt==null?"":_salt.getAsString();
 
-			JsonElement sha1_expire_time = API.registry.getValue("users/"+login+"/tokens/hashed/"+DigestUtils.sha1Hex(password));
+			JsonElement sha1_expire_time = API.registry.getValue("xusers/"+login+"/tokens/hashed/"+DigestUtils.sha1Hex(password+salt));
 			if (sha1_expire_time==null)
 				throw new RuntimeException("Login or password incorrect");
 			
-			
-
-			//System.err.println("EXPIRED="+UTCDate.expired(sha1_expire_time.getAsString())+" "+sha1_expire_time+" now="+UTCDate.stringify(new Date()));
-			 
+						 
 			if (UTCDate.expired(sha1_expire_time.getAsString())) {
 				// redirecting to password change
 				
@@ -304,7 +302,6 @@ public class LoginServlet extends HttpServlet
 				else {
 					response.sendRedirect(change_redirect);
 				}
-				//throw new RuntimeException("Password expired");
 				return;
 			}
 			
@@ -325,7 +322,7 @@ public class LoginServlet extends HttpServlet
 				c.add(Calendar.MINUTE, 60); // token valid for 1 hour				
 			String token_expires = UTCDate.stringify(c.getTime());
 			
-			API.registry.setValue("users/"+login+"/tokens/ws/"+token, token_expires);
+			API.registry.setValue("xusers/"+login+"/tokens/ws/"+token, token_expires);
 			
 						
 			
@@ -398,6 +395,13 @@ public class LoginServlet extends HttpServlet
     	}		
 	}
 	
+	private String generateSalt() {
+        SecureRandom random = new SecureRandom();
+        byte bytes[] = new byte[20];
+        random.nextBytes(bytes);
+        return org.apache.commons.codec.binary.Base64.encodeBase64String(bytes);
+    }
+	
 	private void signup(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		try {
 			if (!signup_allowed){
@@ -425,7 +429,11 @@ public class LoginServlet extends HttpServlet
 			JsonObject formdata = new JsonObject();
 			
 			JsonObject user_tokens = new JsonObject();
-			user.add("tokens", user_tokens);
+			xuser.add("tokens", user_tokens);
+			
+			String salt = generateSalt();
+			
+			xuser.addProperty("salt", salt);
 			
 			for (String s : arr) {    				
 				if (s.startsWith("g-recaptcha-response=")) {
@@ -439,7 +447,7 @@ public class LoginServlet extends HttpServlet
 					Calendar c = Calendar.getInstance();
 					c.setTime(new Date());
 					c.add(Calendar.DATE, password_expire_days);						
-					hashed.addProperty(DigestUtils.sha1Hex(password), UTCDate.stringify(c.getTime()));
+					hashed.addProperty(DigestUtils.sha1Hex(password+salt), UTCDate.stringify(c.getTime()));
 					user_tokens.add("hashed", hashed);
 					
 					formdata.addProperty(password, password);
@@ -471,8 +479,7 @@ public class LoginServlet extends HttpServlet
 			}
 
 			ValidityChecker.checkLogin(email, desired_login, false); // don't allow standalone (but we should have appended 1 above)
-			if ((recaptcha_response!=null) && (!recaptcha_response.isEmpty()))
-				ValidityChecker.checkToken(recaptcha_response);
+			ValidityChecker.checkTokenLike(recaptcha_response, "Illegal reCAPTCHA response", true);			
 			
 			// verify reCAPTCHA
 		    if (!captchaSolved(recaptcha_response)) {
@@ -510,7 +517,6 @@ public class LoginServlet extends HttpServlet
 			
 			if (signup_policy.startsWith("jsoncall:")) {
 				// TODO: async servlet response...
-				response.getOutputStream().println("Please wait, we are checking...");    				
 				
 				String action = signup_policy.substring("jsoncall:".length());
 				
@@ -559,9 +565,7 @@ public class LoginServlet extends HttpServlet
 				login = desired_login;    				
 				JsonElement el = API.registry.getValue("xusers/"+login);
 				while (el != null) {
-					System.out.println("user "+login+" already exists");
 					login = login + new Random().nextInt(10); 
-					System.out.println("trying "+login);
 					el = API.registry.getValue("xusers/"+login);
 				}
 			}
@@ -666,7 +670,7 @@ public class LoginServlet extends HttpServlet
 			// validate
 	    	ValidityChecker.checkEmail(email);
 	    	ValidityChecker.checkLogin(email, false); // use email as login	    	
-	    	ValidityChecker.checkToken(recaptcha_response);
+			ValidityChecker.checkTokenLike(recaptcha_response, "Illegal reCAPTCHA response", true);			
 
 			// verify reCAPTCHA
 		    if (!captchaSolved(recaptcha_response)) {
@@ -702,8 +706,11 @@ public class LoginServlet extends HttpServlet
 	    	    sb.append(chars.charAt(k));
 	    	}
 	    	
+			JsonElement _salt = API.registry.getValue("xusers/"+email+"/salt");
+			String salt = _salt==null?"":_salt.getAsString();
 	    	String pass = sb.toString();
-	    	API.registry.setValue("users/"+email+"/tokens/hashed/"+DigestUtils.sha1Hex(pass), UTCDate.stringify(new Date()));
+	    	
+	    	API.registry.setValue("xusers/"+email+"/tokens/hashed/"+DigestUtils.sha1Hex(pass+salt), UTCDate.stringify(new Date()));
 	    		// expires right away
 
 			if (API.emailSender.sendEmail(email, "Password reset", "Please, log in with this one-time password `"+pass+"'")) {        			        			
@@ -716,9 +723,11 @@ public class LoginServlet extends HttpServlet
 		}
 		catch (Throwable t) {
 			logger.error(t.getMessage());
-			StringWriter errors = new StringWriter();
-			t.printStackTrace(new PrintWriter(errors));
-			logger.error(errors.toString());
+			if (logger.isTraceEnabled()) {
+				StringWriter errors = new StringWriter();
+				t.printStackTrace(new PrintWriter(errors));
+				logger.error(errors.toString());
+			}
 
 			redirectToMessage("forgot_failed", t.getMessage(), response);			
 		}        	
@@ -794,14 +803,17 @@ public class LoginServlet extends HttpServlet
 	    		return;
 	    	}
 	    	
-	    	JsonElement user = API.registry.getValue("users/"+login);
-	    	if (!(user instanceof JsonObject)) {
+	    	JsonElement xuser = API.registry.getValue("xusers/"+login);
+	    	if (!(xuser instanceof JsonObject)) {
 	    		// user not found, but we still inform just that the password change failed 
 	    		response.sendRedirect("/apps/login/change_failed.html"); 
 	    		return;	    		
 	    	}
 	    	
-	    	JsonElement tokens = ((JsonObject)user).get("tokens");
+			JsonElement _salt = API.registry.getValue("xusers/"+login+"/salt");
+			String salt = _salt==null?"":_salt.getAsString();	    	
+	    	
+	    	JsonElement tokens = ((JsonObject)xuser).get("tokens");
 	    	if (!(tokens instanceof JsonObject)) {
 	    		response.sendRedirect("/apps/login/change_failed.html"); 
 	    		return;
@@ -813,7 +825,7 @@ public class LoginServlet extends HttpServlet
 	    		return;
 	    	}
 	    	
-	    	JsonElement expire_time = ((JsonObject)hashed).get(DigestUtils.sha1Hex(old_password));; 
+	    	JsonElement expire_time = ((JsonObject)hashed).get(DigestUtils.sha1Hex(old_password+salt)); 
 	    			
 	    	if ((expire_time == null) || (expire_time.toString().isEmpty())) {
 	    		// no such old password
@@ -828,11 +840,11 @@ public class LoginServlet extends HttpServlet
 			c.setTime(new Date());
 			c.add(Calendar.DATE, password_expire_days);						
 	    	
-	    	((JsonObject)hashed).addProperty(DigestUtils.sha1Hex(new_password), UTCDate.stringify(c.getTime()));
+	    	((JsonObject)hashed).addProperty(DigestUtils.sha1Hex(new_password+salt), UTCDate.stringify(c.getTime()));
 	    	((JsonObject)tokens).add("hashed", hashed); 
 	    	
 
-	    	if (!API.registry.setValue("users/"+login, user))
+	    	if (!API.registry.setValue("xusers/"+login, xuser))
 	    		throw new RuntimeException("Error accessing the registry.");
 	    	
 			String redirect = null;
@@ -861,10 +873,11 @@ public class LoginServlet extends HttpServlet
 		}
 		catch (Throwable t) {
 			logger.error(t.getMessage());
-			StringWriter errors = new StringWriter();
-			t.printStackTrace(new PrintWriter(errors));
-			logger.error(errors.toString());
-
+			if (logger.isTraceEnabled()) {
+				StringWriter errors = new StringWriter();
+				t.printStackTrace(new PrintWriter(errors));
+				logger.error(errors.toString());
+			}
 			redirectToMessage("change_failed", t.getMessage(), response);
 		}        	
 		
@@ -885,7 +898,6 @@ public class LoginServlet extends HttpServlet
 			
 			String login=null, ws_token=null;
 			for (String s : arr) {    	
-				System.err.println("`"+s+"`");
 				if (s.startsWith("login=")) {
 					login = s.substring("login=".length()).trim();
 				}
@@ -896,13 +908,11 @@ public class LoginServlet extends HttpServlet
 			
 			ValidityChecker.checkLogin(login, false);
 			
-			JsonElement sha1_expire_time = API.registry.getValue("users/"+login+"/tokens/ws/"+ws_token);
+			JsonElement sha1_expire_time = API.registry.getValue("xusers/"+login+"/tokens/ws/"+ws_token);
 			if (sha1_expire_time==null)
 				throw new RuntimeException("Login or ws_token incorrect");			
 			
 
-			System.err.println("EXPIRED="+UTCDate.expired(sha1_expire_time.getAsString())+" "+sha1_expire_time+" now="+UTCDate.stringify(new Date()));
-			 
 			if (UTCDate.expired(sha1_expire_time.getAsString())) {
 				throw new RuntimeException("ws_token expired");
 			}
@@ -944,7 +954,6 @@ public class LoginServlet extends HttpServlet
 			
 			String login=null, ws_token=null;
 			for (String s : arr) {    	
-				System.err.println("`"+s+"`");
 				if (s.startsWith("login=")) {
 					login = s.substring("login=".length()).trim();
 				}
@@ -963,7 +972,7 @@ public class LoginServlet extends HttpServlet
 			if ((blocked!=null) && (blocked.toString().equals("true")))
 				throw new RuntimeException("User is blocked");
 
-			API.registry.setValue("users/"+login+"/tokens/ws/"+ws_token, null);
+			API.registry.setValue("xusers/"+login+"/tokens/ws/"+ws_token, null);
 			
     	}
     	catch(Throwable t) {

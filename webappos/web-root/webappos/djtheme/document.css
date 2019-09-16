@@ -1,0 +1,43 @@
+@import url("resources/dojo.css");
+/* ======= Styling for the document itself (overriding dojo.css) ======== */
+.webappos {
+  font-family: webAppOS, Verdana, Arial, Helvetica, sans-serif;
+  font-size: 11pt;
+  color: #131313;
+}
+/* Headings */
+.webappos h1 {
+  font-size: 1.545em;
+  margin-bottom: 0.727em;
+}
+.webappos h2 {
+  font-size: 1.364em;
+  line-height: 1.455em;
+  margin-top: 1em;
+  margin-bottom: 0.60em;
+  font-weight: normal;
+}
+.webappos h3,
+.webappos h4,
+.webappos h5,
+.webappos h6 {
+  font-size: 1.091em;
+  font-weight: normal;
+}
+/* paragraphs, quotes and lists */
+.webappos p {
+  line-height: 1.3em;
+}
+/* pre and code */
+.webappos pre,
+.webappos code {
+  font-family: inherit;
+  background-color: #efefef;
+  border: 1px solid #d3d3d3;
+}
+/* tables */
+.webappos table.dojoTabular thead,
+.webappos table.dojoTabular tfoot {
+  background-color: #efefef;
+  border: 1px solid #d3d3d3;
+}
