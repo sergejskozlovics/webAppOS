@@ -334,7 +334,7 @@ public class CloudProject implements IProject {
 			return false;
 		}
 
-		File tmp;
+/*		File tmp;
 		try {
 			tmp = File.createTempFile("cloud_project_zip", ".tmp");
 		} catch (IOException e1) {
@@ -361,7 +361,9 @@ public class CloudProject implements IProject {
 		
 		tmp.delete();
 				
-		return b;
+		return b;*/
+		
+		return ProjectCache.zipAndUpload(new File(folder).getName()/*uuid*/, name, true);
 	}
 
 	private void cleanup(boolean close, boolean deleteFolder) {

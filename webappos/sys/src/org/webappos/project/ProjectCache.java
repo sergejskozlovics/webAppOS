@@ -101,7 +101,7 @@ public class ProjectCache {
 		return f.getAbsolutePath();
 	}
 	
-	private static boolean zipAndUpload(String uuid, String project_id, boolean overwrite) {
+	public static boolean zipAndUpload(String uuid, String project_id, boolean overwrite) {
 		Path src = new File(ConfigStatic.PROJECTS_CACHE_DIR+File.separator+uuid).toPath();
 		File tmp;
 		try {

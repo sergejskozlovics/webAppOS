@@ -1,6 +1,5 @@
 package org.webappos.adapters.webcalls.staticjava;
 
-import java.io.File;
 import java.lang.reflect.Method;
 
 import org.slf4j.Logger;

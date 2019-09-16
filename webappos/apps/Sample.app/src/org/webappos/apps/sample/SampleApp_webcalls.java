@@ -1,6 +1,7 @@
 package org.webappos.apps.sample;
 
 import java.io.File;
+import java.net.MalformedURLException;
 
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
@@ -31,11 +32,26 @@ public class SampleApp_webcalls {
 		}
 		
 		lv.lumii.tda.kernel.mm.InsertMetamodelCommand cmd = kmmFactory.createInsertMetamodelCommand();
-		cmd.setUrl(ConfigStatic.APPS_DIR + File.separator+API.dataMemory.getProjectFullAppName(project_id)+"Sample.mmd");
+		// file: 
+		File f = new File(ConfigStatic.APPS_DIR + File.separator+API.dataMemory.getProjectFullAppName(project_id)+File.separator+"Sample.mmd");
+		try {
+			cmd.setUrl(f.toURI().toURL().toString());
+		} catch (MalformedURLException e) {
+			cmd.setUrl("file:///"+f.getAbsolutePath());
+		}
 		cmd.submit();
 
 		org.webappos.sample.mm.SampleMetamodelFactory samplemmFactory = new org.webappos.sample.mm.SampleMetamodelFactory();
+		try {
+			samplemmFactory.setRAAPI(raapi, "", true);
+		} catch (Throwable e) {
+			eemmFactory.unsetRAAPI();
+			kmmFactory.unsetRAAPI();			
+			return;
+		}
 		org.webappos.sample.mm.Counter counter = org.webappos.sample.mm.Counter.firstObject(samplemmFactory);
+		
+		
 		if (counter == null)
 			counter = samplemmFactory.createCounter();
 		counter.setCount(0);

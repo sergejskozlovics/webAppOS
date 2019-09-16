@@ -220,6 +220,18 @@
 				}
 			}
 
+			// check for modern event handler obj.on[EventName]Event...
+			if (c["getOn"+eventName+"Event"]) {
+				let actionName = c["getOn"+eventName+"Event"]();
+				if (actionName) {
+					var ev = new tda.model["D#Event"];
+							ev.setEventName(eventName);
+							ev.setInfo(eventName);
+							ev.setSource(c);
+					tda.model.webcall(actionName, ev.reference);
+				}
+			}
+
 			// check for legacy event handlers...
 			if (c.eventHandler && (c.eventHandler.length > 0)) {
 				for (var i = 0; i < c.eventHandler.length; i++) {

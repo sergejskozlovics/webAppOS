@@ -139,6 +139,10 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 			cachedInstructionSetToWebProcessor.clear();
 			
 			if (project!=null) {
+				if (!fault) {
+					logger.debug("PROJECT SAVE to "+project.getName());
+					project.save();
+				}
 				project.close();
 			}
 			

@@ -1,1 +1,2 @@
 tdacall\ onOpen=lua:empty_project_dialog.open
+tdacall\ onCloseDialog=lua:empty_project_dialog.close_dialog
