@@ -91,10 +91,10 @@ define([
 //			mime = obj.mime ? obj.mime.split('/')[0] : null;
 			mime = obj.mime;
                         if (mime) {
-                                img.src = require.toUrl('rfe') + '/../mimes/'+mime+'.png';
+                                img.src = require.toUrl('rfe') + '/../icons/'+mime+'.png';
                         }
                         else {
-				img.src = require.toUrl('rfe') + '/../mimes/'+ (obj.dir ? 'folder.png' : 'file.png');
+				img.src = require.toUrl('rfe') + '/../icons/'+ (obj.dir ? 'folder.png' : 'file.png');
                         }
                        
                         img.style["box-shadow"]="none"; // added by SK

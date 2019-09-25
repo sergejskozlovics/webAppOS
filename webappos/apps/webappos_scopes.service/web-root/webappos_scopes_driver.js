@@ -141,14 +141,14 @@ define(function(){
         if (!window.webappos.webcall_and_wait("webappos.appRequiresTemplate", webappos.app_full_name).result) {
               contentURI+="<div style='border-bottom:1px dotted #888;'>New</div>";
               contentURI+="<div onclick=\"javascript:"+INIT_CODE+"\" style='display:inline-block; align:center; width:100px; min-height:100px; cursor:pointer; margin:10px; vertical-align:top;'>"+
-                      "<div style='display:inline-block;width:100px;height:80px;'><img src='template-icons/new.png' width='100px' height='auto'></img></div>"+
+                      "<div style='display:inline-block;width:100px;height:80px;'><img src='icons/template/new.png' width='100px' height='auto'></img></div>"+
                       "<p style='word-wrap: break-word; padding:0; margin:0;' align='center'>Bootstrap new</p>"+
                       "</div>";
         }
   
         contentURI+="<div style='border-bottom:1px dotted #888;'>Browse</div>";
         var s ="<div onclick=\"javascript:webappos.desktop.browse_for_file('open', '"+webappos.app_displayed_name+" files(*."+webappos.project_extension+")').then(function(fname){if (!fname) return;webappos.set_project_id(webappos.login+'/'+fname);"+INIT_CODE+"});\" style='display:inline-block; align:center; width:100px; min-height:100px; cursor:pointer; margin:10px; vertical-align:top; border:1px dotted; #888;'>"+
-                      "<div style='display:inline-block;width:100px;height:80px;'><img src='template-icons/browse.png' width='100px' height='auto'></img></div>"+
+                      "<div style='display:inline-block;width:100px;height:80px;'><img src='icons/template/browse.png' width='100px' height='auto'></img></div>"+
                       "<p style='word-break: break-all; word-wrap: break-word; padding:0; margin:0;' align='center'>Browse</p>"+
                       "</div>";
         contentURI+=s;
@@ -162,7 +162,7 @@ define(function(){
                 arr[i] = (arr[i]+"").substring(0, j);
   
               contentURI+="<div onclick=\"javascript:webappos.project_id='apptemplate:"+arr[i]+"."+webappos.project_extension+"';"+INIT_CODE+"\" style='display:inline-block; align:center; width:100px; min-height:100px; cursor:pointer; margin:10px; vertical-align:top;'>"+
-                      "<div style='display:inline-block;width:100px;height:80px;'><img src='template-icons/"+arr[i]+".png' width='100px' height='auto'></img></div>"+
+                      "<div style='display:inline-block;width:100px;height:80px;'><img src='icons/template/"+arr[i]+".png' width='100px' height='auto'></img></div>"+
                       "<p style='word-wrap: break-word; padding:0; margin:0;' align='center'>"+arr[i]+"</p>"+
                       "</div>";
   
@@ -178,7 +178,7 @@ define(function(){
                 arr[i] = (arr[i]+"").substring(0, j);
   
               contentURI+="<div onclick=\"javascript:webappos.project_id='publishedtemplate:"+arr[i]+"."+webappos.project_extension+"';"+INIT_CODE+"\" style='display:inline-block; align:center; width:100px; min-height:100px; cursor:pointer; margin:10px; vertical-align:top;'>"+
-                      "<div style='display:inline-block;width:100px;height:80px;'><img src='template-icons/user.png' width='100px' height='auto'></img></div>"+
+                      "<div style='display:inline-block;width:100px;height:80px;'><img src='icons/template/user.png' width='100px' height='auto'></img></div>"+
                       "<p style='word-wrap: break-word; padding:0; margin:0;' align='center'>"+arr[i]+"</p>"+
                       "</div>";
           }
@@ -193,7 +193,7 @@ define(function(){
                 arr[i] = (arr[i]+"").substring(0, j);
   
               contentURI+="<div onclick=\"javascript:webappos.project_id='usertemplate:"+arr[i]+"."+webappos.project_extension+"';"+INIT_CODE+"\" style='display:inline-block; align:center; width:100px; min-height:100px; cursor:pointer; margin:10px; vertical-align:top;'>"+
-                      "<div style='display:inline-block;width:100px;height:80px;'><img src='template-icons/user.png' width='100px' height='auto'></img></div>"+
+                      "<div style='display:inline-block;width:100px;height:80px;'><img src='icons/template/user.png' width='100px' height='auto'></img></div>"+
                       "<p style='word-wrap: break-word; padding:0; margin:0;' align='center'>"+arr[i]+"</p>"+
                       "</div>";
           }

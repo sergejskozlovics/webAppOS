@@ -33,7 +33,7 @@ public class AppProperties extends SomeProperties {
 	public String app_type = "html";
 	public boolean requires_root_url_paths = false;
 	
-	public String initial_transformation = "";	
+	public String initial_webcall = "";	
 	
 	public enum MemoryScope { NONE, USER, PROJECT, TEMP };
 	public MemoryScope memory_scope = MemoryScope.PROJECT;
@@ -153,7 +153,7 @@ public class AppProperties extends SomeProperties {
 			catch(Throwable t) {				
 			}
 			
-			initial_transformation = properties.getProperty("initial_transformation", initial_transformation);
+			initial_webcall = properties.getProperty("initial_webcall", initial_webcall);
 			
 			String s = properties.getProperty("memory_scope", "PROJECT").trim().toUpperCase();
 			if (s.equals("NONE") || s.isEmpty())

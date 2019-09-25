@@ -66,7 +66,7 @@ public class AppsActions_webcalls {
 
 	public static String appRequiresTemplate(String appFullName) { // no raapi, no login		
 		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(appFullName);		
-		boolean b = (props==null) || (props.initial_transformation==null) || (props.initial_transformation.isEmpty());
+		boolean b = (props==null) || (props.initial_webcall==null) || (props.initial_webcall.isEmpty());
 		String s = "{\"result\":"+b+"}";
 		return s;
 	}
@@ -214,7 +214,7 @@ public class AppsActions_webcalls {
 		
 		IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
 		seed.callingConventions = IWebCaller.CallingConventions.TDACALL;
-		seed.actionName = props.initial_transformation;
+		seed.actionName = props.initial_webcall;
 		seed.tdaArgument = rEvent;
 		seed.login = login;
 		seed.project_id = project_id;

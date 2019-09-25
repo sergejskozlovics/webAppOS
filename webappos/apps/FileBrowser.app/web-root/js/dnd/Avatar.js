@@ -30,7 +30,7 @@ function(window, array, declare, domConstruct, domClass, domAttr, Avatar) {
              images.folder = img2;
            };
 	};
-	images.folder.src = require.toUrl('rfe') + '/../mimes/folder.png'; // by SK
+	images.folder.src = require.toUrl('rfe') + '/../icons/folder.png'; // by SK
 	images.files.onload=function() {
            ctx.drawImage(images.files, 0, 0, 64, 64);
            var img2 = new Image();
@@ -39,7 +39,7 @@ function(window, array, declare, domConstruct, domClass, domAttr, Avatar) {
              images.files = img2;
            };
 	};
-	images.files.src = require.toUrl('rfe') + '/../mimes/files.png'; // by SK
+	images.files.src = require.toUrl('rfe') + '/../icons/files.png'; // by SK
 	images.file.onload=function() {
            ctx.drawImage(images.file, 0, 0, 64, 64);
            var img2 = new Image();
@@ -48,7 +48,7 @@ function(window, array, declare, domConstruct, domClass, domAttr, Avatar) {
              images.file = img2;
            };
 	};
-	images.file.src = require.toUrl('rfe') + '/../mimes/file.png'; // by SK
+	images.file.src = require.toUrl('rfe') + '/../icons/file.png'; // by SK
 
 	return declare([Avatar], {
 

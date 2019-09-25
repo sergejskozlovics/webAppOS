@@ -221,8 +221,8 @@ public class CloudProject implements IProject {
 		}		
 		
 		
-		if ((appProps.initial_transformation == null) || (appProps.initial_transformation.isEmpty())) {
-			// initial main transformation not found
+		if ((appProps.initial_webcall == null) || (appProps.initial_webcall.isEmpty())) {
+			// initial webcall not found
 			return false;
 		}
 		// desiredName is is format "user/New SomeApp project.ext";		
