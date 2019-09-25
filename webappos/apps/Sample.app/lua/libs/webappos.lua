@@ -9,7 +9,7 @@ end
 
 print = log
 
-tda = require("lua_tda")
+--tda = require("lua_tda")
 
 lQuery = require("lQuery")
 

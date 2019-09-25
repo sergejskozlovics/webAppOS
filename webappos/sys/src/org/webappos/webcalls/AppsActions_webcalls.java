@@ -188,6 +188,13 @@ public class AppsActions_webcalls {
 	
 	public static String bootstrapProject(String project_id, String arg, String login, String fullAppName) {
 		
+		// TODO: arg = created: true|false
+		// bootstrapProject -> initializeProject
+		// if EE:
+		//    if created then call initial_webcall and create projectcreatedevent; else submit projectopenedevent
+		// else
+		//    call initial_webcall
+		
 		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(fullAppName);
 		if (props==null)
 			return "{}";
@@ -210,7 +217,9 @@ public class AppsActions_webcalls {
 		}
 		
 		// creating ProjectCreatedEvent and launching the initial webcall
-		long rEvent = kernel.createObject(kernel.EEMM.PROJECTCREATEDEVENT);
+		long rEvent = 0;
+		if (kernel.EEMM.PROJECTCREATEDEVENT!=0)
+			rEvent = kernel.createObject(kernel.EEMM.PROJECTCREATEDEVENT);
 		
 		IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
 		seed.callingConventions = IWebCaller.CallingConventions.TDACALL;

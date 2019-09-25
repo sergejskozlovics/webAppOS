@@ -147,7 +147,7 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 				LuaValue lua_tda1 = luaCachedEnv.globals.load(luaCachedEnv.lua_tda);
 				luaCachedEnv.globals.get("package").get("loaded").set("lua_tda", lua_tda1);
 				luaCachedEnv.globals.set("lua_tda", lua_tda1);
-
+				
 				LuaValue lua_graphDiagram1 = luaCachedEnv.globals.load(luaCachedEnv.lua_graphDiagram);
 				luaCachedEnv.globals.get("package").get("loaded").set("lua_graphDiagram", lua_graphDiagram1);
 				luaCachedEnv.globals.set("lua_graphDiagram", lua_graphDiagram1);
