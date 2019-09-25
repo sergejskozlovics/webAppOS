@@ -16,9 +16,7 @@ public class ServiceProperties extends SomeProperties {
 	
 	public boolean hidden = false;
 	
-/*	enum ServiceType { PERMANENT, ONETIME };
-	public ServiceType service_type = ServiceType.ONETIME;*/
-	public String service_adapter = "javaservlet";	
+	public String service_type = "javaservlet";	
 	
 	public boolean requires_root_url_paths = false;
 	
@@ -71,12 +69,12 @@ public class ServiceProperties extends SomeProperties {
 /*			String s = properties.getProperty("service_type", "ONETIME").trim().toUpperCase();
 			if (s.equals("PERMANENT"))
 				service_type = ServiceType.PERMANENT;*/
-			service_adapter = properties.getProperty("service_adapter", service_adapter);
+			service_type = properties.getProperty("service_type", service_type);
 			
-			if (properties.getProperty("service_adapter","").trim().equals("")) {
+			if (properties.getProperty("service_type","").trim().equals("")) {
 				File f = new File(this.service_dir+File.separator+"web-root");
 				if (f.exists() && f.isDirectory())
-					service_adapter = "webroot";
+					service_type = "webroot";
 			}
 			
 			try {

@@ -365,9 +365,9 @@ public class Gate {
 				return;
 			}
 			
-			IServiceAdapter svcAdapter = getServiceAdapter(svcProps.service_adapter);
+			IServiceAdapter svcAdapter = getServiceAdapter(svcProps.service_type);
 			if (svcAdapter == null) {				
-				logger.error("Could not load serivice "+name+": unknown service adapter "+svcProps.service_adapter);
+				logger.error("Could not load serivice "+name+": unknown service adapter "+svcProps.service_type);
 				return;
 			}
 			
