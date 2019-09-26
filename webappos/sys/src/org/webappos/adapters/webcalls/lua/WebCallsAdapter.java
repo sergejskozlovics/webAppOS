@@ -184,7 +184,8 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 								+specificBin+"/lua/libs/?.lua;"
 								+specificBin+"/lua/?.class;"
 								+pwd+"/?.lua;"
-								+pwd+"/?.class;";
+								+pwd+"/?.class;"
+								+ConfigStatic.ROOT_DIR+"/lib/lua/?.lua";
 				
 				AppProperties props = API.propertiesManager.getAppPropertiesByFullName(appFullName);
 				paths += props.properties.getProperty("lua_paths","");
