@@ -1,0 +1,53 @@
+  apply plugin: 'java'
+  apply plugin: 'application'
+
+
+  // Define the main class for the application
+  application {
+    mainClassName = 'lv.lumii.tda.kernel.mmdparser.MMD2Ecore'
+  }
+
+  dependencies {
+    compile project(':webappos')
+  }
+
+  distZip.enabled = false
+  distTar.enabled = false
+  jar.enabled = false
+
+  startScripts {
+    classpath += files('BIN_PLACEHOLDER')
+    doLast {
+      def windowsScriptFile = file getWindowsScript()
+      def unixScriptFile    = file getUnixScript()
+      windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\BIN_PLACEHOLDER', '%APP_HOME%\\sys\\bin')
+      windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\mmd2ecore.jar', '%APP_HOME%\\sys\\bin')
+
+      unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/BIN_PLACEHOLDER', '$APP_HOME/sys/bin')
+      unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/mmd2ecore.jar', '$APP_HOME/sys/bin')
+    }
+  }
+
+  installDist {
+    doFirst {
+    }
+    into('../../webappos')
+    preserve({
+          include 'apps/**'
+          include 'bin/**'
+          exclude 'bin/mmd2ecore*'
+          include 'boot/**'
+          include 'cache/**'
+          include 'engines/**'
+          include 'etc/**'
+          include 'home/**'
+          include 'lib/**'
+          include 'native/**'
+          include 'sys/**'
+          include 'var/**'
+          include 'web-root/**'
+          include '*.gradle'
+    })
+    doLast {
+    }
+  }

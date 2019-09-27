@@ -1,1 +1,4 @@
-rootProject.name = 'webappos'
+rootProject.name = 'webappos-all'
+include ':webappos'
+include ':webappos.dev:ecore2java'
+include ':webappos.dev:mmd2ecore'
