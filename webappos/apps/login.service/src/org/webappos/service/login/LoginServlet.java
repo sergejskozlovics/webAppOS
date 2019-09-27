@@ -284,12 +284,12 @@ public class LoginServlet extends HttpServlet
 			JsonElement _salt = API.registry.getValue("xusers/"+login+"/salt");
 			String salt = _salt==null?"":_salt.getAsString();
 
-			JsonElement sha1_expire_time = API.registry.getValue("xusers/"+login+"/tokens/hashed/"+DigestUtils.sha1Hex(password+salt));
-			if (sha1_expire_time==null)
+			JsonElement sha_expire_time = API.registry.getValue("xusers/"+login+"/tokens/hashed/"+DigestUtils.sha256Hex(password+salt));
+			if (sha_expire_time==null)
 				throw new RuntimeException("Login or password incorrect");
 			
 						 
-			if (UTCDate.expired(sha1_expire_time.getAsString())) {
+			if (UTCDate.expired(sha_expire_time.getAsString())) {
 				// redirecting to password change
 				
 				String change_redirect = "/apps/login/change.html?login="+login;
@@ -447,7 +447,7 @@ public class LoginServlet extends HttpServlet
 					Calendar c = Calendar.getInstance();
 					c.setTime(new Date());
 					c.add(Calendar.DATE, password_expire_days);						
-					hashed.addProperty(DigestUtils.sha1Hex(password+salt), UTCDate.stringify(c.getTime()));
+					hashed.addProperty(DigestUtils.sha256Hex(password+salt), UTCDate.stringify(c.getTime()));
 					user_tokens.add("hashed", hashed);
 					
 					formdata.addProperty(password, password);
@@ -710,7 +710,7 @@ public class LoginServlet extends HttpServlet
 			String salt = _salt==null?"":_salt.getAsString();
 	    	String pass = sb.toString();
 	    	
-	    	API.registry.setValue("xusers/"+email+"/tokens/hashed/"+DigestUtils.sha1Hex(pass+salt), UTCDate.stringify(new Date()));
+	    	API.registry.setValue("xusers/"+email+"/tokens/hashed/"+DigestUtils.sha256Hex(pass+salt), UTCDate.stringify(new Date()));
 	    		// expires right away
 
 			if (API.emailSender.sendEmail(email, "Password reset", "Please, log in with this one-time password `"+pass+"'")) {        			        			
@@ -825,7 +825,7 @@ public class LoginServlet extends HttpServlet
 	    		return;
 	    	}
 	    	
-	    	JsonElement expire_time = ((JsonObject)hashed).get(DigestUtils.sha1Hex(old_password+salt)); 
+	    	JsonElement expire_time = ((JsonObject)hashed).get(DigestUtils.sha256Hex(old_password+salt)); 
 	    			
 	    	if ((expire_time == null) || (expire_time.toString().isEmpty())) {
 	    		// no such old password
@@ -840,7 +840,7 @@ public class LoginServlet extends HttpServlet
 			c.setTime(new Date());
 			c.add(Calendar.DATE, password_expire_days);						
 	    	
-	    	((JsonObject)hashed).addProperty(DigestUtils.sha1Hex(new_password+salt), UTCDate.stringify(c.getTime()));
+	    	((JsonObject)hashed).addProperty(DigestUtils.sha256Hex(new_password+salt), UTCDate.stringify(c.getTime()));
 	    	((JsonObject)tokens).add("hashed", hashed); 
 	    	
 
@@ -908,12 +908,12 @@ public class LoginServlet extends HttpServlet
 			
 			ValidityChecker.checkLogin(login, false);
 			
-			JsonElement sha1_expire_time = API.registry.getValue("xusers/"+login+"/tokens/ws/"+ws_token);
-			if (sha1_expire_time==null)
+			JsonElement sha_expire_time = API.registry.getValue("xusers/"+login+"/tokens/ws/"+ws_token);
+			if (sha_expire_time==null)
 				throw new RuntimeException("Login or ws_token incorrect");			
 			
 
-			if (UTCDate.expired(sha1_expire_time.getAsString())) {
+			if (UTCDate.expired(sha_expire_time.getAsString())) {
 				throw new RuntimeException("ws_token expired");
 			}
 			

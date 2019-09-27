@@ -90,23 +90,23 @@ public class UsersManager {
 	public static boolean passwordOK(String emailOrLogin, String password, boolean checkIfExpired) {
 		JsonElement _salt = API.registry.getValue("xusers/"+emailOrLogin+"/salt");
 		String salt = _salt==null?"":_salt.getAsString();
-		JsonElement sha1_expire_time = API.registry.getValue("xusers/"+emailOrLogin+"/tokens/hashed/"+DigestUtils.sha1Hex(password+salt));
-		if (sha1_expire_time==null)
+		JsonElement sha_expire_time = API.registry.getValue("xusers/"+emailOrLogin+"/tokens/hashed/"+DigestUtils.sha256Hex(password+salt));
+		if (sha_expire_time==null)
 			return false;
 
 		if (checkIfExpired)
-			return !UTCDate.expired(sha1_expire_time.getAsString());
+			return !UTCDate.expired(sha_expire_time.getAsString());
 		else
 			return true;
 	}
 	
 	public static boolean ws_token_OK(String emailOrLogin, String ws_token, boolean checkIfExpired) {		
-		JsonElement sha1_expire_time = API.registry.getValue("xusers/"+emailOrLogin+"/tokens/ws/"+ws_token);
-		if (sha1_expire_time==null)
+		JsonElement sha_expire_time = API.registry.getValue("xusers/"+emailOrLogin+"/tokens/ws/"+ws_token);
+		if (sha_expire_time==null)
 			return false;
 
 		if (checkIfExpired)
-			return !UTCDate.expired(sha1_expire_time.getAsString());
+			return !UTCDate.expired(sha_expire_time.getAsString());
 		else
 			return true;
 	}
