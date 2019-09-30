@@ -1,0 +1,31 @@
+<html>
+<head>
+<script src="webappos.js"></script>
+</head>
+<body>
+
+<h1>This is the HelloWorld app</h1>
+
+<script>
+
+function alertFromJSON(json)
+{
+console.log(json);
+  alert(json.message+" / web memory reference="+json.reference+" (must be undefined)");
+  return {};
+}
+
+function alertFromWebMemory(obj)
+{
+  alert(obj.message+" / web memory reference="+obj.reference+" (must be some integer)");
+}
+
+webappos.request_scopes("webappos_scopes", "project_id").then(
+  ()=> alert("Web memory initialized.")
+);
+
+
+</script>
+
+</body>
+</html>

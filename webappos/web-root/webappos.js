@@ -167,7 +167,7 @@ script_label: {
 
       require([action.resolvedInstructionSet + "_webcalls_adapter.js"], function (adapter) {
       if (adapter.tdacall) {
-        adapter.tdacall(action, obj);
+        adapter.tdacall(action.resolvedLocation, obj);
       } else
         console.log("ERROR: Webcalls adapter '" + action.resolvedInstructionSet + "' does not support tdacall calling conventions.");
     });
@@ -978,7 +978,11 @@ script_label: {
           webappos.drivers_set[driver_name] = driver;
           webappos.drivers_stack.push(driver);
         }
-        driver.request_access(scopes, (webappos.server_mode == -1)).then(() => resolve(true)).catch((e) => reject(e));
+
+        webappos.webcall("webappos.getAvailableWebCalls").then(function (result) {
+          webappos.webcalls = result;
+          driver.request_access(scopes, (webappos.server_mode == -1)).then(() => resolve(true)).catch((e) => reject(e));
+        });
       });
     });
   };
@@ -3081,21 +3085,23 @@ script_label: {
                   console.log("web sync done!");
                   // issuing a command...
 
-                  webappos.webcall("webappos.getAvailableWebCalls").then(function (result) {
-                    webappos.webcalls = result;
-                  });
-
                   var d = new Date();
                   webappos.connect_finished = d.getTime();
                   console.log("Initial sync done in "+(webappos.connect_finished-webappos.connect_started)+" ms");
 
-                  var event;
-                  if (tda.bootstrapped) {
-                    tda.model.webcallAsync("webappos.bootstrapProject");
-                  } else {
-                    event = new tda.model.ProjectOpenedEvent();
-                    tda.model.submit(event);
-                  }
+                  webappos.webcall("webappos.getAvailableWebCalls").then(function (result) {
+                    webappos.webcalls = result;
+
+                    // TODO: in case no EE
+                    var event;
+                    if (tda.bootstrapped) {
+                      tda.model.webcallAsync("webappos.bootstrapProject");
+                    } else {
+                      event = new tda.model.ProjectOpenedEvent();
+                      tda.model.submit(event);
+                    }
+                    });
+
                 }
                 break;
               case 0xBB:

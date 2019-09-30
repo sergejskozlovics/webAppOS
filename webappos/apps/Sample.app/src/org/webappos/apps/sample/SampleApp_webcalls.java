@@ -16,6 +16,26 @@ public class SampleApp_webcalls {
 	{
 		System.out.println("in sample app bootstrap r="+r+", raapi="+raapi+", project_id="+project_id);
 		
+		/*		if (raapi.findClass("HelloWorld")==0) {
+		// if the class HelloWorld does not exist,
+		// inserting the HelloWorld.ecore metamodel (optional, since the HWMM below will insert the metamodel in any case)
+	
+		try {
+			lv.lumii.tda.kernel.mm.TDAKernelMetamodelFactory KMM=null;			
+			KMM = new lv.lumii.tda.kernel.mm.TDAKernelMetamodelFactory();
+			KMM.setRAAPI(raapi, "", true);
+			
+			lv.lumii.tda.kernel.mm.InsertMetamodelCommand cmd = KMM.createInsertMetamodelCommand();
+			File f = new File(ConfigStatic.APPS_DIR + File.separator+API.dataMemory.getProjectFullAppName(project_id)+File.separator+"HelloWorld.ecore");
+			cmd.setUrl(f.toURI().toURL().toString());
+			cmd.submit();
+
+		}
+		catch(Throwable t) {
+			t.printStackTrace();				
+		}
+	}*/
+
 		lv.lumii.tda.kernel.mm.TDAKernelMetamodelFactory kmmFactory = new lv.lumii.tda.kernel.mm.TDAKernelMetamodelFactory();
 		try {
 			kmmFactory.setRAAPI(raapi, "", true);

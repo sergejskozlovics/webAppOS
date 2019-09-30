@@ -1,0 +1,2 @@
+jsoncall\ ShowMessageFromJSON=clientjs:alertFromJSON
+tdacall\ ShowMessageFromWebMemory=clientjs:alertFromWebMemory
