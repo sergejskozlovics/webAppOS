@@ -2,22 +2,26 @@
 <head>
 <script src="webappos.js"></script>
 </head>
-<body>
+<body class="webappos">
 
 <h1>This is the HelloWorld app</h1>
 
 <script>
 
-function alertFromJSON(json)
+async function helloFromJSON(json)
 {
-console.log(json);
   alert(json.message+" / web memory reference="+json.reference+" (must be undefined)");
+
+  let json2 = await webappos.webcall("AddWorldToHello", json.message);
+//  alert(json2.result+" (must be with 'world')");
+
+  window.webappos.desktop.show_dialog("Adding world", json2.result);
   return {};
 }
 
-function alertFromWebMemory(obj)
+function helloFromWebMemory(obj)
 {
-  alert(obj.message+" / web memory reference="+obj.reference+" (must be some integer)");
+  alert(obj.getMessage()+" / web memory reference="+obj.reference+" (must be some integer)");
 }
 
 webappos.request_scopes("webappos_scopes", "project_id").then(

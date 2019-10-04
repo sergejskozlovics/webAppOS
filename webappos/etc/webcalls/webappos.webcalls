@@ -140,13 +140,12 @@ public\ static\ webappos.getPublishedTemplates(appFullName)=staticjava:org.webap
 static\ webappos.getUserTemplates(appFullName)=staticjava:org.webappos.webcalls.AppsActions_webcalls#getUserTemplates
 
 ##
-# Function: bootstrapProject
-#   Launches the initial web call of the current app
-#   to bootstrap the project, which is being created.
+# Function: initializeProject
+#   Launches the initial web call of the current app.
 #
 #   Returns:
 #     {}
-webappos.bootstrapProject()=staticjava:org.webappos.webcalls.AppsActions_webcalls#bootstrapProject
+webappos.initializeProject()=staticjava:org.webappos.webcalls.AppsActions_webcalls#initializeProject
 
 # Group: File system-related functions
 

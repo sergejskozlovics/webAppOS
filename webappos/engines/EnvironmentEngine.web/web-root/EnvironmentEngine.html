@@ -1833,7 +1833,8 @@
             }
           };
 
-
+          let event = new tda.model.ProjectOpenedEvent();
+          tda.model.submit(event);
         });
       });
 

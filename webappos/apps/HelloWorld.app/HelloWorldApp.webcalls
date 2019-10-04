@@ -1,2 +1,4 @@
-jsoncall\ ShowMessageFromJSON=clientjs:alertFromJSON
-tdacall\ ShowMessageFromWebMemory=clientjs:alertFromWebMemory
+tdacall\ HelloWorldMain=staticjava:org.webappos.apps.helloworld.HelloWorld#initial
+jsoncall\ ShowMessageFromJSON=clientjs:helloFromJSON
+tdacall\ ShowMessageFromWebMemory=clientjs:helloFromWebMemory
+jsoncall\ AddWorldToHello=staticjava:org.webappos.apps.helloworld.HelloWorld#addWorld

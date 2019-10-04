@@ -186,14 +186,7 @@ public class AppsActions_webcalls {
 	}
 
 	
-	public static String bootstrapProject(String project_id, String arg, String login, String fullAppName) {
-		
-		// TODO: arg = created: true|false
-		// bootstrapProject -> initializeProject
-		// if EE:
-		//    if created then call initial_webcall and create projectcreatedevent; else submit projectopenedevent
-		// else
-		//    call initial_webcall
+	public static String initializeProject(String project_id, String arg, String login, String fullAppName) {
 		
 		AppProperties props = API.propertiesManager.getAppPropertiesByFullName(fullAppName);
 		if (props==null)
@@ -216,15 +209,10 @@ public class AppsActions_webcalls {
 			kernel.createLink(rCmd, rSubmitter, kernel.KMM.COMMAND_SUBMITTER);			
 		}
 		
-		// creating ProjectCreatedEvent and launching the initial webcall
-		long rEvent = 0;
-		if (kernel.EEMM.PROJECTCREATEDEVENT!=0)
-			rEvent = kernel.createObject(kernel.EEMM.PROJECTCREATEDEVENT);
-		
 		IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
 		seed.callingConventions = IWebCaller.CallingConventions.TDACALL;
 		seed.actionName = props.initial_webcall;
-		seed.tdaArgument = rEvent;
+		seed.tdaArgument = 0;
 		seed.login = login;
 		seed.project_id = project_id;
 		seed.jsonResult = null;

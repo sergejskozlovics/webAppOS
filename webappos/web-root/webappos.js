@@ -20,6 +20,10 @@ script_label: {
 
     document.write('<script src="' + webappos_script + '"></script>');
     document.write("<link id=\"the_webappos_css\" href=\"" + "/webappos/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
+    document.write("<link id=\"the_webappos_css\" href=\"" + "/webappos/djtheme/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
+    document.write("<link id=\"the_webappos_css\" href=\"" + "/webappos/djtheme/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
+
+  
     console.log(webappos_script + " loaded without dojo; adding the dojo script tag and loading " + webappos_script + " again...");
     break script_label;
     //variant w/o a label: throw new Error(webappos_script+" loaded without dojo; adding the dojo script tag and loading "+webappos_script+" again...");
@@ -1740,7 +1744,7 @@ script_label: {
    * 
    */
 
-  webappos.init_web_memory = function () {
+  webappos.init_web_memory = async function () {
 
     if (!window.tda) {
       try {
@@ -2713,9 +2717,9 @@ script_label: {
       }; // tda.model
 
 
-      tda.model.init = function () {
+      tda.model.init = async function () {
         if (tda.websocket)
-          return; // already initialized
+          return true; // already initialized
 
         var protocol;
         var port = window.location.port;
@@ -2730,403 +2734,408 @@ script_label: {
             port = 80;
         }
 
-        console.log("connecting... " + port + " " + webappos.ws_token);
-        var socket = new WebSocket(protocol + location.hostname + ":" + port + "/ws/");
-        tda.websocket = socket;
-        socket.binaryType = "arraybuffer";
-        socket.onopen = function () {
-          console.log("Connected.");
-          var d = new Date();
-          webappos.connect_started = d.getTime();
-          if (webappos.project_id != null) {
-            if (webappos.js_util.starts_with(webappos.project_id, "apptemplate:") ||
-              webappos.js_util.starts_with(webappos.project_id, "publishedtemplate:") ||
-              webappos.js_util.starts_with(webappos.project_id, "usertemplate:")) {
-              socket.send("FROM_TEMPLATE" + " " + webappos.login + " " + webappos.ws_token + " " + webappos.app_url_name + " " + webappos.project_id.split(" ").join("\\ ") + " " + webappos.login + "/new." + webappos.project_extension);
-              webappos.set_project_id(webappos.login + "/new." + webappos.project_extension); // ???
-            } else {
-              socket.send("OPEN " + webappos.login + " " + webappos.ws_token + " " + webappos.app_url_name + " " + webappos.project_id);
-            }
-          } else {
-            socket.send("NEW" + " " + webappos.login + " " + webappos.ws_token + " " + webappos.app_url_name + " " + webappos.login + "/new." + webappos.project_extension);
-            webappos.set_project_id(webappos.login + "/new." + webappos.project_extension); // ???
-            tda.bootstrapped = true;
-          }
-          var d = new Date();
-          console.log("ws_token sent. " + d.getTime());
-        };
-        socket.onclose = function (event) {
-          if (event.wasClean) {
-            console.log('Closed (OK)');
-            webappos.js_util.show_failure("We closed the connection due to inactivity.<br>Did you enjoy your coffee?");
-          } else {
-            console.log('Closed (halt)');
-            webappos.js_util.show_failure("The server has unexpectedly closed the socket connection.<br>Perhaps, some server-side exception has occured.");
-          }
-          console.log(event.code + ' ' + event.reason);
-        };
-        socket.onmessage = function (event) {
-          var arr;
-          if (typeof event.data === "string") {
-            if (typeof tda.websocket.arr != 'undefined') {
 
-              arr = tda.websocket.arr;
-              tda.websocket.arr = null;
-              delete tda.websocket.arr; // this tda.websocket.arr may be checked/assigned later for some other (inner) action
+        let promise = new Promise((resolve, reject) => {
+
+
+
+
+          console.log("connecting... " + port + " " + webappos.ws_token);
+          var socket = new WebSocket(protocol + location.hostname + ":" + port + "/ws/");
+          tda.websocket = socket;
+          socket.binaryType = "arraybuffer";
+          socket.onopen = function () {
+            console.log("Connected.");
+            var d = new Date();
+            webappos.connect_started = d.getTime();
+            if (webappos.project_id != null) {
+              if (webappos.js_util.starts_with(webappos.project_id, "apptemplate:") ||
+                webappos.js_util.starts_with(webappos.project_id, "publishedtemplate:") ||
+                webappos.js_util.starts_with(webappos.project_id, "usertemplate:")) {
+                socket.send("FROM_TEMPLATE" + " " + webappos.login + " " + webappos.ws_token + " " + webappos.app_url_name + " " + webappos.project_id.split(" ").join("\\ ") + " " + webappos.login + "/new." + webappos.project_extension);
+                webappos.set_project_id(webappos.login + "/new." + webappos.project_extension); // ???
+              } else {
+                socket.send("OPEN " + webappos.login + " " + webappos.ws_token + " " + webappos.app_url_name + " " + webappos.project_id);
+              }
+            } else {
+              socket.send("NEW" + " " + webappos.login + " " + webappos.ws_token + " " + webappos.app_url_name + " " + webappos.login + "/new." + webappos.project_extension);
+              webappos.set_project_id(webappos.login + "/new." + webappos.project_extension); // ???
+              tda.bootstrapped = true;
+            }
+            var d = new Date();
+            console.log("ws_token sent. " + d.getTime());
+          };
+          socket.onclose = function (event) {
+            if (event.wasClean) {
+              console.log('Closed (OK)');
+              webappos.js_util.show_failure("We closed the connection due to inactivity.<br>Did you enjoy your coffee?");
+            } else {
+              console.log('Closed (halt)');
+              webappos.js_util.show_failure("The server has unexpectedly closed the socket connection.<br>Perhaps, some server-side exception has occured.");
+              reject("The server has unexpectedly closed the socket connection.<br>Perhaps, some server-side exception has occured.");
+            }
+            console.log(event.code + ' ' + event.reason);
+          };
+          socket.onmessage = function (event) {
+            var arr;
+            if (typeof event.data === "string") {
+              if (typeof tda.websocket.arr != 'undefined') {
+
+                arr = tda.websocket.arr;
+                tda.websocket.arr = null;
+                delete tda.websocket.arr; // this tda.websocket.arr may be checked/assigned later for some other (inner) action
+
+                switch (arr[0]) {
+                  case 0x01:
+                    tda.model.createClass(tda.model.unsharpenString(event.data), arr[1]);
+                    break;
+                  case 0x03:
+                    tda.model.createAttribute(arr[1], tda.model.unsharpenString(event.data), arr[2], arr[3]);
+                    break;
+                  case 0x04:
+                    var k = event.data.indexOf("/");
+                    if (k >= 0) {
+                      var parts = event.data.split("/");
+                      tda.model.setAttributeValue(arr[1], arr[2], tda.model.unsharpenString(parts[0]), tda.model.unsharpenString(parts[1]));
+                    } else
+                      tda.model.setAttributeValue(arr[1], arr[2], tda.model.unsharpenString(event.data), null);
+                    break;
+                  case 0xA4:
+                    var obj = tda.model[arr[1]];
+                    var rAttr = arr[2];
+                    var attrName = tda.model[arr[2]].attributeName;
+                    var curval = obj[attrName];
+                    var value = tda.model.unsharpenString(event.data);
+                    if (curval != value) {
+                      if (!curval || (curval < value)) {
+                        // sync curval
+
+                        if ((curval == null) || (typeof curval === 'undefined')) {
+                          var arr = new Float64Array(3);
+                          arr[0] = 0xF4;
+                          arr[1] = obj.reference;
+                          arr[2] = rAttr;
+                          tda.websocket.send(arr.buffer);
+                          tda.model.registerChange();
+                        } else {
+                          var arr = new Float64Array(3);
+                          arr[0] = 0x04;
+                          arr[1] = obj.reference;
+                          arr[2] = rAttr;
+                          tda.websocket.send(arr.buffer);
+                          tda.websocket.send(tda.model.sharpenString(curval + "") + "/" + tda.model.sharpenString(value));
+                          tda.model.registerChange();
+                        }
+
+                      } else
+                        tda.model.setAttributeValue(arr[1], arr[2], value, curval);
+                    }
+                    break;
+                  case 0x05:
+                    var parts = event.data.split("/");
+                    tda.model.createAssociation(arr[1], arr[2], tda.model.unsharpenString(parts[0]), tda.model.unsharpenString(parts[1]), arr[3]?true:false, arr[4], arr[5]);
+                    break;
+                  case 0x15:
+                    tda.model.createDirectedAssociation(arr[1], arr[2], tda.model.unsharpenString(event.data), arr[3]?true:false, arr[4]);
+                    break;
+                  case 0xC1:
+                    var callback = tda.websocket.jsonsubmitCallbacks[arr[1]];
+                    if (callback) {
+                      var json = null;
+                      try {
+                        if (event.data)
+                          json = JSON.parse(tda.model.unsharpenString(event.data));
+                      } catch (t) {
+                        console.log("Error during tda.model.webcallAsync result parse: " + t);
+                      }
+                      try {
+                        callback(json);
+                      } catch (t) {
+                        console.log("Error during tda.model.webcallAsync callback: " + t);
+                      }
+                      delete tda.websocket.jsonsubmitCallbacks[arr[1]];
+                    }
+                    break;
+                  case 0xC0:
+                    var aa = event.data.split("/"); // action/argument
+                    if (aa.length == 1) {
+                      webappos.client_webcall_tdacall(tda.model.unsharpenString(aa[0]), tda.model[arr[1]]);
+                    } else {
+                      var id = arr[1];
+                      webappos.client_webcall_jsoncall(tda.model.unsharpenString(aa[0]), tda.model.unsharpenString(aa[1])).then(function (result) {
+                        if (id>0) {
+                          var arr2 = new Float64Array(2);
+                          arr2[0] = 0xC1;
+                          arr2[1] = id;
+                          tda.websocket.send(arr2.buffer);
+                          tda.websocket.send(tda.model.sharpenString(JSON.stringify(result)));
+                        }
+                      });
+                    }
+                    break;
+                  case 0xFC:
+                    webappos.set_project_id(tda.model.unsharpenString(event.data));
+                    break;
+                    // TODO: 0x25
+                  case 0xEE:
+                    var i = 1;
+                    var d = new Date();
+                    var newEvent = {};
+                    var strArr = event.data.split("`");
+                    var j = 0;
+                    while (i < arr.length) {
+                      switch (arr[i]) {
+                        case 0xF2:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 2);
+                          tda.websocket.onmessage(newEvent);
+                          i += 2;
+                          break;
+                        case 0x01:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 2);
+                          tda.websocket.onmessage(newEvent);
+                          i += 2;
+                          newEvent.data = strArr[j];
+                          tda.websocket.onmessage(newEvent);
+                          j++;
+                          break;
+                        case 0x03:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 4);
+                          tda.websocket.onmessage(newEvent);
+                          i += 4;
+                          newEvent.data = strArr[j];
+                          tda.websocket.onmessage(newEvent);
+                          j++;
+                          break;
+                        case 0x04:
+                        case 0xA4:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 3);
+                          tda.websocket.onmessage(newEvent);
+                          i += 3;
+                          newEvent.data = strArr[j];
+                          tda.websocket.onmessage(newEvent);
+                          j++;
+                          break;
+                        case 0x05:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 6);
+                          tda.websocket.onmessage(newEvent);
+                          i += 6;
+                          newEvent.data = strArr[j];
+                          tda.websocket.onmessage(newEvent);
+                          j++;
+                          break;
+                        case 0x15:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 5);
+                          tda.websocket.onmessage(newEvent);
+                          i += 5;
+                          newEvent.data = strArr[j];
+                          tda.websocket.onmessage(newEvent);
+                          j++;
+                          break;
+                          // TODO: 0x25
+                        case 0xF1:
+                        case 0xF3:
+                        case 0xF5:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 2);
+                          tda.websocket.onmessage(newEvent);
+                          i += 2;
+                          break;
+                        case 0xFF:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 4);
+                          tda.websocket.onmessage(newEvent);
+                          i += 4;
+                          break;
+                        case 0x11:
+                        case 0xE1:
+                        case 0xF4:
+                        case 0x02:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 3);
+                          tda.websocket.onmessage(newEvent);
+                          i += 3;
+                          break;
+                        case 0x06:
+                        case 0xF6:
+                        case 0xE6:
+                        case 0xA6:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 4);
+                          tda.websocket.onmessage(newEvent);
+                          i += 4;
+                          break;
+                        case 0x16:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 5);
+                          tda.websocket.onmessage(newEvent);
+                          i += 5;
+                          break;
+                          // TODO: 0x12 0xE2 0x22
+                        case 0xFC:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 1);
+                          tda.websocket.onmessage(newEvent);
+                          i += 1;
+                          newEvent.data = strArr[j];
+                          tda.websocket.onmessage(newEvent);
+                          j++;
+                          break;
+                        case 0xC0:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 2);
+                          tda.websocket.onmessage(newEvent);
+                          i += 2;
+                          newEvent.data = strArr[j];
+                          tda.websocket.onmessage(newEvent);
+                          j++;
+                          break;
+                        case 0xC1:
+                          newEvent.data = webappos.js_util.slice(arr, i, i + 2);
+                          tda.websocket.onmessage(newEvent);
+                          i += 2;
+                          newEvent.data = strArr[j];
+                          tda.websocket.onmessage(newEvent);
+                          j++;
+                          break;
+                        default:
+                          console.log("ERROR in processing bulk actions, i=" + i);
+                          for (var i = 0; i < arr.length; i++)
+                            console.log("  arr[" + i + "]=" + arr[i]);
+                      }
+                    }
+                    var d2 = new Date();
+                    //			console.log("bulk string (and data) processed "+d2.getTime());
+                    break;
+                }
+                delete tda.websocket.arr;
+              } else {
+                /*        var d = new Date();
+                
+                
+                        console.log("socket strdata len: " + event.data.length+" "+d.getTime());
+                        if (event.data.length<100) {
+                          console.log("socket strdata: "+event.data);
+                        }*/
+              }
+            } else
+            if ((event.data instanceof ArrayBuffer) || (event.data instanceof Float64Array) || webappos.js_util.is_array(event.data)) {
+              if (event.data instanceof ArrayBuffer)
+                arr = new Float64Array(event.data);
+              else
+                arr = event.data;
 
               switch (arr[0]) {
                 case 0x01:
-                  tda.model.createClass(tda.model.unsharpenString(event.data), arr[1]);
-                  break;
                 case 0x03:
-                  tda.model.createAttribute(arr[1], tda.model.unsharpenString(event.data), arr[2], arr[3]);
-                  break;
                 case 0x04:
-                  var k = event.data.indexOf("/");
-                  if (k >= 0) {
-                    var parts = event.data.split("/");
-                    tda.model.setAttributeValue(arr[1], arr[2], tda.model.unsharpenString(parts[0]), tda.model.unsharpenString(parts[1]));
-                  } else
-                    tda.model.setAttributeValue(arr[1], arr[2], tda.model.unsharpenString(event.data), null);
-                  break;
                 case 0xA4:
-                  var obj = tda.model[arr[1]];
-                  var rAttr = arr[2];
-                  var attrName = tda.model[arr[2]].attributeName;
-                  var curval = obj[attrName];
-                  var value = tda.model.unsharpenString(event.data);
-                  if (curval != value) {
-                    if (!curval || (curval < value)) {
-                      // sync curval
-
-                      if ((curval == null) || (typeof curval === 'undefined')) {
-                        var arr = new Float64Array(3);
-                        arr[0] = 0xF4;
-                        arr[1] = this.reference;
-                        arr[2] = rAttr;
-                        tda.websocket.send(arr.buffer);
-                        tda.model.registerChange();
-                      } else {
-                        var arr = new Float64Array(3);
-                        arr[0] = 0x04;
-                        arr[1] = this.reference;
-                        arr[2] = rAttr;
-                        tda.websocket.send(arr.buffer);
-                        tda.websocket.send(tda.model.sharpenString(curval + "") + "/" + tda.model.sharpenString(value));
-                        tda.model.registerChange();
-                      }
-
-                    } else
-                      tda.model.setAttributeValue(arr[1], arr[2], value, curval);
-                  }
-                  break;
                 case 0x05:
-                  var parts = event.data.split("/");
-                  tda.model.createAssociation(arr[1], arr[2], tda.model.unsharpenString(parts[0]), tda.model.unsharpenString(parts[1]), arr[3]?true:false, arr[4], arr[5]);
-                  break;
                 case 0x15:
-                  tda.model.createDirectedAssociation(arr[1], arr[2], tda.model.unsharpenString(event.data), arr[3]?true:false, arr[4]);
-                  break;
+                case 0x25:
                 case 0xC1:
-                  var callback = tda.websocket.jsonsubmitCallbacks[arr[1]];
-                  if (callback) {
-                    var json = null;
-                    try {
-                      if (event.data)
-                        json = JSON.parse(tda.model.unsharpenString(event.data));
-                    } catch (t) {
-                      console.log("Error during tda.model.webcallAsync result parse: " + t);
-                    }
-                    try {
-                      callback(json);
-                    } catch (t) {
-                      console.log("Error during tda.model.webcallAsync callback: " + t);
-                    }
-                    delete tda.websocket.jsonsubmitCallbacks[arr[1]];
-                  }
-                  break;
-                case 0xC0:
-                  var aa = event.data.split("/"); // action/argument
-                  if (aa.length == 1) {
-                    webappos.client_webcall_tdacall(tda.model.unsharpenString(aa[0]), tda.model[arr[1]]);
-                  } else {
-                    var id = arr[1];
-                    webappos.client_webcall_jsoncall(tda.model.unsharpenString(aa[0]), tda.model.unsharpenString(aa[1])).then(function (result) {
-                      if (id>0) {
-                        var arr2 = new Float64Array(2);
-                        arr2[0] = 0xC1;
-                        arr2[1] = id;
-                        tda.websocket.send(arr2.buffer);
-                        tda.websocket.send(tda.model.sharpenString(JSON.stringify(result)));
-                      }
-                    });
-                  }
-                  break;
                 case 0xFC:
-                  webappos.set_project_id(tda.model.unsharpenString(event.data));
+                case 0xC0:
+                  // for string-containing ops, save the arr, and process the op on string message
+                  tda.websocket.arr = arr;
                   break;
-                  // TODO: 0x25
                 case 0xEE:
-                  var i = 1;
                   var d = new Date();
-                  var newEvent = {};
-                  var strArr = event.data.split("`");
-                  var j = 0;
-                  while (i < arr.length) {
-                    switch (arr[i]) {
-                      case 0xF2:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 2);
-                        tda.websocket.onmessage(newEvent);
-                        i += 2;
-                        break;
-                      case 0x01:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 2);
-                        tda.websocket.onmessage(newEvent);
-                        i += 2;
-                        newEvent.data = strArr[j];
-                        tda.websocket.onmessage(newEvent);
-                        j++;
-                        break;
-                      case 0x03:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 4);
-                        tda.websocket.onmessage(newEvent);
-                        i += 4;
-                        newEvent.data = strArr[j];
-                        tda.websocket.onmessage(newEvent);
-                        j++;
-                        break;
-                      case 0x04:
-                      case 0xA4:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 3);
-                        tda.websocket.onmessage(newEvent);
-                        i += 3;
-                        newEvent.data = strArr[j];
-                        tda.websocket.onmessage(newEvent);
-                        j++;
-                        break;
-                      case 0x05:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 6);
-                        tda.websocket.onmessage(newEvent);
-                        i += 6;
-                        newEvent.data = strArr[j];
-                        tda.websocket.onmessage(newEvent);
-                        j++;
-                        break;
-                      case 0x15:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 5);
-                        tda.websocket.onmessage(newEvent);
-                        i += 5;
-                        newEvent.data = strArr[j];
-                        tda.websocket.onmessage(newEvent);
-                        j++;
-                        break;
-                        // TODO: 0x25
-                      case 0xF1:
-                      case 0xF3:
-                      case 0xF5:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 2);
-                        tda.websocket.onmessage(newEvent);
-                        i += 2;
-                        break;
-                      case 0xFF:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 4);
-                        tda.websocket.onmessage(newEvent);
-                        i += 4;
-                        break;
-                      case 0x11:
-                      case 0xE1:
-                      case 0xF4:
-                      case 0x02:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 3);
-                        tda.websocket.onmessage(newEvent);
-                        i += 3;
-                        break;
-                      case 0x06:
-                      case 0xF6:
-                      case 0xE6:
-                      case 0xA6:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 4);
-                        tda.websocket.onmessage(newEvent);
-                        i += 4;
-                        break;
-                      case 0x16:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 5);
-                        tda.websocket.onmessage(newEvent);
-                        i += 5;
-                        break;
-                        // TODO: 0x12 0xE2 0x22
-                      case 0xFC:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 1);
-                        tda.websocket.onmessage(newEvent);
-                        i += 1;
-                        newEvent.data = strArr[j];
-                        tda.websocket.onmessage(newEvent);
-                        j++;
-                        break;
-                      case 0xC0:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 2);
-                        tda.websocket.onmessage(newEvent);
-                        i += 2;
-                        newEvent.data = strArr[j];
-                        tda.websocket.onmessage(newEvent);
-                        j++;
-                        break;
-                      case 0xC1:
-                        newEvent.data = webappos.js_util.slice(arr, i, i + 2);
-                        tda.websocket.onmessage(newEvent);
-                        i += 2;
-                        newEvent.data = strArr[j];
-                        tda.websocket.onmessage(newEvent);
-                        j++;
-                        break;
-                      default:
-                        console.log("ERROR in processing bulk actions, i=" + i);
-                        for (var i = 0; i < arr.length; i++)
-                          console.log("  arr[" + i + "]=" + arr[i]);
-                    }
-                  }
-                  var d2 = new Date();
-                  //			console.log("bulk string (and data) processed "+d2.getTime());
+                  tda.websocket.arr = arr;
                   break;
-              }
-              delete tda.websocket.arr;
-            } else {
-              /*        var d = new Date();
-              
-              
-                      console.log("socket strdata len: " + event.data.length+" "+d.getTime());
-                      if (event.data.length<100) {
-                        console.log("socket strdata: "+event.data);
-                      }*/
-            }
-          } else
-          if ((event.data instanceof ArrayBuffer) || (event.data instanceof Float64Array) || webappos.js_util.is_array(event.data)) {
-            if (event.data instanceof ArrayBuffer)
-              arr = new Float64Array(event.data);
-            else
-              arr = event.data;
+                case 0xF1:
+                  tda.model.deleteClass(arr[1]);
+                  break;
+                case 0x11:
+                  tda.model.createGeneralization(arr[1], arr[2]);
+                  break;
+                case 0xE1:
+                  tda.model.deleteGeneralization(arr[1], arr[2]);
+                  break;
+                case 0x02:
+                  tda.model.createObject(arr[1], arr[2]);
+                  break;
+                case 0xF2:
+                  tda.model.deleteObject(arr[1]);
+                  break;
+                  // TODO: 0x12 0xE2 0x22
+                case 0xF3:
+                  tda.model.deleteAttribute(arr[1]);
+                  break;
+                case 0xF4:
+                  tda.model.deleteAttributeValue(arr[1], arr[2]);
+                  break;
+                case 0xF5:
+                  tda.model.deleteAssociation(arr[1]);
+                  break;
+                case 0x06:
+                  tda.model.createLink(arr[1], arr[2], arr[3]);
+                  break;
+                case 0x16:
+                  tda.model.createOrderedLink(arr[1], arr[2], arr[3], arr[4]);
+                  break;
+                case 0xA6:
+                  // validate that link exists...
+                  if (tda.model.linkExists(arr[1], arr[2], arr[3])) {} // ok
+                  else {
+                    // the link does not exist; 
+                    // we force to delete the link at the server-side
+                    var arr2 = new Float64Array(4);
+                    arr2[0] = 0xF6;
+                    arr2[1] = arr[1];
+                    arr2[2] = arr[2];
+                    arr2[3] = arr[3];
+                    tda.websocket.send(arr2.buffer);
+                    tda.model.registerChange();
+                  };
+                  break;
+                case 0xF6:
+                  tda.model.deleteLink(arr[1], arr[2], arr[3]);
+                  break;
+                case 0xFF:
+                  tda.model.checkReference(arr[1]);
+                  tda.model.predefinedBitsCount = arr[2];
+                  tda.model.predefinedBitsValues = arr[3];
+                  if (tda.standalone) {
+                    console.log("standalone sync done!");
+                    tda.synced = true;
+                    console.log("tda.ee=" + tda.ee);
+                  } else {
+                    console.log("web sync done!");
+                    // issuing a command...
 
-            switch (arr[0]) {
-              case 0x01:
-              case 0x03:
-              case 0x04:
-              case 0xA4:
-              case 0x05:
-              case 0x15:
-              case 0x25:
-              case 0xC1:
-              case 0xFC:
-              case 0xC0:
-                // for string-containing ops, save the arr, and process the op on string message
-                tda.websocket.arr = arr;
-                break;
-              case 0xEE:
-                var d = new Date();
-                tda.websocket.arr = arr;
-                break;
-              case 0xF1:
-                tda.model.deleteClass(arr[1]);
-                break;
-              case 0x11:
-                tda.model.createGeneralization(arr[1], arr[2]);
-                break;
-              case 0xE1:
-                tda.model.deleteGeneralization(arr[1], arr[2]);
-                break;
-              case 0x02:
-                tda.model.createObject(arr[1], arr[2]);
-                break;
-              case 0xF2:
-                tda.model.deleteObject(arr[1]);
-                break;
-                // TODO: 0x12 0xE2 0x22
-              case 0xF3:
-                tda.model.deleteAttribute(arr[1]);
-                break;
-              case 0xF4:
-                tda.model.deleteAttributeValue(arr[1], arr[2]);
-                break;
-              case 0xF5:
-                tda.model.deleteAssociation(arr[1]);
-                break;
-              case 0x06:
-                tda.model.createLink(arr[1], arr[2], arr[3]);
-                break;
-              case 0x16:
-                tda.model.createOrderedLink(arr[1], arr[2], arr[3], arr[4]);
-                break;
-              case 0xA6:
-                // validate that link exists...
-                if (tda.model.linkExists(arr[1], arr[2], arr[3])) {} // ok
-                else {
-                  // the link does not exist; 
-                  // we force to delete the link at the server-side
-                  var arr = new Float64Array(4);
-                  arr[0] = 0xF6;
-                  arr[1] = this.reference;
-                  arr[2] = obj2.reference;
-                  arr[3] = rAssoc;
-                  tda.websocket.send(arr.buffer);
-                  tda.model.registerChange();
-                };
-                break;
-              case 0xF6:
-                tda.model.deleteLink(arr[1], arr[2], arr[3]);
-                break;
-              case 0xFF:
-                tda.model.checkReference(arr[1]);
-                tda.model.predefinedBitsCount = arr[2];
-                tda.model.predefinedBitsValues = arr[3];
-                if (tda.standalone) {
-                  console.log("standalone sync done!");
-                  tda.synced = true;
-                  console.log("tda.ee=" + tda.ee);
-                } else {
-                  console.log("web sync done!");
-                  // issuing a command...
+                    tda.synced = true;
+                    var d = new Date();
+                    webappos.connect_finished = d.getTime();
+                    console.log("Initial sync done in "+(webappos.connect_finished-webappos.connect_started)+" ms");
 
-                  var d = new Date();
-                  webappos.connect_finished = d.getTime();
-                  console.log("Initial sync done in "+(webappos.connect_finished-webappos.connect_started)+" ms");
+                    webappos.webcall("webappos.getAvailableWebCalls").then(function (result) {
+                      webappos.webcalls = result;
 
-                  webappos.webcall("webappos.getAvailableWebCalls").then(function (result) {
-                    webappos.webcalls = result;
-
-                    // TODO: in case no EE
-                    var event;
-                    if (tda.bootstrapped) {
-                      tda.model.webcallAsync("webappos.bootstrapProject");
-                    } else {
-                      event = new tda.model.ProjectOpenedEvent();
-                      tda.model.submit(event);
-                    }
+                      tda.model.webcall("webappos.initializeProject", {bootstrapped: tda.bootstrapped}).then(()=>resolve(true));
                     });
 
-                }
-                break;
-              case 0xBB:
-                tda.model.registerChange(); // start new saveBall
-                break;
-              case 0xFE:
-                localStorage.removeItem("login");
-                localStorage.removeItem("ws_token");
-                var redirect = window.location.href;
-                window.location.href = "/apps/login?signout=true&redirect=" + redirect;
-                break;
-              default:
-                console.log("bindata(" + arr[0] + "): " + event.data);
+                  }
+                  break;
+                case 0xBB:
+                  tda.model.registerChange(); // start new saveBall
+                  break;
+                case 0xFE:
+                  localStorage.removeItem("login");
+                  localStorage.removeItem("ws_token");
+                  var redirect = window.location.href;
+                  window.location.href = "/apps/login?signout=true&redirect=" + redirect;
+                  break;
+                default:
+                  console.log("bindata(" + arr[0] + "): " + event.data);
+              }
+            } else {
+              webappos.js_util.print_stack_trace();
+              console.log("wrong arr type!", typeof event.data, JSON.stringify(event.data));
+              throw "wrong arr type!";
             }
-          } else {
-            webappos.js_util.print_stack_trace();
-            console.log("wrong arr type!", typeof event.data, JSON.stringify(event.data));
-            throw "wrong arr type!";
-          }
-        };
-        socket.onerror = function (error) {
-          console.log("error: " + JSON.stringify(error));
-        };
-        console.log("connecting socket done.");
-      };
+          };
+          socket.onerror = function (error) {
+            console.log("error: " + JSON.stringify(error));
+          };
+          console.log("connecting socket done.");
+
+        });
+
+        return promise;
+      }; // tda.model.init
 
       tda.model.disassemble_object = function (obj) {
         if (null == obj || "object" != typeof obj) return obj;
@@ -3187,7 +3196,7 @@ script_label: {
     }; // if (!window.tda)
 
     // launching...
-    tda.model.init();
+    return await tda.model.init();
 
   }; // init_web_memory
 

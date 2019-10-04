@@ -136,7 +136,7 @@ define(function(){
         if (webappos.app_icon_url)
           contentURI = "<img height='100' width='auto' src='"+webappos.app_icon_url+"'></img>"+contentURI;
   
-        var INIT_CODE = "document.body.removeChild(document.getElementById('"+newDiv.id+"'));webappos.init_web_memory();let f=window.resolve_project_id; delete window.resolve_project_id; f();";
+        var INIT_CODE = "document.body.removeChild(document.getElementById('"+newDiv.id+"'));webappos.init_web_memory().then( function(ok) {let f=window.resolve_project_id; delete window.resolve_project_id; if(ok) f();} );";
 
         if (!window.webappos.webcall_and_wait("webappos.appRequiresTemplate", webappos.app_full_name).result) {
               contentURI+="<div style='border-bottom:1px dotted #888;'>New</div>";

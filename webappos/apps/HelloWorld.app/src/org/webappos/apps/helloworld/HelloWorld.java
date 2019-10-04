@@ -1,7 +1,5 @@
 package org.webappos.apps.helloworld;
 
-import java.util.Date;
-
 import org.webappos.apps.helloworld.mm.HelloWorldMetamodelFactory;
 import org.webappos.server.API;
 import org.webappos.webcaller.IWebCaller;
@@ -21,10 +19,10 @@ public class HelloWorld {
 			org.webappos.apps.helloworld.mm.HelloWorld objectWithMessage = org.webappos.apps.helloworld.mm.HelloWorld.firstObject(HWMM);
 			if (objectWithMessage==null) {
 				objectWithMessage = HWMM.createHelloWorld();
-				objectWithMessage.setMessage("An instance of the HelloWorld class has been just created in the web memory.");
+				objectWithMessage.setMessage("Hello for the first time!");
 			}
 			else
-				objectWithMessage.setMessage("An existing instance of the HelloWorld class found in the web memory. Current server date/time is "+new Date()+".");
+				objectWithMessage.setMessage("Hello again!");
 			
 			WebCallSeed seed = new WebCallSeed();
 			seed.actionName = "ShowMessageFromJSON";
@@ -41,9 +39,22 @@ public class HelloWorld {
 			API.webCaller.enqueue(seed2);
 
 		} catch (Throwable e) {
-			e.printStackTrace();
+			WebCallSeed seed = new WebCallSeed();
+			seed.actionName = "ShowMessageFromJSON";
+			seed.project_id = project_id;
+			seed.jsonArgument = "{\"message\":\"An exception occurred - "+e.getMessage()+"\"}";
+			seed.callingConventions = IWebCaller.CallingConventions.JSONCALL;
+			API.webCaller.enqueue(seed);
 		}
 
+	}
+
+	public static String addWorld(String s)
+	{
+		if (s==null)
+			return "{\"error\":\"Null string passed.\"}";
+		else
+			return "{\"result\":\""+s.replace("Hello", "Hello, world, ")+"\"}";
 	}
 
 }
