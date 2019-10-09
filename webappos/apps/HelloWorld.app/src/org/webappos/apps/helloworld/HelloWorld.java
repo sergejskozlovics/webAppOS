@@ -16,7 +16,9 @@ public class HelloWorld {
 			HelloWorldMetamodelFactory HWMM = new HelloWorldMetamodelFactory();
 			HWMM.setRAAPI(raapi, "", true);
 			
-			org.webappos.apps.helloworld.mm.HelloWorld objectWithMessage = org.webappos.apps.helloworld.mm.HelloWorld.firstObject(HWMM);
+			org.webappos.apps.helloworld.mm.HelloWorld objectWithMessage
+				= org.webappos.apps.helloworld.mm.HelloWorld.firstObject(HWMM);
+			
 			if (objectWithMessage==null) {
 				objectWithMessage = HWMM.createHelloWorld();
 				objectWithMessage.setMessage("Hello for the first time!");
@@ -54,7 +56,7 @@ public class HelloWorld {
 		if (s==null)
 			return "{\"error\":\"Null string passed.\"}";
 		else
-			return "{\"result\":\""+s.replace("Hello", "Hello, world, ")+"\"}";
+			return "{\"result\":\""+s.replace("Hello", "Hello, world,")+"\"}";
 	}
 
 }

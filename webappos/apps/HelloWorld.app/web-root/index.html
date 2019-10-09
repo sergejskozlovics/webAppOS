@@ -13,10 +13,9 @@ async function helloFromJSON(json)
   alert(json.message+" / web memory reference="+json.reference+" (must be undefined)");
 
   let json2 = await webappos.webcall("AddWorldToHello", json.message);
-//  alert(json2.result+" (must be with 'world')");
 
   window.webappos.desktop.show_dialog("Adding world", json2.result);
-  return {};
+  return {}; // jsoncall calling conventions require to return a JSON
 }
 
 function helloFromWebMemory(obj)

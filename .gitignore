@@ -1,0 +1,18 @@
+.gradle
+/build
+/eclipse-workspace
+/webappos/apps/Sample.app/bin
+/webappos/apps/fileupload.service/bin
+/webappos/apps/login.service/bin
+/webappos/apps/webcalls.service/bin
+/webappos/apps/webdav.service/bin
+/webappos/apps/filedownload.service/bin
+/webappos/apps/FileBrowser.service/bin
+/webappos/engines/GraphDiagramEngine.web/bin
+/webappos/etc/acme
+/webappos/etc/registry
+/webappos/apps/login.service/service.properties
+/webappos/etc/webappos.properties
+/webappos/sys/bin
+/doc.src/.deploy.winscp
+/doc.src/ndocs/Working Data
