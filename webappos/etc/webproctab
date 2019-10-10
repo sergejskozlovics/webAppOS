@@ -1,27 +1,11 @@
-#[proc-type=adapter-name] [adapter-specific address/location] [options or none] [instances/cores] [name] [reconnect ms]
-#use TAB or space as delimiter
-#local will be launched (and re-launched on fail) automatically, remote - not
+# Web Processor Table (webproctab)
+# format:
+# [proc-type=adapter-name] [adapter-specific address/location] [options or none] [#instances/cores] ["user-friendly name"] [#milliseconds before reconnect]
+# use TAB or space as delimiter
+
 localjava org.webappos.webproc.DefaultWebProcessor load=lua 2 "Default server-side web processor" 1000
-# localnode path/to/node 1	"Node web processor" 0
-# remote rmi:1.2.3.4:123 1 "Some remote"   5
-
-#client client_default_webproc.js 1[always] "Default client-side web processor (JS event loop)" n/a
-#         ^^^ can offer JS, WebAssembly, Flash, Java applet... instruction sets
-
-#client client_webworker_webproc.js 10 "Client-side web worker" 1000
-#         ^^^ can offer algorithmic JS, Java applet...
-
-# ^^^ in web-root/webproctab (default JS event loop is always present)
-
-
-# In Task Manager app
-
-# List of web processors:                                                    owned by
-# server-side "Default server-side web processor (1)"             available  project_id, user
-# server-side "Default server-side web processor (2)"             available  free
-# server-side-remote "Some remote web processor (1)"              disconnected  n/a
-# client-side "Default client-side web processor (JS event loop)" available  project_id, user
-
-# used by HTML JS code:
-# webcall: getActiveServerSideWebProcessors (including remote)
-# webcall: getActiveClientSideWebProcessors
+# web processors managed by the localjava adapter
+# will be launched and re-launched on fail automatically;
+# the option load=lua will instruct the web processor to
+# initialize lua web calls adapter in advance, before any
+# lua web call

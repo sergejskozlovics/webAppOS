@@ -11,14 +11,16 @@ http_auth_required=false
 # =================================
 
 # signup_policy is one of the following:
-# * deny - signup not allowed (the admin has to add users manually)
-# * manual - signup is allowed, but the admin has to approve the user manually
-# * email - signup is allowed, but the e-mail has to be approved by sending a secret link to the user
-# * allow - signup is always allowed
-# * jsonsubmit:functionName - signup is allowed, but the given function
-#   will hadle the signup request; the function "converts" the signup request to
-#   one of the previous 4 values "deny"|"manual"|"email"|"allow"
-signup_policy=email
+# * deny - signup not allowed (the admin has to add users manually via the registry)
+# * manual - signup is allowed, but the admin has to approve the user manually (via "webappos approveuser")
+# * email - signup is allowed, but the e-mail has to be verified by sending a secret link to the user
+# * email+manual - signup is allowed, but the e-mail address has to be verified AND then the admin has to approve (unblock) the user manually
+# * allow - signup is always allowed (not recommended)
+# * webcall:actionName - signup is allowed, but the given web call action
+#   (implemented according to the jsoncall calling conventions)
+#   must handle the signup request; the action must "convert" the signup request to
+#   one of the previous values: "deny"|"manual"|"email"|"email+manual"|"allow"
+signup_policy=deny
 
 # password expire time in days (1100 years by default)
 password_expire_days=401500

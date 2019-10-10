@@ -13,14 +13,12 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.SecureRandom;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import javax.servlet.ServletException;
@@ -38,6 +36,7 @@ import org.webappos.antiattack.ValidityChecker;
 import org.webappos.auth.UsersManager;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
+import org.webappos.util.RandomToken;
 import org.webappos.util.UTCDate;
 import org.webappos.webcaller.WebCaller;
 
@@ -155,9 +154,13 @@ public class LoginServlet extends HttpServlet
 				throw new RuntimeException("Token expired "+el.toString());
 			
 			API.registry.setValue("xusers/"+login+"/tokens/emailed/"+path2, null);
-			API.registry.setValue("xusers/"+login+"/verified", true);
+			API.registry.setValue("xusers/"+login+"/email_verified", true);
 			
-			response.sendRedirect("/apps/login/signup_ok.html");
+			el = API.registry.getValue("xusers/"+login+"/blocked");
+			if ((el==null) || (el.getAsBoolean()==false))
+				response.sendRedirect("/apps/login/signup_ok.html");
+			else
+				response.sendRedirect("/apps/login/signup_processing.html");
 		}
 		catch(Throwable t) {
 			logger.error(t.getMessage());
@@ -305,15 +308,15 @@ public class LoginServlet extends HttpServlet
 				return;
 			}
 			
-			JsonElement verified = API.registry.getValue("xusers/"+login+"/verified");
-			if ((verified==null) || (!verified.toString().equals("true")))
-				throw new RuntimeException("User not verified");
+			JsonElement email_verified = API.registry.getValue("xusers/"+login+"/email_verified");
+			if ((email_verified!=null) && (!email_verified.getAsBoolean()))
+				throw new RuntimeException("User's e-mail not verified yet");
 			
 			JsonElement blocked = API.registry.getValue("xusers/"+login+"/blocked");
 			if ((blocked!=null) && (blocked.toString().equals("true")))
 				throw new RuntimeException("User is blocked");
 
-			String token = UUID.randomUUID().toString();
+			String token = RandomToken.generateRandomToken();
 			Calendar c = Calendar.getInstance();
 			c.setTime(new Date());
 			if (remember)
@@ -395,13 +398,6 @@ public class LoginServlet extends HttpServlet
     	}		
 	}
 	
-	private String generateSalt() {
-        SecureRandom random = new SecureRandom();
-        byte bytes[] = new byte[20];
-        random.nextBytes(bytes);
-        return org.apache.commons.codec.binary.Base64.encodeBase64String(bytes);
-    }
-	
 	private void signup(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		try {
 			if (!signup_allowed){
@@ -431,7 +427,7 @@ public class LoginServlet extends HttpServlet
 			JsonObject user_tokens = new JsonObject();
 			xuser.add("tokens", user_tokens);
 			
-			String salt = generateSalt();
+			String salt = RandomToken.generateSalt();
 			
 			xuser.addProperty("salt", salt);
 			
@@ -498,7 +494,7 @@ public class LoginServlet extends HttpServlet
 		    	
 		    	JsonElement el = API.registry.getValue("xusers/"+email);
 		    	if (el instanceof JsonObject) {
-		    		JsonElement el1 = ((JsonObject)el).get("verified");
+		    		JsonElement el1 = ((JsonObject)el).get("email_verified");
 		    		if ((el1!=null)&&(el1.getAsBoolean()))
 		    			throw new RuntimeException("E-mail already registered");
 		    		JsonElement el2 = ((JsonObject)el).get("last_email_time");
@@ -515,10 +511,10 @@ public class LoginServlet extends HttpServlet
 		    xuser.addProperty("last_email_time", UTCDate.stringify(new Date()));
 		       			
 			
-			if (signup_policy.startsWith("jsoncall:")) {
+			if (signup_policy.startsWith("webcall:")) {
 				// TODO: async servlet response...
 				
-				String action = signup_policy.substring("jsoncall:".length());
+				String action = signup_policy.substring("webcall:".length());
 				
 				String result = null;
 				
@@ -534,9 +530,9 @@ public class LoginServlet extends HttpServlet
 					catch(Throwable t) {
 						result = "{\"error\":\"Could not launch verification function\"}";
 					}
-    				//jsonsubmit function must return something like this:
+    				//the web call must return something like this:
     				//	{
-    				//    result: "deny"|"manual"|"email"|"allow",
+    				//    result: "deny"|"manual"|"email"|"email+manual"|"allow",
     				//    error: "Password too short"
     				//  }
 				}
@@ -553,7 +549,7 @@ public class LoginServlet extends HttpServlet
 				catch(Throwable t) {    					
 				}
 				
-				if (!"manual".equals(signup_policy) && !"email".equals(signup_policy) && !"allow".equals(signup_policy)) {
+				if (!"manual".equals(signup_policy) && !"email".equals(signup_policy) && !"email+manual".equals(signup_policy) && !"allow".equals(signup_policy)) {
 					signup_policy = "deny";
 					if (error!=null)
 						throw new RuntimeException(error);
@@ -575,7 +571,7 @@ public class LoginServlet extends HttpServlet
 			xuser.addProperty("_id", login);
 			user.addProperty("_id", login);
 				
-   			if (signup_policy.equals("email")) {
+   			if (signup_policy.startsWith("email")) { // "email" | "email+manual"
 				if (email==null)
 					throw new RuntimeException("E-mail not specified for validation");
 
@@ -583,9 +579,14 @@ public class LoginServlet extends HttpServlet
 				Calendar c = Calendar.getInstance();
 				c.setTime(new Date());
 				c.add(Calendar.DATE, 1); // e-mail verification valid for 1 day					
-				String token = UUID.randomUUID().toString();
+				String token = RandomToken.generateRandomToken();
 				emailedToken.addProperty(token, UTCDate.stringify(c.getTime()));
-				user_tokens.add("emailed", emailedToken);
+				user_tokens.add("emailed", emailedToken);				
+				xuser.addProperty("email_verified", false); // require to set email_verified=true explicitly after the email validation
+				
+				if (!"email".equals(signup_policy)) { // "email+manual"
+					xuser.addProperty("blocked", true); // require to set blocked=false manually (e.g., via "webappos approveuser")
+				}
 				
     			API.registry.setValue("xusers/"+login, xuser);
     			API.registry.setValue("users/"+login, user);
@@ -612,7 +613,6 @@ public class LoginServlet extends HttpServlet
 			}
 			    			    			
 			if (signup_policy.equals("allow")) {
-				xuser.addProperty("verified", true);
     			API.registry.setValue("xusers/"+login, xuser);
     			API.registry.setValue("users/"+login, user);
 				response.sendRedirect("/apps/login/signup_ok.html");
@@ -620,13 +620,17 @@ public class LoginServlet extends HttpServlet
 			}
 			
 			if (signup_policy.equals("deny")) {
-				// don't save the user in the registry
+				// we won't save the xuser and user;
+				
+				// "deny" must have been checked on top of the function: if (!signup_allowed) ...
+				// however, the webcall could also return "deny", thus, we check it again here							
 				response.sendRedirect("/apps/login/signup_failed.html");
 				return;
 			}
 			
 			
-			// else: manual
+			// else: assume "manual"
+			xuser.addProperty("blocked", true); // require to set blocked=false manually (e.g., via "webappos approveuser")			
 			API.registry.setValue("xusers/"+login, xuser);
 			API.registry.setValue("users/"+login, user);
 			response.sendRedirect("/apps/login/signup_processing.html");
@@ -679,9 +683,9 @@ public class LoginServlet extends HttpServlet
 	    	
 	    	JsonElement el = API.registry.getValue("xusers/"+email);
 	    	if (el instanceof JsonObject) {
-	    		JsonElement el1 = ((JsonObject)el).get("verified");
-	    		if ((el1==null) || (!el1.getAsBoolean()))
-	    			throw new RuntimeException("User not verified");
+	    		JsonElement el1 = ((JsonObject)el).get("email_verified");
+	    		if ((el1!=null) && (!el1.getAsBoolean()))
+	    			throw new RuntimeException("User's e-mail not verified yet");
 	    		
 	    		JsonElement el2 = ((JsonObject)el).get("last_email_time");
 	    		
@@ -790,9 +794,9 @@ public class LoginServlet extends HttpServlet
 		    
 	    	JsonElement el = API.registry.getValue("xusers/"+login);	    	
 	    	if (el instanceof JsonObject) {
-	    		JsonElement el1 = ((JsonObject)el).get("verified");
-	    		if ((el1==null) || (!el1.getAsBoolean()))
-	    			throw new RuntimeException("User not verified");	    		
+	    		JsonElement el1 = ((JsonObject)el).get("email_verified");
+	    		if ((el1!=null) && (!el1.getAsBoolean()))
+	    			throw new RuntimeException("User's e-mail not verified yet");	    		
 	    		JsonElement el2 = ((JsonObject)el).get("blocked");
 	    		if ((el2!=null) && (el2.getAsBoolean()))
 	    			throw new RuntimeException("User is blocked");	    		
@@ -917,9 +921,9 @@ public class LoginServlet extends HttpServlet
 				throw new RuntimeException("ws_token expired");
 			}
 			
-			JsonElement verified = API.registry.getValue("xusers/"+login+"/verified");
-			if ((verified==null) || (!verified.toString().equals("true")))
-				throw new RuntimeException("User not verified");
+			JsonElement email_verified = API.registry.getValue("xusers/"+login+"/email_verified");
+			if ((email_verified!=null) && (!email_verified.getAsBoolean()))
+				throw new RuntimeException("User's e-mail not verified yet");
 			
 			JsonElement blocked = API.registry.getValue("xusers/"+login+"/blocked");
 			if ((blocked!=null) && (blocked.toString().equals("true")))
@@ -964,9 +968,9 @@ public class LoginServlet extends HttpServlet
 			
 			ValidityChecker.checkLogin(login, false);
 			
-			JsonElement verified = API.registry.getValue("xusers/"+login+"/verified");
-			if ((verified==null) || (!verified.toString().equals("true")))
-				throw new RuntimeException("User not verified");
+			JsonElement email_verified = API.registry.getValue("xusers/"+login+"/email_verified");
+			if ((email_verified!=null) && (!email_verified.getAsBoolean()))
+				throw new RuntimeException("User's e-mail not verified");
 			
 			JsonElement blocked = API.registry.getValue("xusers/"+login+"/blocked");
 			if ((blocked!=null) && (blocked.toString().equals("true")))
