@@ -16,6 +16,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry, IRRegistry {		
 
@@ -150,6 +151,25 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 	synchronized public JsonElement getValue(String key) {
 		if (key == null)
 			return null;
+		
+		if ("#xusers".equals(key)) {
+			
+			File dir = new File(DIR_XUSERS);
+			if (!dir.exists() || !dir.isDirectory())			
+				return new JsonPrimitive(0);
+			
+			String[] names = dir.list();
+			if (names==null)
+				return new JsonPrimitive(0);
+			
+			int cnt = 0;
+			for (String s : names)
+				if (!s.startsWith("."))
+					cnt++;
+			
+			return new JsonPrimitive(cnt);
+		}
+		
 		try {
 			String[] path = key.split("/");
 			if (path.length<2)

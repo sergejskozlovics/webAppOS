@@ -1,15 +1,19 @@
 package org.webappos.registry;
 
+import java.io.File;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
 import org.lightcouch.CouchDbClient;
+import org.lightcouch.Document;
 import org.lightcouch.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 public class CouchDBRegistry extends UnicastRemoteObject implements IRegistry, IRRegistry {
 
@@ -113,6 +117,19 @@ public class CouchDBRegistry extends UnicastRemoteObject implements IRegistry, I
 	synchronized public JsonElement getValue(String key) {
 		if (key == null)
 			return null;
+		
+		if ("#xusers".equals(key)) {
+			
+			try {
+				List<Document> allDocs = xusers.view("_all_docs").query(Document.class);
+				return new JsonPrimitive( allDocs.size() );
+			}
+			catch(Throwable t) {				
+				return new JsonPrimitive(0);
+			}
+		}
+		
+		
 		try {
 			String[] path = key.split("/");
 			if (path.length<2)

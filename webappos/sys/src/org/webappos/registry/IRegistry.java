@@ -12,20 +12,11 @@ import com.google.gson.JsonElement;
  */
 public interface IRegistry {
 	/**
-	 * Returns the user's login by the given e-mail (or login alias).
-	 * In webAppOS, the user can specify only login, only e-mail, or both.
-	 * In the latter case, the e-mail becomes a login alias. If the user specifies this e-mail,
-	 * it must be converted to login, thus, getUserLogin comes in handy.
-	 * 
-	 * @param emailOrLogin user's e-mail, true login, or alias 
-	 * @return the true login
-	 */
-	//public String getUserLogin(String emailOrLogin);
-	/**
 	 * Gets the value of the given registry key. If the key is pointing to a final node, 
 	 * a value of some primitive type is returned. Otherwise, a JSON object representing the registry subtree is returned.
 	 * @param key a registry key specified as the path starting with one of the predefined
-	 * registry root keys ("users", "xusers", "apps", etc.) and delimited by "/" 
+	 * registry root keys ("users", "xusers", "apps", etc.) and delimited by "/";
+	 * as a special key, one can use #xusers to obtain the number of documents in the xusers registry branch 
 	 * @return a JSON element (the final element or a branch); null, if the registry key not found or an error occurred
 	 */
 	public JsonElement getValue(String key);	
