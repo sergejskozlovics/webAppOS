@@ -1,28 +1,11 @@
 package org.webappos.status;
 
-import java.rmi.RemoteException;
+import org.webappos.registry.IRegistryWrapper;
 
-public class IStatusWrapper implements IStatus {
-	
-	private IRStatus delegate;
+public class IStatusWrapper extends IRegistryWrapper implements IStatus {
 	
 	public IStatusWrapper(IRStatus _delegate) {
-		delegate = _delegate;
+		super(_delegate);
 	}
-
-	public void setStatus(String key, String value) {
-		try {
-			delegate.setStatus_R(key, value);
-		} catch (RemoteException e) {
-		}
-	}
-
-	public void setStatus(String key, String value, long expireSeconds) {
-		try {
-			delegate.setStatus_R(key, value, expireSeconds);
-		} catch (RemoteException e) {
-		}
-	}
-
 
 }

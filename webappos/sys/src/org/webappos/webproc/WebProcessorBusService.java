@@ -64,20 +64,20 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 			
 						
 			if (webproctabRow.reconnectMs<0) {
-				API.status.setStatus("webproctab/"+id+"/status", "disconnected");
-				API.status.setStatus("webproctab/"+id+"/message", "Disconnected unexpectedly.");
+				API.status.setValue("webproctab/"+id+"/status", "disconnected");
+				API.status.setValue("webproctab/"+id+"/error", "Disconnected unexpectedly.");
 				// no need to reconnect..
 				return;
 			}
 			
 			if (webproctabRow.reconnectMs==0) {
-				API.status.setStatus("webproctab/"+id+"/status", "connecting");
-				API.status.setStatus("webproctab/"+id+"/message", "Disconnected unexpectedly. Reconnecting...");
+				API.status.setValue("webproctab/"+id+"/status", "connecting");
+				API.status.setValue("webproctab/"+id+"/error", "Disconnected unexpectedly. Reconnecting...");
 				adapter.connect(webproctabRow.location, id, webproctabRow.options);
 			}
 			else {
-				API.status.setStatus("webproctab/"+id+"/status", "connecting");
-				API.status.setStatus("webproctab/"+id+"/message", "Disconnected unexpectedly. Reconnecting in "+webproctabRow.reconnectMs+" ms...");
+				API.status.setValue("webproctab/"+id+"/status", "connecting");
+				API.status.setValue("webproctab/"+id+"/error", "Disconnected unexpectedly. Reconnecting in "+webproctabRow.reconnectMs+" ms...");
 				
 				new Thread() {
 				    @Override
@@ -86,8 +86,8 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 				            Thread.sleep(webproctabRow.reconnectMs);
 				        } catch (InterruptedException e) {
 				        }
-						API.status.setStatus("webproctab/"+id+"/status", "connecting");
-						API.status.setStatus("webproctab/"+id+"/message", "Disconnected unexpectedly. Reconnecting...");
+						API.status.setValue("webproctab/"+id+"/status", "connecting");
+						API.status.setValue("webproctab/"+id+"/error", "Disconnected unexpectedly. Reconnecting...");
 						adapter.connect(webproctabRow.location, id, webproctabRow.options);
 				    }
 				}.start();
@@ -117,8 +117,8 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 				c = Class.forName("org.webappos.adapters.webproc."+wpRow.type+".WebProcessorAdapter");
 			}
 			catch(Throwable t) {
-				API.status.setStatus("webproctab/"+wpRow.name+"/status", "disconnected");
-				API.status.setStatus("webproctab/"+wpRow.name+"/message", "Unsupported web processor type: "+wpRow.type+".");
+				API.status.setValue("webproctab/"+wpRow.name+"/status", "disconnected");
+				API.status.setValue("webproctab/"+wpRow.name+"/error", "Unsupported web processor type: "+wpRow.type+".");
 				continue;
 			}
 					
@@ -132,13 +132,13 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 					info.adapter = (IWebProcessorAdapter) c.getConstructor().newInstance();
 				}
 				catch(Throwable t) {
-					API.status.setStatus("webproctab/"+wpRow.name+"/status", "disconnected");
-					API.status.setStatus("webproctab/"+wpRow.name+"/message", "Could not instantiate "+wpRow.type+" adapter."); 
+					API.status.setValue("webproctab/"+wpRow.name+"/status", "disconnected");
+					API.status.setValue("webproctab/"+wpRow.name+"/error", "Could not instantiate "+wpRow.type+" adapter."); 
 					continue;
 				}
 				wpMap.put(info.id, info);
-				API.status.setStatus("webproctab/"+info.id+"/status", "connecting");
-				API.status.setStatus("webproctab/"+wpRow.name+"/message", "Initial connect request sent.");
+				API.status.setValue("webproctab/"+info.id+"/status", "connecting");
+				API.status.setValue("webproctab/"+wpRow.name+"/error", null);
 				info.adapter.connect(wpRow.location, info.id, info.webproctabRow.options);
 			}
 		}
@@ -174,7 +174,7 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 		h.idle = true;
 		h.api = wpAPI;
 		h.faultMRAM = false;
-		API.status.setStatus("webproctab/"+id, "available");
+		API.status.setValue("webproctab/"+id+"/status", "available");
 	}
 	
 	@Override

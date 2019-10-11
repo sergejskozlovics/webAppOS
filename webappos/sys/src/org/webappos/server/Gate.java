@@ -12,6 +12,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -153,13 +154,15 @@ public class Gate {
 			}
 		}
 		
+		API.status.setValue("server/free_port", ((ConfigEx)API.config).free_port);
+		
 		
 		if (isApp) {	
 			// app
 			AppProperties appProps = ((PropertiesManager)API.propertiesManager).loadAppProperties(name, appDir);
 			if (appProps == null) {
 				logger.error("Could not load app "+name+" from "+appDir);
-				API.status.setStatus("apps/"+name, "ERROR:Could not load app properties.");
+				API.status.setValue("apps/"+name+"/error", "Could not load app properties.");
 				return;
 			}
 			// adding .webcalls functions provided by this app
@@ -168,7 +171,7 @@ public class Gate {
 			IAppAdapter appAdapter = getAppAdapter(appProps.app_type);
 			if (appAdapter == null) {
 				logger.error("Could not load app "+name+": unknown app type "+appProps.app_type);
-				API.status.setStatus("apps/"+name, "ERROR:Unknown app type "+appProps.app_type+".");
+				API.status.setValue("apps/"+name+"/error", "Unknown app type "+appProps.app_type);
 				return;
 			}
 
@@ -191,11 +194,13 @@ public class Gate {
 					int securePort = -1;
 					if (port < 0) {
 						logger.error("Could not find a suitable port "+((ConfigEx)API.config).free_port+"+i for "+name);
-						API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
+						API.status.setValue("apps/"+name+"/error", "Could not find free port.");
 						return;
 					}
-					else
+					else {
 						((ConfigEx)API.config).free_port = port+1;
+						API.status.setValue("server/free_port", ((ConfigEx)API.config).free_port);
+					}
 					
 					
 			        Server portServer = new Server();
@@ -205,11 +210,13 @@ public class Gate {
 						securePort = Gate.getFreePort(((ConfigEx)API.config).free_port);
 						if (securePort < 0) {
 							logger.error("Could not find a suitable secure port "+((ConfigEx)API.config).free_port+"+i for "+name);
-							API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
+							API.status.setValue("apps/"+name+"/error", "Could not find free port (secure).");
 							return;
 						}
-						else
+						else {
 							((ConfigEx)API.config).free_port = securePort+1;
+							API.status.setValue("server/free_port", ((ConfigEx)API.config).free_port);
+						}
 						http_config.setSecureScheme("https");
 						http_config.setSecurePort(securePort);
 					}
@@ -245,7 +252,7 @@ public class Gate {
 					}
 					catch(Throwable t) {
 						logger.error("Could not attach "+appProps.app_full_name+". "+t.getMessage());
-						API.status.setStatus("apps/"+name, "ERROR:Could not attach app context.");
+						API.status.setValue("apps/"+name+"/error", "Could not attach app context.");
 						return;
 					}
 					appContextHandler.setHandler(appContext);
@@ -254,8 +261,10 @@ public class Gate {
 					try {
 						portServer.start();
 						logger.info("Attached "+appProps.app_full_name+" at HTTP port "+port);
+						API.status.setValue("apps/"+name+"/port", port);
 						if (API.config.secure) {
 							logger.info("Attached "+appProps.app_full_name+" at HTTPS port "+securePort);
+							API.status.setValue("apps/"+name+"/secure_port", securePort);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -271,21 +280,24 @@ public class Gate {
 					try {
 						portRedirectHandler.start();
 						logger.info("Attached "+appProps.app_full_name+" redirect from /apps/"+appProps.app_url_name+" to "+API.config.simple_domain_or_ip+":"+port+(API.config.secure?"["+(securePort)+"]":""));
-						API.status.setStatus("apps/"+name,"/apps/"+appProps.app_url_name+" -> "+API.config.simple_domain_or_ip+":"+port+(API.config.secure?"["+(securePort)+"]":""));
+						API.status.setValue("apps/"+name+"/bindings",
+								 "[\""
+						             +"/apps/"+appProps.app_url_name+" -> "+API.config.simple_domain_or_ip+":"+port+(API.config.secure?"["+(securePort)+"]":"")
+						        +"\"]");
 					} catch (Exception e) {
-						e.printStackTrace();
+						API.status.setValue("apps/"+name+"/error", "Could not establish redirect from /apps/"+appProps.app_url_name+": "+e.getMessage());
 					}
 										
 				}			
 				else {
-					// only IP specified, but the app does not require root paths, thus, sub-domain is not necessary...
+					// only IP specified, but the app does not require root paths; thus, sub-domain is not necessary...
 					ContextHandler appContext;
 					try {
 						 appContext = appAdapter.attachApp(appProps);
 					}
 					catch(Throwable t) {
 						logger.error("Could not attach "+appProps.app_full_name+". "+t.getMessage());
-						API.status.setStatus("apps/"+name, "ERROR:Could not attach app context.");
+						API.status.setValue("apps/"+name+"/error", "Could not attach app context.");
 						return;
 					}
 					ContextHandler appContextHandler = new ContextHandler("/apps/"+appProps.app_url_name);				
@@ -294,9 +306,9 @@ public class Gate {
 					try {
 						appContextHandler.start();
 						logger.info("Attached "+appProps.app_full_name+" at /apps/"+appProps.app_url_name);
-						API.status.setStatus("apps/"+name, "/apps/"+appProps.app_url_name);
+						API.status.setValue("apps/"+name+"/bindings", "[\"/apps/"+appProps.app_url_name+"\"]");
 					} catch (Exception e) {
-						e.printStackTrace();
+						API.status.setValue("apps/"+name+"/error", "Could not bind to /apps/"+appProps.app_url_name+": "+e.getMessage());
 					}								
 				}													
 			}
@@ -312,18 +324,21 @@ public class Gate {
 				}
 				catch(Throwable t) {
 					logger.error("Could not attach "+appProps.app_full_name+". "+t.getMessage());
-					API.status.setStatus("apps/"+name, "ERROR:Could not attach app context.");
+					API.status.setValue("apps/"+name+"/error", "Could not attach.");
 					return;
 				}
 				appContextHandler.setHandler(appContext);
 				
+				ArrayList<String> bindings = new ArrayList<String>();
 				
 				handlerColl.addHandler(appContextHandler);
 				try {
 					appContextHandler.start();
 					logger.info("Attached "+appProps.app_full_name+" at "+appProps.app_url_name+"."+API.config.simple_domain_or_ip+" and "+appProps.app_url_name+".localhost");
+					bindings.add(appProps.app_url_name+"."+API.config.simple_domain_or_ip);
+					bindings.add(appProps.app_url_name+".localhost");
 				} catch (Exception e) {
-					e.printStackTrace();
+					API.status.setValue("apps/"+name+"/error", "Could not bind to "+appProps.app_url_name+"."+API.config.simple_domain_or_ip+" and "+appProps.app_url_name+".localhost");
 				}
 		
 		
@@ -336,19 +351,24 @@ public class Gate {
 				try {
 					appRedirectHandler.start();
 					logger.info("Attached "+appProps.app_full_name+" redirect from /apps/"+appProps.app_url_name+" to "+appProps.app_url_name+"."+API.config.simple_domain_or_ip);
-					API.status.setStatus("apps/"+name, "/apps/"+appProps.app_url_name+"->"+appProps.app_url_name+"."+API.config.simple_domain_or_ip);
+					bindings.add("/apps/"+appProps.app_url_name+" -> "+appProps.app_url_name+"."+API.config.simple_domain_or_ip);
 				} catch (Exception e) {
-					e.printStackTrace();
+					API.status.setValue("apps/"+name+"/error", "Could not establish redirect from /apps/"+appProps.app_url_name+": "+e.getMessage());
 				}
 				
+				if (bindings.size()>0) {
+					API.status.setValue("apps/"+name+"/bindings", "[\""+String.join("\", \"", bindings)+"\"]");
+				}
 			}
 		} // if isApp
 		else {			
+			API.status.setValue("apps/"+name+"/status", "stopped");
+			
 			// service
 			ServiceProperties svcProps = ((PropertiesManager)API.propertiesManager).loadServiceProperties(name, appDir);
 			if (svcProps == null) {
 				logger.error("Could not load service "+name+" from "+appDir);
-				API.status.setStatus("apps/"+name, "ERROR:Could not load properties.");
+				API.status.setValue("app/"+name+"/error", "Could not load service properties.");
 				return;
 			}
 			// adding .webcalls functions provided by this service
@@ -361,13 +381,13 @@ public class Gate {
 			}
 			
 			if (!"auto".equalsIgnoreCase(startup_type.getAsString())) {
-				API.status.setStatus("apps/"+name, "ERROR:Could not attach app context.");
 				return;
 			}
 			
 			IServiceAdapter svcAdapter = getServiceAdapter(svcProps.service_type);
 			if (svcAdapter == null) {				
-				logger.error("Could not load serivice "+name+": unknown service adapter "+svcProps.service_type);
+				logger.error("Could not load serivice "+name+": unknown service type "+svcProps.service_type);
+				API.status.setValue("apps/"+name+"/error", "Unknown service type "+svcProps.service_type);
 				return;
 			}
 			
@@ -378,6 +398,11 @@ public class Gate {
 					if (addPort >=0 ) {
 						svcProps.requires_additional_ports[k] = addPort;
 						((ConfigEx)API.config).free_port = addPort+1;
+						API.status.setValue("server/free_port", ((ConfigEx)API.config).free_port);
+					}
+					else {
+						API.status.setValue("apps/"+name+"/error", "Could not find additional free port.");
+						return;
 					}
 				}
 			}			
@@ -391,24 +416,34 @@ public class Gate {
 		        try {
 		        	handler = svcAdapter.attachService(svcProps, "/", getOnStopped(svcProps.service_full_name), getOnHalted(svcProps.service_full_name));
 			        if (handler == null)
-			        	handler = new org.webappos.adapters.service.webroot.ServiceAdapter().attachService(svcProps, "/", null, null);
+			        	handler = new org.webappos.adapters.service.webroot.ServiceAdapter().attachService(svcProps, "/", null, null);			        
 		        }
 		        catch(Throwable t) {
 					logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
+					API.status.setValue("apps/"+name+"/error", "Could not attach for /");
 					return;
 		        }
+		        
+		        API.status.setValue("apps/"+name+"/status", "running");
+		        
+		        ArrayList<String> bindings = new ArrayList<String>();
+		        ArrayList<String> errors = new ArrayList<String>();
+		        
 				handler.setVirtualHosts(new String[]{"*."+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip, "*."+svcProps.service_url_name+"_service.localhost"});
 				handlerColl.addHandler(handler);
 				try {
 					handler.start();
-					logger.info("Attached "+svcProps.service_full_name+" at "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" and "+svcProps.service_url_name+"_service.localhost");
+					logger.info("Binding OK for "+svcProps.service_full_name+" at "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" and "+svcProps.service_url_name+"_service.localhost");
+					bindings.add("*."+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip);
+					bindings.add("*."+svcProps.service_url_name+"_service.localhost");
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error("Could not bind "+svcProps.service_full_name+" to "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" and "+svcProps.service_url_name+"_service.localhost");
+					errors.add("Could not bind "+svcProps.service_full_name+" to "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" and "+svcProps.service_url_name+"_service.localhost");					
 				}
 		
 						
-				// attaching /apps/urlName
-				
+				// attaching /services/url_name
+				boolean err=false;
 		        try {
 		        	handler = svcAdapter.attachService(svcProps, "/services/"+svcProps.service_url_name, getOnStopped(svcProps.service_full_name), getOnHalted(svcProps.service_full_name));
 			        if (handler == null)
@@ -416,34 +451,32 @@ public class Gate {
 		        }
 		        catch(Throwable t) {
 					logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
-					return;
+					errors.add("Could not attach for /services/"+svcProps.service_url_name);
+					err = true;
 		        }
-				handler.setVirtualHosts(new String[] { "*."+API.config.simple_domain_or_ip, "*.localhost", "*."+API.config.simple_domain_or_ip });
-				handlerColl.addHandler(handler);
-				try {
-					handler.start();
-					logger.info("Attached "+svcProps.service_full_name+" at /services/"+svcProps.service_url_name);
-				} catch (Exception e) {
-					e.printStackTrace();
+		        
+		        if (!err) {
+					handler.setVirtualHosts(new String[] { "*."+API.config.simple_domain_or_ip, "*.localhost", "*."+API.config.simple_domain_or_ip });
+					handlerColl.addHandler(handler);
+					try {
+						handler.start();
+						logger.info("Binding OK for "+svcProps.service_full_name+" at /services/"+svcProps.service_url_name);
+						bindings.add(API.config.simple_domain_or_ip+"/services/"+svcProps.service_url_name);
+						bindings.add("localhost/services/"+svcProps.service_url_name);
+					} catch (Exception e) {
+						logger.error("Could not bind"+svcProps.service_full_name+" at /services/"+svcProps.service_url_name);
+						errors.add("Could not bind"+svcProps.service_full_name+" at /services/"+svcProps.service_url_name);
+					}
+		        }
+				
+
+				if (bindings.size()>0) {
+					API.status.setValue("apps/"+name+"/bindings", "[\""+String.join("\", \"", bindings)+"\"]");
 				}
-				
-/*				
-				ServletContextHandler svcRedirectHandler = new ServletContextHandler(handlerColl, "/services/"+svcProps.service_url_name, false, false);
-				
-				svcRedirectHandler.setVirtualHosts(new String[] { "*."+API.config.simple_domain_or_ip, "*.localhost", "*."+API.config.simple_domain_or_ip });
-					// "*." means that we allow to call this service from all subdomains, e.g., login app from its subdomain login.domain.org can access /services/login
-				
-				ServletHolder holder = new ServletHolder();
-				holder.setServlet(new RedirectServlet(svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip, -1, -1));
-		        svcRedirectHandler.addServlet(holder, "/*");
-				try {
-					svcRedirectHandler.start();
-					logger.info("Attached "+svcProps.service_full_name+" redirect from /services/"+svcProps.service_url_name+" to "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}				
-*/
-				
+				if (errors.size()>0) {
+					API.status.setValue("apps/"+name+"/error", String.join("; ", errors));
+				}
+
 				return;
 			}
 			
@@ -461,15 +494,20 @@ public class Gate {
 		        }
 		        catch(Throwable t) {
 					logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
+					API.status.setValue("apps/"+name+"/error", "Could not attach.");
 					return;
 		        }
 				
+		        API.status.setValue("apps/"+name+"/status", "running");
+		        
 				handlerColl.addHandler(handler);
 				try {
 					handler.start();
-					logger.info("Attached "+svcProps.service_full_name+" at /services/"+svcProps.service_url_name);
+					logger.info("Binding OK for "+svcProps.service_full_name+" at /services/"+svcProps.service_url_name);
+					API.status.setValue("apps/"+name+"/bindings", "[\"/services/"+svcProps.service_url_name+"\"]");
 				} catch (Exception e) {
 					logger.error("Could not start handler for "+svcProps.service_full_name+". "+e.getMessage());
+					API.status.setValue("apps/"+name+"/error", "Could not bind at /services/"+svcProps.service_url_name);
 				}								
 				return;
 			}					
@@ -485,9 +523,14 @@ public class Gate {
 	        }
 	        catch(Throwable t) {
 				logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
+				API.status.setValue("apps/"+name+"/error", "Could not attach.");
 				return;
 	        }
+	        
+	        API.status.setValue("apps/"+name+"/status", "running");
 
+	        ArrayList<String> bindings = new ArrayList<String>();
+	        ArrayList<String> errors = new ArrayList<String>();
 		        
 	        if (svcProps.httpPort<0) {
 	        	// the service adapter did not create ports; we need to provide the HTTP (and, perhaps, HTTPS) ports for the handler
@@ -496,11 +539,13 @@ public class Gate {
         		svcProps.httpPort = Gate.getFreePort(((ConfigEx)API.config).free_port);
 				if (svcProps.httpPort < 0) {
 					logger.error("Could not find a suitable port "+((ConfigEx)API.config).free_port+"+i for "+name);
-					API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
+					API.status.setValue("apps/"+name+"/error", "Could not find free port.");
 					return;
 				}
-				else
+				else {
 					((ConfigEx)API.config).free_port = svcProps.httpPort+1;
+					API.status.setValue("server/free_port", ((ConfigEx)API.config).free_port);
+				}
 			
 				Server portServer = null;
 		        portServer = new Server();
@@ -509,11 +554,13 @@ public class Gate {
 					svcProps.httpsPort = Gate.getFreePort(((ConfigEx)API.config).free_port);
 					if (svcProps.httpsPort < 0) {
 						logger.error("Could not find a suitable secure port "+((ConfigEx)API.config).free_port+"+i for "+name);
-						API.status.setStatus("apps/"+name, "ERROR:Could not find free port.");
+						API.status.setValue("apps/"+name+"/error", "Could not find free port (secure).");
 						return;
 					}
-					else
+					else {
 						((ConfigEx)API.config).free_port = svcProps.httpsPort+1;
+						API.status.setValue("server/free_port", ((ConfigEx)API.config).free_port);
+					}
 					http_config.setSecureScheme("https");
 					http_config.setSecurePort(svcProps.httpsPort);
 				}
@@ -544,12 +591,25 @@ public class Gate {
 				portServer.setHandler(handler);
 				try {
 					portServer.start();
-					logger.info("Attached "+svcProps.service_full_name+" at HTTP port "+svcProps.httpPort);
 					if (API.config.secure) {
-						logger.info("Attached "+svcProps.service_full_name+" at HTTPS port "+svcProps.httpsPort);
+						logger.info("Port server OK for "+svcProps.service_full_name+" at HTTP port "+svcProps.httpPort);
+						logger.info("Port server OK for "+svcProps.service_full_name+" at HTTPS port "+svcProps.httpsPort);
+						bindings.add(":"+svcProps.httpPort);
+						bindings.add(":"+svcProps.httpsPort);
+					}
+					else {
+						logger.info("Port server OK for "+svcProps.service_full_name+" at HTTP port "+svcProps.httpPort);
+						bindings.add(":"+svcProps.httpPort);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					String s;
+					if (API.config.secure)
+						s = "Could not bind automatic ports "+svcProps.httpPort+" and "+svcProps.httpsPort;
+					else
+						s = "Could not bind automatic port "+svcProps.httpPort;
+					
+					logger.error(s);
+					errors.add(s);
 				}
 	        }		        
 		        
@@ -566,9 +626,10 @@ public class Gate {
 	        portRedirectHandler.addServlet(holder2, "/*");
 			try {
 				portRedirectHandler.start();
-				logger.info("Attached "+svcProps.service_full_name+" simple redirect from /services/"+svcProps.service_url_name+" to "+API.config.simple_domain_or_ip+":"+svcProps.httpPort+(API.config.secure?"["+(svcProps.httpsPort)+"]":""));
+				logger.info("Binding OK "+svcProps.service_full_name+" simple redirect from /services/"+svcProps.service_url_name+" to "+API.config.simple_domain_or_ip+":"+svcProps.httpPort+(API.config.secure?"["+(svcProps.httpsPort)+"]":""));
+				bindings.add("/services/"+svcProps.service_url_name+" -> "+API.config.simple_domain_or_ip+":"+svcProps.httpPort+(API.config.secure?"["+(svcProps.httpsPort)+"]":""));
 			} catch (Exception e) {
-				e.printStackTrace();
+				errors.add("Could not bind /services/"+svcProps.service_url_name+" -> "+API.config.simple_domain_or_ip+":"+svcProps.httpPort+(API.config.secure?"["+(svcProps.httpsPort)+"]":""));
 			}
 			
 			// subdomain proxy to port...
@@ -591,13 +652,21 @@ public class Gate {
 		        subdomainProxyHandler.addServlet(proxyServlet, "/*");
 				try {
 					subdomainProxyHandler.start();
-					logger.info("Attached "+svcProps.service_full_name+" proxy redirect from "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" to localhost:"+svcProps.httpPort+(API.config.secure?"["+svcProps.httpsPort+"]":""));
+					bindings.add(svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" <-> localhost:"+svcProps.httpPort+(API.config.secure?"["+svcProps.httpsPort+"]":""));
+					logger.info("Binding OK for "+svcProps.service_full_name+" via proxy from "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" to localhost:"+svcProps.httpPort+(API.config.secure?"["+svcProps.httpsPort+"]":""));
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error("Could not bind "+svcProps.service_full_name+" via proxy from "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" to localhost:"+svcProps.httpPort+(API.config.secure?"["+svcProps.httpsPort+"]":""));
+					errors.add("Could not bind "+svcProps.service_full_name+" via proxy from "+svcProps.service_url_name+"_service."+API.config.simple_domain_or_ip+" to localhost:"+svcProps.httpPort+(API.config.secure?"["+svcProps.httpsPort+"]":""));
 				}
 				
 			}
 			
+			if (bindings.size()>0) {
+				API.status.setValue("apps/"+name+"/bindings", "[\""+String.join("\", \"", bindings)+"\"]");
+			}
+			if (errors.size()>0) {
+				API.status.setValue("apps/"+name+"/error", String.join("; ", errors));
+			}
 		}
 	}
 
@@ -740,7 +809,7 @@ public class Gate {
 	        
 	        webServer.addConnector(http);
 	        logger.info("PORT is "+API.config.port);
-	        API.status.setStatus("server/port", API.config.port+"");
+	        API.status.setValue("server/port", API.config.port);
 	        
 
 			
@@ -845,7 +914,7 @@ public class Gate {
 				
 		        
 				logger.info("SECURE_PORT is "+API.config.secure_port);
-				API.status.setStatus("server/secure_port", API.config.secure_port+"");
+				API.status.setValue("server/secure_port", API.config.secure_port);
 		        webServer.start();
 			}
 			

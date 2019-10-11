@@ -528,7 +528,8 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					}
 				
 				map.put(key, action);
-				API.status.setStatus("webcalls/"+key, action.resolvedInstructionSet+":"+action.resolvedLocation);
+				API.status.setValue("webcalls/"+key, action.toString());
+				API.status.setValue("webcalls/"+key+"/declared_in", whereDefined);
 				if (loaded != null)
 					loaded.add(key);
 				
@@ -582,7 +583,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 				if (i>=0)
 					key = key.substring(i+1);				
 				map.remove(key);
-				API.status.setStatus("webcalls/"+key, null);
+				API.status.setValue("webcalls/"+key, null);
 			}
 		} catch (Throwable t) {
 			logger.error(t.toString()+" - could not read web calls from file "+fileName);

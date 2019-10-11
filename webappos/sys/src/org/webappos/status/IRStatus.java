@@ -1,9 +1,8 @@
 package org.webappos.status;
 
 import java.rmi.Remote;
-import java.rmi.RemoteException;
 
-public interface IRStatus extends Remote {
-	public void setStatus_R(String key, String value) throws RemoteException;		
-	public void setStatus_R(String key, String value, long expireSeconds) throws RemoteException;
+import org.webappos.registry.IRRegistry;
+
+public interface IRStatus extends Remote, IRRegistry {
 }

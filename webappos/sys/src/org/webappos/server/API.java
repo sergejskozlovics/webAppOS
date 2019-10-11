@@ -18,7 +18,7 @@ import org.webappos.registry.IRegistryWrapper;
 import org.webappos.registry.JsonFilesRegistry;
 import org.webappos.status.IStatus;
 import org.webappos.status.IStatusWrapper;
-import org.webappos.status.InFileStatus;
+import org.webappos.status.InMemoryLoggedStatus;
 import org.webappos.status.NoStatus;
 import org.webappos.util.PID;
 import org.webappos.util.Ports;
@@ -75,11 +75,11 @@ public class API {
 		}
 		
 		try {
-			status = new InFileStatus();
+			status = new InMemoryLoggedStatus();
 		} catch (RemoteException e) {
 		} 
 		
-		status.setStatus("server/internal/PID", PID.getPID()+"");
+		status.setValue("server/pid", PID.getPID()+"");
 		
 		try {
 			webCaller = new WebCaller();
@@ -104,11 +104,11 @@ public class API {
 				Registry registry = LocateRegistry.createRegistry(API.config.web_processor_bus_service_port);
 		        registry.rebind(ConfigStatic.WEB_PROCESSOR_BUS_SERVICE_NAME, wpbs);
 		        wpbs.webproctabInit();
-		        status.setStatus("server/internal/web_processor_bus_service_port", API.config.web_processor_bus_service_port+"");
+		        status.setValue("server/web_processor_bus_service/port", API.config.web_processor_bus_service_port);
 		        wpbService = wpbs; 
 			}
 			catch(Throwable t) {				
-				status.setStatus("server/internal/web_processor_bus_service_port", "ERROR:"+t.getMessage());
+				status.setValue("server/web_processor_bus_service/error", t.getMessage());
 				return;
 			}
 		}
@@ -145,7 +145,7 @@ public class API {
 		    registry = new IRegistryWrapper(wpbService.getRegistry());
 		    status = new IStatusWrapper(wpbService.getStatus());
 
-		    status.setStatus("webproctab/"+webProcessorID+"/PID", PID.getPID()+"");
+		    status.setValue("web_processors/"+webProcessorID+"/pid", PID.getPID());
 		    
 		    webCaller = new IWebCallerWrapper(wpbService.getWebCaller());
 		    
