@@ -1,6 +1,6 @@
 package org.webappos.util;
 
-import java.security.SecureRandom;
+//import java.security.SecureRandom;
 
 import org.apache.commons.text.CharacterPredicates;
 import org.apache.commons.text.RandomStringGenerator;
@@ -8,10 +8,11 @@ import org.apache.commons.text.RandomStringGenerator;
 public class RandomToken {
 	
 	public static String generateSalt() {
-        SecureRandom random = new SecureRandom();
+        /*SecureRandom random = new SecureRandom();
         byte bytes[] = new byte[20];
         random.nextBytes(bytes);
-        return org.apache.commons.codec.binary.Base64.encodeBase64String(bytes);
+        return org.apache.commons.codec.binary.Base64.encodeBase64String(bytes);*/
+		return generateRandomToken();
     }
 	
 
