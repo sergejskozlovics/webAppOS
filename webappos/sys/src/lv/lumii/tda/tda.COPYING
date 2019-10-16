@@ -1,9 +1,7 @@
-TDA Kernel
-==========
-Files: [tdakernel*] [libtdakernel*] [*/lv/lumii/tda/kernel/*]
-[*/lv/lumii/tda/raapi/*] [*/lv/lumii/tda/util/*]
-[*/lv/lumii/tda/kernel/*] [*/lv/lumii/tda/jsonsubmit/*]
-[*/lv/lumii/tda/ee/mm/*]
+TDA and TDA Kernel
+==================
+License: MIT/X
+Files: $PWD/**
 Author: Sergejs Kozlovics
 
 Copyright (C) 2010-2011 by University of Latvia

@@ -1,9 +1,10 @@
 ECore Adapter for TDA Kernel
 ============================
-Files: [ecore_adapter.jar] [*/lv/lumii/tda/adapters/repository/ecore/*]
+License: EUPL 1.2+
+Files: $PWD/**
 Author: Sergejs Kozlovics
 
-Copyright (C) 2013-2018 by Institute of Mathematics and Computer Science, University of Latvia (IMCS, UL)
+Copyright (C) 2013-2019 by Institute of Mathematics and Computer Science, University of Latvia (IMCS, UL)
 
 Licensed under the EUPL, Version 1.2 or – as soon they
 will be approved by the European Commission - subsequent

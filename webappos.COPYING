@@ -1,6 +1,13 @@
-webAppOS license (excluding third-party dependencies, which are distributed on their own terms)
+webAppOS license
 ================
-Copyright 2017-2018 Institute of Mathematics and Computer Science, University of Latvia (IMCS, UL)
+License: EUPL 1.2+ (third-party dependencies may have other open-source licenses)
+Files: All webAppOS code excluding third-party dependencies,
+       which are distributed on their own terms.
+       Third-party licenses are usually located inside the corresponding files or folders
+       and/or jar-files (as *LICENSE* or *COPYING* files). The closest ancestor
+       principle should be used when determining which license is applicable.
+
+Copyright 2017-2019 Institute of Mathematics and Computer Science, University of Latvia (IMCS, UL)
 
 Licensed under the EUPL, Version 1.2 or – as soon they
 will be approved by the European Commission - subsequent
