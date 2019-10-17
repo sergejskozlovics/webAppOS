@@ -1,0 +1,20 @@
+HTML_OUTPUT = /webAppOS-homepage/dev/tdakernel/dllapi
+LATEX_OUTPUT = /webAppOS-homepage/dev/tdakernel/dllapi/pdf
+EXTRACT_ALL = YES
+GENERATE_HTMLHELP = NO
+TOC_EXPAND = NO
+GENERATE_TREEVIEW = NO
+PROJECT_NAME = "TDA Kernel DLL for native calls"
+#GENERATE_LATEX = NO
+INPUT = tdakernel_stub_c2base.h tdakernel.h tda_pipes_and_java.h 
+#EXCLUDE_SYMBOLS = Delegator*
+ENABLE_PREPROCESSING=NO
+
+HIDE_UNDOC_MEMBERS     = YES
+HIDE_UNDOC_CLASSES     = YES
+INHERIT_DOCS           = YES
+SORT_MEMBER_DOCS       = NO
+HTML_HEADER            = 
+HTML_FOOTER            = 
+DISABLE_INDEX          = YES
+GENERATE_TREEVIEW      = NO
