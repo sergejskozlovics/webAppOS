@@ -336,7 +336,7 @@ public class LoginServlet extends HttpServlet
 				if ((el!=null) && (!el.toString().isEmpty())) {
 					redirect = el.toString();
 				}
-				redirect = API.config.domain_or_ip+"/apps/"+redirect.toLowerCase();
+				redirect = API.config.domain_or_ip+":"+(request.isSecure()?API.config.secure_port:API.config.port)+"/apps/"+redirect.toLowerCase();
 			}
 			
 			// deleting previous ws_token=value (if any) from the redirect string
