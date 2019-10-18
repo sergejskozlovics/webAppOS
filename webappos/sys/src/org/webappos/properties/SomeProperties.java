@@ -40,6 +40,8 @@ public class SomeProperties implements Serializable {
 		catch(Throwable t) {
 			return;
 		}
+		if (!fDir.exists())
+			return;
 		
 		String sDir = fDir.getAbsolutePath();
 		

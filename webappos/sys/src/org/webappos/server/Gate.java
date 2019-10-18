@@ -424,6 +424,7 @@ public class Gate {
 		        catch(Throwable t) {
 					logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
 					API.status.setValue("apps/"+name+"/error", "Could not attach for /");
+					t.printStackTrace();
 					return;
 		        }
 		        
