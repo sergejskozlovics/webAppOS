@@ -30,7 +30,14 @@ public class ConfigEx extends ConfigStatic implements Serializable {
 	
 	public ConfigEx() { // constructor
 		try {
-			properties.load(new FileInputStream(ETC_DIR + File.separator + CONFIG_FILE_NAME));
+			try {
+				properties.load(new FileInputStream(ETC_DIR + File.separator + CONFIG_FILE_NAME));
+			}
+			catch (Throwable t) {
+				logger.error("Could not load webAppOS properties from file "
+							+ ETC_DIR + File.separator + CONFIG_FILE_NAME, t);
+			}		
+
 			
 			
 			for (Entry<Object, Object> entry : properties.entrySet()) {
@@ -148,8 +155,7 @@ public class ConfigEx extends ConfigStatic implements Serializable {
 
 			
 		} catch (Throwable t) {
-			logger.error("Could not load webAppOS properties from file "
-							+ ETC_DIR + File.separator + CONFIG_FILE_NAME, t);
+			logger.error("Could not initialize webAppOS properties - "+t.getMessage());
 		}		
 		
 		
