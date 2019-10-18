@@ -826,11 +826,15 @@ public class Gate {
 			if (!dir.exists())
 				dir.mkdirs();
 			
+			File acmeDir = new File(API.config.ETC_DIR+File.separator+"acme"+File.separator+"web-root");
+			if (!acmeDir.exists())
+				acmeDir.mkdirs();
+			
 	        // web-root + acme-challenge web-root...	       	       
 			ResourceCollection mainResources = new ResourceCollection(new String[] {
 				API.config.WEB_ROOT_DIR, // must always present, then other folders in the search path follow
-				API.config.ETC_DIR+File.separator+"acme"+File.separator+"web-root",
-				API.config.WEB_ROOT_CACHE_DIR,
+				acmeDir.getAbsolutePath(),
+				dir.getAbsolutePath(),
 			});
 			mainContext.setBaseResource(mainResources);
 						
