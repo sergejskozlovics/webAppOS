@@ -1,5 +1,6 @@
 rootProject.name = 'webappos-all'
 include ':webappos'
+include ':webappos:apps:login.service'
 include ':webappos.dev:ecore2java'
 include ':webappos.dev:mmd2ecore'
 include ':webappos.dev:sha256gen'
