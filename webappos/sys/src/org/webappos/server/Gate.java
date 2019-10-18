@@ -59,6 +59,9 @@ public class Gate {
 	private static SslContextFactory sslContextFactory = null;
 	synchronized public static void reloadCerts() {
 		try {
+			File certsDir = new File(ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs");
+			if (!certsDir.exists())
+				certsDir.mkdirs();
 			if (sslContextFactory == null) {		
 				sslContextFactory = new SslContextFactory();
 				logger.info("Loading certs from "+ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_KEY_FILE_NAME +" and "+ConfigStatic.ETC_DIR+File.separator+"acme"+File.separator+"certs"+File.separator+CertBot4j.DOMAIN_CHAIN_FILE_NAME);
