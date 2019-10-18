@@ -8,36 +8,18 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.webappos.antiattack.ValidityChecker;
 import org.webappos.auth.UsersManager;
-import org.webappos.properties.AppProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
-import org.webappos.webcaller.IWebCaller;
-import org.webappos.webcaller.IWebCaller.WebCallDeclaration;
-
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import lv.lumii.tda.kernel.TDAKernel;
 
 
 

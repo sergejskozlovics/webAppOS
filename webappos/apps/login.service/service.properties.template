@@ -26,8 +26,9 @@ signup_policy=deny
 password_expire_days=401500
 
 # obtain reCAPTCHA keys for your domain from Google at https://www.google.com/recaptcha/admin
-# if recaptcha_site_key is empty then no CAPTCHA will be required
-recaptcha_site_key=RECAPTCHA_SITE_KEY_PLACEHOLDER
-recaptcha_secret_key=RECAPTCHA_SECRET_KEY_PLACEHOLDER
+# if recaptcha_site_key is empty/not specified then no CAPTCHA will be required
+
+#recaptcha_site_key=RECAPTCHA_SITE_KEY_PLACEHOLDER
+#recaptcha_secret_key=RECAPTCHA_SECRET_KEY_PLACEHOLDER
 
 recaptcha_verify_url=https://www.google.com/recaptcha/api/siteverify

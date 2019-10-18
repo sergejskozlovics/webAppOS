@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,9 +29,7 @@ import org.webappos.properties.AppProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
 import org.webappos.webcaller.IWebCaller;
-import org.webappos.webcaller.IWebCaller.WebCallDeclaration;
 
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

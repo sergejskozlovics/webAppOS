@@ -1,0 +1,22 @@
+  apply plugin: 'java'
+
+
+  dependencies {
+    compile project(':webappos')
+    compile files('../../sys/bin')
+    compile 'com.google.code.gson:gson:2.8.5'
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'org.eclipse.jetty:jetty-servlet:9.4.14.v20181114'
+  }
+
+  sourceSets {
+    main.java.srcDirs = ['src']
+    main {
+      output.resourcesDir = file('bin')
+      java.outputDir = file('bin')
+    }
+  }
+
+
+  jar.enabled = false
+
