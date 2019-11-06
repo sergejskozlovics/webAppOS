@@ -2,7 +2,7 @@
 
 
   dependencies {
-    compile project(':src:sys')
+    compile project(':sys')
     compile files('../../sys/bin')
     compile 'com.google.code.gson:gson:2.8.5'
     compile 'commons-io:commons-io:2.6'

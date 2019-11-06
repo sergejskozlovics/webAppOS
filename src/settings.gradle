@@ -1,6 +1,24 @@
 rootProject.name = 'webappos'
 include ':sys'
+include ':FileBrowser.webservice'
+project(':FileBrowser.webservice').projectDir = new File('../dist/apps/FileBrowser.webservice')
+include ':FileDownload.webservice'
+project(':FileDownload.webservice').projectDir = new File('../dist/apps/FileDownload.webservice')
+include ':FileUpload.webservice'
+project(':FileUpload.webservice').projectDir = new File('../dist/apps/FileUpload.webservice')
 include ':Login.webservice'
-project(':Login.webservice').projectDir = new File('../apps/Login.webservice')
+project(':Login.webservice').projectDir = new File('../dist/apps/Login.webservice')
+include ':Status.webservice'
+project(':Status.webservice').projectDir = new File('../dist/apps/Status.webservice')
 include ':WebCalls.webservice'
-project(':WebCalls.webservice').projectDir = new File('../apps/WebCalls.webservice')
+project(':WebCalls.webservice').projectDir = new File('../dist/apps/WebCalls.webservice')
+include ':WebDAV.webservice'
+project(':WebDAV.webservice').projectDir = new File('../dist/apps/WebDAV.webservice')
+
+include ':DialogEngine.weblibrary'
+project(':DialogEngine.weblibrary').projectDir = new File('../dist/apps/DialogEngine.weblibrary')
+include ':GraphDiagramEngine.weblibrary'
+project(':GraphDiagramEngine.weblibrary').projectDir = new File('../dist/apps/GraphDiagramEngine.weblibrary')
+
+include ':HelloWorld.webapp'
+project(':HelloWorld.webapp').projectDir = new File('../dist/apps/HelloWorld.webapp')

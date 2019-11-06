@@ -2,7 +2,7 @@
 
 
   dependencies {
-    compile project(':src:sys')
+    compile project(':sys')
     compile files('../../sys/bin')
     compile 'com.google.code.gson:gson:2.8.5'
     compile 'org.slf4j:slf4j-api:1.7.25'

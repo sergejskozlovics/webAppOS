@@ -5,7 +5,8 @@ allprojects {
       mavenCentral()
   }
 
-  project.buildDir = file('../../build')
+  project.buildDir = file('../../../build')
+
 
 }
 

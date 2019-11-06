@@ -10,7 +10,21 @@
       mavenCentral()
   }
 
-  dependencies {
+dependencies {
+  runtimeOnly project(':FileBrowser.webservice')
+  runtimeOnly project(':FileDownload.webservice')
+  runtimeOnly project(':FileUpload.webservice')
+  runtimeOnly project(':Login.webservice')
+  runtimeOnly project(':Status.webservice')
+  runtimeOnly project(':WebCalls.webservice')
+  runtimeOnly project(':WebDAV.webservice')
+
+  runtimeOnly project(':DialogEngine.weblibrary')
+  runtimeOnly project(':GraphDiagramEngine.weblibrary')
+
+  runtimeOnly project(':HelloWorld.webapp')
+
+
   // slf4j used everywhere
       implementation 'org.slf4j:slf4j-api:1.7.25'
       //implementation 'org.slf4j:slf4j-simple:1.7.25'
@@ -106,8 +120,8 @@
   sourceSets {
     main.java.srcDirs = ['src']
     main {
-      output.resourcesDir = file('../../sys/bin')
-      java.outputDir = file('../../sys/bin')
+      output.resourcesDir = file('../../dist/sys/bin')
+      java.outputDir = file('../../dist/sys/bin')
     }
   }
 
@@ -140,13 +154,21 @@
 
   installDist {
     doFirst {
-          mkdir "bin"
-          mkdir "lib"
-          mkdir "home"
+          mkdir "../../dist/bin"
+          mkdir "../../dist/home"
     }
-    into('../../qq')  // relative to this gradle project
+    into('../../dist')  // relative to this gradle project
     preserve({
-          include '**'
+          include 'apps/**'
+          exclude 'bin/webappos*'
+          include 'cache/**'
+          include 'engines/**'
+          include 'etc/**'
+          include 'home/**'
+          include 'lib/lua/**'
+          include 'sys/**'
+          include 'var/**'
+          include 'web-root/**'
     })
     doLast {
       delete fileTree('bin').matching {
