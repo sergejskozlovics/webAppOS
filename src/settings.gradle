@@ -1,5 +1,6 @@
 rootProject.name = 'webappos'
 include ':sys'
+project(':sys').projectDir = new File('../dist/sys')
 include ':FileBrowser.webservice'
 project(':FileBrowser.webservice').projectDir = new File('../dist/apps/FileBrowser.webservice')
 include ':FileDownload.webservice'
