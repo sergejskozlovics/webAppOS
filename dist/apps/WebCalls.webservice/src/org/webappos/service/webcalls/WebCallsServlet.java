@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webappos.antiattack.ValidityChecker;
 import org.webappos.auth.UsersManager;
-import org.webappos.properties.AppProperties;
+import org.webappos.properties.WebAppProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
 import org.webappos.webcaller.IWebCaller;
@@ -303,12 +303,12 @@ public class WebCallsServlet extends HttpServlet
 			if (decl == null) {
 				fullAppName = API.dataMemory.getProjectFullAppName(project_id);
 				if ((fullAppName == null) && (app_url_name!=null)) {
-					AppProperties props = API.propertiesManager.getAppPropertiesByUrlName(app_url_name);
+					WebAppProperties props = API.propertiesManager.getWebAppPropertiesByUrlName(app_url_name);
 					if (props != null)
 						fullAppName = props.app_full_name;
 				}
 				if ((app_url_name==null) && (fullAppName!=null)) {
-					AppProperties props = API.propertiesManager.getAppPropertiesByFullName(fullAppName);
+					WebAppProperties props = API.propertiesManager.getWebAppPropertiesByFullName(fullAppName);
 					if (props != null)
 						app_url_name = props.app_url_name;
 				}
@@ -317,7 +317,7 @@ public class WebCallsServlet extends HttpServlet
 			else {
 				fullAppName = API.dataMemory.getProjectFullAppName(project_id);
 				if ((fullAppName == null) && (app_url_name!=null)) {
-					AppProperties props = API.propertiesManager.getAppPropertiesByUrlName(app_url_name);
+					WebAppProperties props = API.propertiesManager.getWebAppPropertiesByUrlName(app_url_name);
 					if (props != null)
 						fullAppName = props.app_full_name;
 				}
@@ -326,7 +326,7 @@ public class WebCallsServlet extends HttpServlet
 						fullAppName = new File(decl.pwd).getName();
 				}
 				if ((app_url_name==null) && (fullAppName!=null)) {
-					AppProperties props = API.propertiesManager.getAppPropertiesByFullName(fullAppName);
+					WebAppProperties props = API.propertiesManager.getWebAppPropertiesByFullName(fullAppName);
 					if (props != null)
 						app_url_name = props.app_url_name;
 				}

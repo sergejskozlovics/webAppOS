@@ -376,6 +376,10 @@ public class LoginServlet extends HttpServlet
 		    	}
 			}
 			
+			File f = new File(ConfigStatic.HOME_DIR+File.separator+login);
+			if (!f.exists())
+				f.mkdirs();
+			
 			if (jsonResult)
 				response.getOutputStream().print("{\"login\":\""+login+"\",\"ws_token\":\""+token+"\",\"expires\":\""+token_expires+"\",\"redirect\":\""+redirect+"\"}");
 			else {
