@@ -1,5 +1,0 @@
-[comment encoding = Cp1257 /]
-[module ecore2javahelper('http://www.eclipse.org/emf/2002/Ecore')/]
-
-[query public fileExists(name:String):Boolean
-	= invoke('ecore2java.ECore2JavaHelper','fileExists(java.lang.String)',Sequence{name}) /]
