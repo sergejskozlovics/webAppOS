@@ -1,0 +1,6 @@
+rootProject.name = 'webappos'
+include ':sys'
+include ':Login.webservice'
+project(':Login.webservice').projectDir = new File('../apps/Login.webservice')
+include ':WebCalls.webservice'
+project(':WebCalls.webservice').projectDir = new File('../apps/WebCalls.webservice')

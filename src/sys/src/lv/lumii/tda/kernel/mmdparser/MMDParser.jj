@@ -1,0 +1,331 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(MMDParser)
+
+package lv.lumii.tda.kernel.mmdparser;
+
+import lv.lumii.tda.raapi.RAAPI;
+
+public class MMDParser
+{
+  public static boolean debug = false;
+  private RAAPI repository;
+/*  public static void main(String args[]) throws ParseException {
+    MMDParser p = new MMDParser(System.in);
+    p.Start();
+  }*/
+
+  private boolean onlyCheckSyntax = true;
+  private StringBuffer loadErrors = null;
+
+  private String removeQuotes(String s)
+  {
+    if ((s.length()>=2) && (s.codePointAt(0)==0x22) && (s.codePointAt(s.length()-1)==0x22))
+    	return s.substring(1, s.length()-1);
+    if ((s.length()>=2) && (s.codePointAt(0)==0x201C) && (s.codePointAt(s.length()-1)==0x201D))
+    	return s.substring(1, s.length()-1);
+    if (s.startsWith("'") && s.endsWith("'"))
+    	return s.substring(1, s.length()-1);
+    else
+    	return s;
+  }
+  
+  public String checkSyntax()
+  {
+    onlyCheckSyntax = true;
+    try    {
+      	repository = null;   
+    	Start();
+    	return null;
+	} catch (ParseException e1) {
+	  return e1.toString();
+	}
+  }
+    // returns null if OK, or error description
+  public String loadMMD(RAAPI _repository)
+  {    onlyCheckSyntax = false;
+    repository = _repository;
+    loadErrors = new StringBuffer();
+    try
+    {      
+    	Start();
+    	if (loadErrors.length()==0) {    	  
+    	  loadErrors = null;
+	      repository = null;
+    	  return null;
+   		}
+   		else {		  repository = null;
+		  String s = loadErrors.toString();
+		  loadErrors.delete(0, loadErrors.length());
+		  loadErrors = null;	  
+		  return s;   		     		}
+	} catch (ParseException e1) {
+	  repository = null;
+	  String s = loadErrors.toString();
+	  loadErrors.delete(0, loadErrors.length());
+	  loadErrors = null;	  
+	  return s;
+	}      
+  }
+}
+
+PARSER_END(MMDParser)
+
+SKIP :
+{
+  < " " > |
+  < "\r" > |
+  < "\n" > |
+  < "\t" > |
+  < "//" (~["\n"])* "\n" >
+}
+
+void Start() :
+{
+}
+{
+	"MMDefStart;"
+	(MetamodelOperation() ";")*
+	"MMDefEnd;"
+	<EOF>
+}
+
+void MetamodelOperation() :
+{
+}
+{
+  Class() | Attr() | Rel() | Assoc()
+}
+
+void Class() :
+{
+}
+{  
+	"class"
+	<NAME>
+	{
+	  if (!onlyCheckSyntax)	  {	    
+		  if (MMDParser.debug)
+		    System.out.println(" >>adding class `" + token.image + "'...");
+		  long r = repository.findClass(removeQuotes(token.image));
+		  if (r == 0) {		    
+		  	r = repository.createClass(removeQuotes(token.image));
+		  	if (r == 0)
+		      loadErrors.append("Could not add class `" + token.image + ".\n");
+		  }
+		  
+		  if (r != 0) 		    		 
+		    repository.freeReference(r);
+	  }
+	}
+}
+
+void Attr() :
+{
+  String className;
+  String attrName;
+  String attrType;
+}
+{
+	"attr"
+	<NAME> {className=removeQuotes(token.image);}
+	"."
+	<NAME> {attrName=removeQuotes(token.image);}
+	":"
+	<NAME> {attrType=removeQuotes(token.image);}
+
+	{
+	  if (!onlyCheckSyntax)	  {	    
+		  if (MMDParser.debug)
+		    System.out.println(">>adding "+attrType+" attr "+attrName+" of "+className+"...");
+		  long c = repository.findClass(className);
+		  if (c==0)
+		      c = repository.createClass(className);
+		  if (c != 0) {
+			  long t = repository.findPrimitiveDataType(attrType);
+			  if (t != 0) {				    
+				  long r = repository.findAttribute(c, attrName);
+				  if (r == 0) {		    
+				    r = repository.createAttribute(c, attrName, t);
+				    if (r == 0)
+				      loadErrors.append("Could not add attribute `"+attrName+"' of type `"+attrType+"' for class `"+className+"'.\n");
+				    else
+				      repository.freeReference(r);
+				  }
+				  else {
+				    long rt = repository.getAttributeType(r); 
+				    if (rt != t) {
+				      loadErrors.append("Attribute `"+attrName+"' of type `"+attrType+"' for class `"+className
+				        +"' already exists, but has a different type ("+repository.getPrimitiveDataTypeName(rt)+" instead of "+repository.getPrimitiveDataTypeName(t)+").\n");
+				      if (rt != 0)
+				        repository.freeReference(rt);				    }				    repository.freeReference(r);
+				  }
+				  repository.freeReference(t);
+			  }
+			  else {
+			    loadErrors.append("Could not add attribute `"+attrName+"' of type `"+attrType+"' for class `"+className+"' since the type was not found.\n");
+			  }
+			  repository.freeReference(c);
+		 }
+		 else {
+		   loadErrors.append("Could not add attribute `"+attrName+"' of type `"+attrType+"' for class `"+className+"' since the class was not found.\n");		   		 }
+	  }
+	}
+}
+
+void Rel() :
+{
+	String subClassName;
+	String superClassName;
+}
+{
+	"rel"
+	<NAME> {subClassName=removeQuotes(token.image);}
+	"." "subClassOf" "."
+	<NAME> {superClassName=removeQuotes(token.image);}
+
+	{
+	  if (!onlyCheckSyntax)	  {
+        if (MMDParser.debug)
+	  	  System.out.println(">>generalization "+subClassName+"->"+superClassName+"...");
+	    long subRef = repository.findClass(subClassName);
+	    if (subRef==0)
+	      subRef = repository.createClass(subClassName);
+	    long superRef = repository.findClass(superClassName);
+	    if (superRef==0)
+	      superRef = repository.createClass(superClassName);
+
+	    boolean found = false;
+	    long it = repository.getIteratorForDirectSuperClasses(subRef);
+	    if (it != 0) {
+	      long r = repository.resolveIteratorFirst(it);
+	      while (r != 0) {
+	        if (r == superRef)
+	          found = true;
+	        repository.freeReference(r);
+	        if (found)
+	          break;
+	        r = repository.resolveIteratorNext(it);
+	      }
+	      repository.freeIterator(it);
+	    }	      
+	    if (!found) {	      
+	      boolean result = repository.createGeneralization(subRef, superRef);
+	      if (!result)
+	        loadErrors.append("Could not create generalization: "+subClassName+"->"+superClassName+".\n");
+	    }
+	    repository.freeReference(subRef);
+	    repository.freeReference(superRef);
+	  }
+	}
+}
+
+void Assoc() :
+{
+	boolean isComposition;
+	String sourceClass;
+	String sourceRole;
+	String sourceCardinality;
+	String targetClass;
+	String targetRole;
+	String targetCardinality;
+	boolean sourceOrdered;
+	boolean targetOrdered;
+}
+{
+	(
+	  "assoc" {isComposition=false;}
+	  |
+	  "compos"{isComposition=true;}
+	)
+	<NAME> {sourceClass=removeQuotes(token.image);}
+	"."
+	["{ordered}"] {sourceOrdered = token.image.equals("{ordered}");}	  	  
+	"["
+	Cardinality() {sourceCardinality=token.image;}
+	"]"
+	<NAME> {sourceRole=removeQuotes(token.image);}
+	"/"
+	<NAME> {targetRole=removeQuotes(token.image);}
+	"["
+	Cardinality() {targetCardinality=token.image;}
+	"]"
+	["{ordered}"] {targetOrdered = token.image.equals("{ordered}");}	  	  
+	"."
+	<NAME> {targetClass=removeQuotes(token.image);}
+
+	{
+	  if (!onlyCheckSyntax)	  {
+        if (MMDParser.debug) {
+	      if (isComposition)
+	        System.out.print(">>compos ");
+	      else
+	        System.out.print(">>assoc ");	    
+	      System.out.println(sourceClass+" "+sourceCardinality+" "+sourceRole+" "+sourceOrdered+" <-> "+
+	                                 targetClass+" "+targetCardinality+" "+targetRole+" "+targetOrdered+"...");
+        }
+
+		String msg = "Could not create ";
+		if (isComposition)
+		  msg += "composition ";
+		else
+		  msg += "association ";
+	    msg += "between "+sourceClass+"["+sourceCardinality+"]("+sourceRole+") and "+
+	                             targetClass+"["+targetCardinality+"]("+targetRole+").";
+        
+	    long sourceRef = repository.findClass(sourceClass);
+	    if (sourceRef == 0)
+	        sourceRef = repository.createClass(sourceClass);
+	    if (sourceRef != 0) {		      
+		    long targetRef = repository.findClass(targetClass);
+		    if (targetRef == 0)
+		        targetRef = repository.createClass(targetClass);
+		    if (targetRef != 0) {		      
+			    long r1 = repository.findAssociationEnd(sourceRef, targetRole);
+			    if (r1 != 0) {
+			    	long r2 = repository.getInverseAssociationEnd(r1);
+			    	if (r2 != 0) {
+			    	  if (!sourceRole.equals(repository.getRoleName(r2))) {
+			    	    loadErrors.append(msg+" The association already exists, but has another inverse role.\n");			    	  }
+			    	  repository.freeReference(r2);			    	}
+			    	else {
+			    	  loadErrors.append(msg+" The association already exists and is unidirectional.\n");
+			    	}
+			    	repository.freeReference(r1);
+			    }
+			    else			    {				    
+				    long assocRef = repository.createAssociation(sourceRef, targetRef,
+						sourceRole, targetRole, isComposition);
+					if (assocRef != 0) 
+		    		  repository.freeReference(assocRef);
+		    		else
+		    		  loadErrors.append(msg+"\n");
+		   		}	    		
+	    		repository.freeReference(targetRef);
+			}
+			else {
+			  loadErrors.append(msg+" The target class not found.\n");			}				
+ 	    	repository.freeReference(sourceRef);
+        }
+        else
+          loadErrors.append(msg+" The source class not found.\n");
+		  
+	  }
+	}
+}
+
+void Cardinality() :
+{
+}
+{
+	"1" | "1..1" | "0..1" | "0..*" | "*" | "1..*"
+}
+
+TOKEN :
+{
+  < NAME : ((["a"-"z","A"-"Z","0"-"9","_","#"]|"::")+   |   ("\"") (["a"-"z","A"-"Z","0"-"9","_","#"," "]|"::")+ ("\"") ) >
+}
+
+ 
