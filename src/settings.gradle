@@ -23,3 +23,7 @@ project(':GraphDiagramEngine.weblibrary').projectDir = new File('../dist/apps/Gr
 
 include ':HelloWorld.webapp'
 project(':HelloWorld.webapp').projectDir = new File('../dist/apps/HelloWorld.webapp')
+
+include ':devtools:ecore2java'
+include ':devtools:mmd2ecore'
+include ':devtools:sha256gen'

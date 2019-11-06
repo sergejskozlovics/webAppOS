@@ -53,23 +53,11 @@
   jar.enabled = true
 
   installDist {
-    into('../../webappos')
+    into('../../../dist')
     preserve({
-          include 'apps/**'
-          include 'bin/**'
+          include '**'
           exclude 'bin/ecore2java*'
-          include 'boot/**'
-          include 'cache/**'
-          include 'engines/**'
-          include 'etc/**'
-          include 'home/**'
-          include 'lib/**'
           exclude 'lib/ecore2java.jar'
-          include 'native/**'
-          include 'sys/**'
-          include 'var/**'
-          include 'web-root/**'
-          include '*.gradle'
     })
   }
 

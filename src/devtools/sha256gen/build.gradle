@@ -8,7 +8,7 @@
   }
 
   dependencies {
-    compile project(':src:sys')
+    compile project(':sys')
   }
 
   distZip.enabled = false
@@ -31,22 +31,10 @@
   installDist {
     doFirst {
     }
-    into('../../webappos')
+    into('../../../dist')
     preserve({
-          include 'apps/**'
-          include 'bin/**'
+          include '**'
           exclude 'bin/sha256gen*'
-          include 'boot/**'
-          include 'cache/**'
-          include 'engines/**'
-          include 'etc/**'
-          include 'home/**'
-          include 'lib/**'
-          include 'native/**'
-          include 'sys/**'
-          include 'var/**'
-          include 'web-root/**'
-          include '*.gradle'
     })
     doLast {
     }
