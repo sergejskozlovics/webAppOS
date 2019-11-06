@@ -12,4 +12,11 @@ cd webAppOS/src
 ./gradlew install
 cd ../dist/apps/Login.webservice/
 cp webservice.properties.template webservice.properties
+cd ../..
+```
+
+## Starting webAppOS
+From the webAppOS directory, run:
+```bash
+dist/bin/webappos
 ```
