@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="HelloWorldMetamodel" nsURI="http:///lv.lumii.tda.helloworld.153529d4-d959-4c6a-8b9d-4153a2b8f512" nsPrefix="org.webappos.apps.helloworld.mm">
-  <eClassifiers xsi:type="ecore:EClass" name="HelloWorld">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="message" unsettable="true">
-      <eType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    </eStructuralFeatures>
-  </eClassifiers>
-</ecore:EPackage>
