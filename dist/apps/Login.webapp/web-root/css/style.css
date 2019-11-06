@@ -1,0 +1,39 @@
+body { background: #eee; margin: 50px 0 0 0; font-family: /*Quicksand;*/webAppOS; }
+input:focus, button:focus, textarea:focus, select:focus { outline: 0; }
+
+#wrapper { width: 550px; text-align: center; margin: 0 auto;}
+
+#wrapper section { width: 500px; float: left; text-align: left; padding: 25px; background: rgba(255,255,255,0.7); -moz-box-shadow: 0 0 1px 2px rgba(20,20,20,0.3); -webkit-box-shadow: 0 0 1px 2px rgba(20,20,20,0.3); border-radius: 5px; -moz-transition: 0.3s linear; -webkit-transition: 0.3s linear; }
+#wrapper section:hover { -moz-box-shadow: 0 0 4px 3px #ff664a; -webkit-box-shadow: 0 0 4px 3px #66ccff;  background: rgba(255,255,255,1); }
+
+#wrapper section header { width: 35%; float: left; text-align: right; }
+#wrapper section header .name { width: 90%; float: left; margin: 24px 10% 43px 0; }
+#wrapper section header .password { width: 90%; float: left; margin: 0 10% 0 0; }
+#wrapper section header .email { width: 90%; float: left; margin: 10px 10% 43px 0; }
+#wrapper section header .newname { width: 90%; float: left; margin: 0 10% 43px 0; }
+#wrapper section header .password1 { width: 90%; float: left; margin: 0 10% 43px 0; }
+#wrapper section header .password2 { width: 90%; float: left; margin: 0 10% 43px 0; }
+#wrapper section header .first { width: 90%; float: left; margin: 10px 10% 43px 0; }
+#wrapper section header .next { width: 90%; float: left; margin: 0 10% 43px 0; }
+
+#wrapper section .inputs { width: 65%; float: left; }
+#wrapper section .inputs input { width: 93.5%; float: left; padding: 10px 3%; border: 1px solid #ddd; margin: 0 0 20px 0; font-family: Quicksand; font-size: 16px; border-radius: 5px; background: rgba(102,204,255,0.1); -moz-transition: 0.2s linear; -webkit-transition: 0.2s linear; }
+#wrapper section .inputs input:hover { background: #fff; border: 1px solid #ccc; }
+
+#wrapper section input.button { width: 500px; padding: 15px 0; border: 0px solid; margin: 5px 0 0 0; font-family: Quicksand; color: #fff; font-size: 18px; border-radius: 5px; -moz-transition: 0.3s linear; -webkit-transition: 0.3s linear; background: #999; -moz-box-shadow: 2px 2px 2px rgba(20,20,20,0.7); -webkit-box-shadow: 2px 2px 2px rgba(20,20,20,0.7); }
+#wrapper section input.button:hover { background: #66ccff; }
+
+#wrapper section .forgot { font-size: 10pt; width: 100%; float: left; margin: -15px 0 0 0; }
+#wrapper section .forgot a { color: #999; text-decoration: none; -moz-transition: 0.2s linear; -webkit-transition: 0.2s linear; }
+#wrapper section .forgot a:hover { color: #444; }
+
+#wrapper section .register { float: right; margin-top: 10px; margin-right:0; }
+#wrapper section .register a { color: #999; text-decoration: none; -moz-transition: 0.2s linear; -webkit-transition: 0.2s linear; }
+#wrapper section .register a:hover { color: #444; }
+
+#wrapper footer { width: 100%; float: left; margin: 0 0 0 0; padding:25px; /*background: #fff;*/background: rgba(255,255,255,0.7); padding: 20px 0; border-radius: 5px; -moz-box-shadow: 0 0 1px 2px rgba(50,50,50,0.1); -webkit-box-shadow: 0 0 1px 2px rgba(50,50,50,0.1); }
+#wrapper footer img { width: 20%; }
+
+footer {text-align:center; width:200px; float:left; margin-left:10px;/*background: #fff;*/background: rgba(255,255,255,0.7); padding: 20px 0; border-radius: 5px; -moz-box-shadow: 0 0 1px 2px rgba(50,50,50,0.1); -webkit-box-shadow: 0 0 1px 2px rgba(50,50,50,0.1); }
+footer img { width: 20%; }
+footer:hover { -moz-box-shadow: 0 0 4px 3px #ff664a; -webkit-box-shadow: 0 0 4px 3px #66ccff;  background: rgba(255,255,255,0.85); }

@@ -1,0 +1,178 @@
+document: FileBrowser Service API
+
+group: Introduction
+
+The FileBrowser service is a backend service for webAppOS FileBrowser app.
+
+FileBrowser is a modified version of remoteFileExplorer
+(available at <https://github.com/speich/remoteFileExplorer>) tailored for
+webAppOS API. The FileBrowser app uses Java servlet (instead of original PHP code)
+to implement RESTful service for accessing the file system. The Java servlet
+implements the same HTTP API as used by remoteFileExplorer.
+
+[Browser-side JavaScript code of remoteFileExplorer was written using DoJo Toolkit,
+thus, it utilizes modules
+	'dojo/store/Memory',
+	'dojo/store/JsonRest',
+	'dojo/store/Observable', and
+	'dojo/store/Cache'
+to access remote file system. In particular, the JsonRest module is responsible for
+sending underlying HTTP requests.]
+
+group: Access URL
+
+The FileBrowser service is accessible via the following URL:
+---code---
+http[s]://[domain_or_ip]/services/filebrowser/
+----------
+!! The trailing slash is essential because
+of Jetty configuration used by webAppOS. (See https://bugs.eclipse.org/bugs/show_bug.cgi?id=331194#c1 for more info.)
+
+group: Authentication
+
+All requests except </browse> require webAppOS authentication.
+The auth info must be sent in the "Authorization" HTTP header followed by "webAppOS_token",
+followed by the string "login:ws_token".
+
+Example:
+
+---code---
+Authorization webAppOS_token user1:123456
+----------
+
+group: Methods
+
+method: Get info on the given file or folder
+
+---prototype---
+GET http[s]://[domain_or_ip]/services/filebrowser/home/[path-to-file-or-folder-relative-to-user's-home]
+---------------
+
+
+Returns:
+
+  A JSON contating information about the requested file or folder.
+---code---
+{
+  "id": "/home/{path-to-file-or-folder-relative-to-user's-home}",
+  "dir": true|false,
+  "parId": "{parent-folder}",
+  "name": "{name}",
+  "size": 0|12345,
+  "cre": {created-timestamp},
+  "mod": {modified-timestamp},
+  "mime": "directory/desktop"|some other mime (optional)
+}
+----------
+
+On error, returns an empty response.
+
+method: List files in the given folder
+
+---prototype---
+GET http[s]://[domain_or_ip]/services/filebrowser/home/[path-to-folder-relative-to-user's-home]/?[masks]
+---------------
+!! The trailing slash is essential.
+
+Query:
+
+  [masks] - is an optional query contatining comma-separated file masks.
+            If the query is specified, the FileBrowser
+            service will return only files matching the given masks.
+
+Example:
+---code---
+GET http[s]://example.org/services/filebrowser/home/ontologies/?*.owl,*.xml
+----------
+
+
+Returns:
+
+a JSON _array_ of elements in the same format as in <Get info on the given file or folder>.
+On error, returns an empty response.
+
+method: Create new file/folder
+
+---prototype---
+POST http[s]://[domain_or_ip]/services/filebrowser
+---------------
+
+Request body is a JSON in the form:
+---code---
+{
+  "dir":true|false,
+  "parId":"/home/[path-to-parent-folder]",
+  "size":0,
+  "name":"new directory"|"new file.txt"
+}
+----------
+
+Returns:
+
+  A similar JSON with added attributes:
+
+  * *id* equal to the path of the newly created file starting from "/home",
+  * *cre* creation timestamp,
+  * *mod* the same as cre.
+
+  On error, the string "false" is returned.
+
+
+method: Delete a file/folder
+
+---prototype---
+DELETE http[s]://[domain_or_ip]/services/filebrowser/home/[path-to-file-or-folder-relative-to-user's-home]
+---------------
+
+Returns:
+
+  A JSON:
+---code---
+{
+  "msg": "item deleted"
+}
+----------
+  On error, the string "false" is returned.
+
+
+method: Move/Rename file or folder
+
+---prototype---
+PUT http[s]://[domain_or_ip]/services/filebrowser/home/[path-to-file-or-folder-relative-to-user's-home]
+---------------
+
+Request body is a JSON in the form:
+---code---
+{
+  "id":"/home/[path-to-file-or-folder-relative-to-user's-home]",
+  "dir":true|false, 
+  "parId":"/home/[path-to-new-parent-folder]",
+  "name":"[new-name]",
+  "size":0|13752,
+  "cre":1542189355769,
+  "mod":1542189355769
+}
+----------
+
+Returns:
+
+  A similar JSON with updated "mod" (modified time) value, or the string "false" on error.
+
+group: FileBrowser service redirect to FileBrowser app
+
+method: /browse
+
+---prototype---
+GET http[s]://[domain_or_ip]/services/filebrowser/browse/home/[path-to-file-or-folder-relative-to-user's-home]
+---------------
+
+When the URL contains a path that starts with "/browse" instead of "/home",
+FileBrowser service will return a redirect response with the URL
+pointing to the FileBrowser app to serve the path that follows the "/browse" prefix.
+
+Returns:
+
+  Redirects to
+  ---code---
+  http{s}://{domain_or_ip}/apps/filebrowser/path=/home/{path-to-file-or-folder-relative-to-user's-home}
+  ----------

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" >
+<!--
+License can be found in login.COPYING
+-->
+<head>
+  <meta charset="UTF-8">
+  <title>webAppOS Login Form</title>  
+  
+  <link rel="stylesheet" href="css/style.css"/>
+  <script type="text/javascript" src="/jquery.js"></script>
+  <script type="text/javascript" src="/jquery-ui.js"></script>
+
+  <script type="text/javascript" src="/webappos.js"></script>
+
+<!--
+  <link rel="stylesheet" type="text/css" href="css/zocial.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
+-->
+
+  <script>
+
+  function validate(event) {
+    event.preventDefault();
+    
+    var login = document.getElementById('login').value;
+    if (login=="") {
+      $(".inputs").effect("shake", {direction:"up"});
+      document.getElementById('login').style["border-color"]="red";
+    }
+    var p = document.getElementById('password').value;    
+    if (p=="") {
+      $(".inputs").effect("shake", {direction:"up"});
+      document.getElementById('password').style["border-color"]="red";
+    }
+
+    if ((login=="") || (p==""))
+      return;
+
+    var remember = document.getElementById('remember').checked;
+      var data = ("login="+login+"&password="+p+"&remember="+remember).replace(/%20/g, '+');
+
+      var xhr = new XMLHttpRequest();
+
+      var s=webappos.js_util.get_query_value("redirect");
+      if (!s)
+        s="";
+      else {
+        var i = window.location.search.indexOf("redirect=");
+        s="?"+window.location.search.substring(i+9);
+      }
+      xhr.open("POST", "/services/login/signin_token"+s, true);
+
+      var retVal = null;
+      xhr.onreadystatechange = function() {
+          if (this.readyState == this.DONE) {
+            var x = xhr.responseText.trim();
+            try {
+              var json = JSON.parse(x);
+              if (json.error)
+                throw json.error;
+              localStorage.setItem("login", json.login);
+              localStorage.setItem("ws_token", json.ws_token);
+              window.location.href = json.redirect;
+            }
+            catch(t) {
+              // incorrect login/password
+              $("#footer").hide();
+              setTimeout(function() {
+                $("#wrapper").effect("shake")
+                setTimeout(function() {
+                  $("#footer").show();
+                },500);
+              },0);
+            }
+          }
+      };
+
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.send(data);
+
+  }
+
+    
+  </script>
+  
+</head>
+
+<body style="background:url('bkg.jpg'); background-repeat: no-repeat center center fixed; background-size: cover;">
+<script>
+   var need_sign_out=webappos.js_util.get_query_value("signout");
+   if (need_sign_out=="true") {
+     if (webappos.login || webappos.ws_token)
+       webappos.sign_out();
+   }
+</script>
+
+  <div id="wrapper">
+  <IMG SRC="webAppOS.svg" style="width:300px; " ALIGN=CENTER BORDER=0/></img>
+  <p/>
+  <section>
+  	<header>
+      <div class="name">Login/e-mail:</div>
+      <div class="password">Password:</div>
+  	</header>
+  	<form id="theForm" action="/services/login/signin" method="POST">
+      <div class="inputs">
+      	<input type="text" id="login" name="login" onchange="document.getElementById('login').style['border-color']='';" onkeypress="document.getElementById('login').style['border-color']='';"/>
+      	<input type="password" id="password" name="password" onchange="document.getElementById('password').style['border-color']='';" onkeypress="document.getElementById('password').style['border-color']='';"/>
+    <div class="forgot">
+      <a href="forgot.html">Forgotten your password?</a>
+    </div>
+      </div>
+<p>
+      <div style="font-size:10pt;"><input type="checkbox" id="remember" name="remember"/>Remember me in this browser</div>
+        <input type="button" id="button" value="Log In" class="button" style="display:none;" onclick="validate(event);"/>
+        <input type="submit" id="submit" onclick="validate(event);"/>
+        <script>
+        // if scripts are allowed, we display the first button and hide the second
+        document.getElementById('button').style.display = "block";
+        document.getElementById('submit').style.display = "none";
+        </script>
+  	</form>
+  	</form>
+    <div id="signup_link" class="register" style="display:none;">
+      <a href="signup.html">New User? Sign up!</a>
+    </div>
+    <script>
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/services/login/signup_allowed", true);
+
+      var retVal = null;
+      xhr.onreadystatechange = function() {
+          if (this.readyState == this.DONE) {
+            var x = xhr.responseText.trim();
+            if (x == "true") {
+              document.getElementById('signup_link').style.display = "block";
+            }
+          }
+      };
+      xhr.send();
+    </script>
+
+  </section>
+</div>
+
+  <!--
+  <footer id="footer">
+  <div style="margin-top:0; margin-left:7px; margin-right:25px;">
+          <div>or log in via:</div>
+          <div class="zocial googleplus" style="width:100%">Google+</div>
+          <div class="zocial linkedin" style="width:100%">LinkedIn+</div>
+          <div class="zocial facebook" style="width:100%">Facebook</div>
+          <div class="zocial amazon" style="width:100%">Amazon</div>
+  </div>
+  </footer>
+  -->
+</div>
+
+<script>
+  var i = window.location.search.indexOf("redirect=");
+  if (i>=0) {
+    var redirect = window.location.search.substring(i+9);
+    theForm.action += "?"+redirect;
+
+    if (localStorage.getItem("ws_token")) {
+      webappos.request_scopes("webappos_scopes", "login").then(function() { // try to log in
+        if (webappos.login && webappos.ws_token) {
+          // webappos.login and webappos.ws_token must have been validated
+          setTimeout(function() {
+            if (redirect.indexOf("?")>=0)
+              window.location.href = redirect+"&login="+webappos.login+"&ws_token="+webappos.ws_token;
+            else
+              window.location.href = redirect+"?login="+webappos.login+"&ws_token="+webappos.ws_token;
+          }, 0);
+        }
+      });
+    }
+
+  }
+</script>  
+
+</body>
+
+</html>

@@ -1,0 +1,88 @@
+document: FileUpload Service API
+
+group: Introduction
+
+The FileUpload service is used by webAppOS and some apps (e.g., FileBrowser app)
+to upload files to the server.
+
+group: Access URL
+
+The FileUpload service is accessible via the following URL:
+---code---
+http[s]://[domain_or_ip]/services/fileupload/[login]/[relative/target/directory/path]
+----------
+
+Use the HTTP POST method to upload files.
+
+group: Authentication
+
+All requests require webAppOS authentication.
+The auth info must be sent in the URL query string (URL encoded)
+by specifying the "login" and "ws_token" arguments.
+
+Example:
+
+---code---
+http[s]://[domain_or_ip]/services/fileupload/[some/path]?login=[your-login]&ws_token=[your-ws_token]
+----------
+
+group: Methods
+
+method: Upload a file to the user's home directory
+
+---prototype---
+POST http[s]://[domain_or_ip]/services/fileupload/[login]/[path-to-file-or-folder-relative-to-user's-home]?login=[your-login]&ws_token=[your-ws_token]
+-----code------
+Content-Type: multipart/form-data; boundary=[some-boundary]
+---------------
+
+Uploads one ore more files encoded as multipart form data.
+An optional field "custom_file_name" can be specified BEFORE each file
+to specify the desired file name (instead of the original file name).
+
+Returns:
+  If the query parameter "onready" is "nocontent", returns the SC_NO_CONTENT HTTP response.
+  If the query parameter "onready" is "resetcontent", returns the SC_RESET_CONTENT HTTP response.
+
+  Otherwise, returns a JSON contating information about the uploaded files:
+---code---
+{
+  "uploaded": [
+     { "name": "some file.txt" },
+     { "name": "some file.txt", "newName": "some file 1.txt" }
+  ]
+}
+----------
+If the file with the given name already existed, the modified name is returned in the
+"newName" attribute.
+
+On error, returns a JSON contatining the "error" attribute. If some files have been uploaded,
+the "uploaded" attribute is returned as well.
+---code---
+{
+  "error": "Some files were not uploaded: file1.txt, file2.txt",
+  "uploaded": [
+     { "name": "some file.txt" },
+     { "name": "some file.txt", "newName": "some file 1.txt" }
+  ]
+}
+----------
+
+method: Upload a file to an active project
+
+---prototype---
+POST http[s]://[domain_or_ip]/services/fileupload/[project_id]/[some/subdirectory]?login=[your-login]&ws_token=[your-ws_token]&project_id=[project_id]
+-----code------
+Content-Type: multipart/form-data; boundary=[some-boundary]
+---------------
+
+All is the same as in <Upload a file to the user's home directory> except that
+the project_id parameter is added to the query.
+
+The files are being uploaded to the directory containing extracted
+files of the given active project; if the subdirectory is specified
+in the path path, it is prepended to the file name.
+
+
+When the project is saved, the uploaded files will
+remain a part of the project (unless they have been deleted).

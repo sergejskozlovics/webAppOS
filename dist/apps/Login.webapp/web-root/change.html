@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<!--
+Logic (JavaScript+HTML portions) copyright notice
+=================================================
+Copyright (c) 2017, Institute of Mathematics and Computer Science, University of Latvia.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Design (CSS+HTML portions) copyright notice
+===========================================
+Copyright (c) 2017 by Rob Salaman (https://codepen.io/lanesalaman/pen/tfFHp)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-->
+
+
+<head>
+  <meta charset="UTF-8">
+  <title>webAppOS Password Change Form</title>
+  
+  
+  
+      <link rel="stylesheet" href="webappos.css">
+      <link rel="stylesheet" href="css/style.css">
+      <link rel="stylesheet" type="text/css" href="css/zocial.css">
+  
+
+<script>
+
+function get_url_parameter(name) {
+  return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+} // [source: http://stackoverflow.com/questions/11582512/how-to-get-url-parameters-with-javascript]
+
+
+  var captcha_solved = false;
+
+  function onSubmit(token) {
+    captcha_solved = true;
+    document.getElementById('submit').click();
+  }
+
+  function onEnter(event) {
+    if (!captcha_solved)
+      event.preventDefault();
+  }
+
+  function validate(event) {
+    event.preventDefault();
+
+    var l = document.getElementById('login').value;
+    if (l=="") {
+      alert("You must enter your login.");
+      return;
+    }
+    
+    var p = document.getElementById('old_password').value;
+    if (p=="") {
+      alert("You must enter old or mailed password.");
+      return;
+    }
+
+    var p1 = document.getElementById('new_password').value;
+    var p2 = document.getElementById('new_password2').value;
+    if (p1!=p2) {
+      alert("Passwords do not match.");
+      return;
+    }
+    
+
+    if (p1=="") {
+      alert("You must enter new password.");
+      return;
+    }
+
+    // validation passed
+    if (captcha_solved)
+      document.getElementById('submit').click();
+    else
+      grecaptcha.execute();
+  }
+
+</script>
+
+</head>
+
+<body style="background:url('bkg.jpg'); background-repeat: no-repeat center center fixed; background-size: cover;">
+  <div id="recaptcha_warning" style="position:absolute; top:0; width:100%; padding:5px; display:none; background-color:#FFFFE0;">
+  This page implements the <a href="https://www.google.com/recaptcha/intro/index.html" target="_blank">Invisible reCAPTCHA</a>. Your use of the Invisible reCAPTCHA is subject to the <a href="https://www.google.com/intl/en/policies/privacy/" target="_blank">Google Privacy Policy</a> and <a href="https://www.google.com/intl/en/policies/terms/" target="_blank">Terms of Use.</a>
+  </div>
+
+  <div id="wrapper">
+<!--    <img src="webAppOS_signup.svg" style="width:300px; " ALIGN=CENTER BORDER=0/></img>-->
+    <section>
+      <header>
+        <div class="first" id="login_label" style="display:none;">Login:</div>
+        <div class="first" id="old_label">Old password:</div>
+        <div class="next">New password:</div>
+        <div class="next">Re-type password:</div>
+      </header>
+      <form id="theForm" name="change_form" action="/services/login/change_password" method="POST">
+        <div class="inputs">
+          <input type="text" id="login" name="login" style="display:none;"/>
+          <input type="password" id="old_password" name="old_password" />
+          <input type="password" id="new_password" name="new_password" />
+          <input type="password" id="new_password2" />
+        </div>
+        
+        <div id='recaptcha' class="g-recaptcha"
+          data-sitekey="your_site_key"
+          data-callback="onSubmit"
+          data-size="invisible">
+        </div>
+        <script>
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/services/login/recaptcha_site_key", false);
+
+            xhr.onreadystatechange = function() {
+                if (this.readyState == this.DONE) {
+                    var key = xhr.responseText.trim();
+                    if (key!="") {
+                      document.getElementById('recaptcha_warning').style.display = "block";
+                      document.getElementById('recaptcha').dataset.sitekey = key;
+                      var script = document.createElement('script');
+                      script.type = 'text/javascript';
+                      script.src = 'https://www.google.com/recaptcha/api.js';    
+                      document.getElementsByTagName('head')[0].appendChild(script);
+                    }
+                    else
+                      captcha_solved = true;
+                }
+            };
+            xhr.send();        
+        </script>
+             
+        <input type="button" id="button" value="Change!" class="button" style="display:none;" onclick="validate(event);"/>
+        <input type="submit" id="submit" onclick="onEnter(event);"/>
+        <script>
+        // if scripts are allowed, we display the first button and hide the second
+        document.getElementById('button').style.display = "block";
+        document.getElementById('submit').style.display = "none";
+        </script>
+      </form>
+      <div class="register">
+        <a href="index.html">Back to login</a>
+      </div>
+    </section>
+  </div>
+
+<script>
+document.getElementById('login').value = get_url_parameter("login");
+if (!document.getElementById('login').value) {
+  document.getElementById('login_label').style.display="block";
+  document.getElementById('login').style.display="block";
+  document.getElementById('old_label').classList.add("next");
+  document.getElementById('old_label').classList.remove("first");
+}
+
+
+var redirect = get_url_parameter("redirect");
+if (redirect) {
+  var i = window.location.search.indexOf("redirect=");
+  redirect=window.location.search.substring(i+9);
+  theForm.action += "?"+redirect;
+}
+
+</script>  
+
+</body>
+
+</html>

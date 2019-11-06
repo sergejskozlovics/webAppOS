@@ -1,0 +1,62 @@
+document: FileDownload Service API
+
+group: Introduction
+
+The FileDownload service is used by webAppOS and some apps
+to download files to the server.
+
+group: Access URL
+
+The FileDownload service is accessible via the following URL:
+---code---
+http[s]://[domain_or_ip]/services/filedownload/[login]/[relative/path/to/file/being/downloaded]
+----------
+
+Use the HTTP GET method to download files.
+
+group: Authentication
+
+All requests require webAppOS authentication.
+The auth info must be sent in the URL query string (URL encoded)
+by specifying the "login" and "ws_token" arguments.
+
+Example:
+
+---code---
+http[s]://[domain_or_ip]/services/filedownload/[login]/[some/relative/path/to/file]?login=[your-login]&ws_token=[your-ws_token]
+----------
+
+group: Methods
+
+method: Download a file from the user's home directory
+
+---prototype---
+GET http[s]://[domain_or_ip]/services/filedownload/[login]/[relative-path-to-a-file]?login=[your-login]&ws_token=[your-ws_token]
+---------------
+
+Returns:
+
+  an octet stream contatining the given file (content type will be "application/octet-stream").
+
+  On error, returns a JSON:
+---code---
+{
+  "error": "{message}"
+}
+----------
+
+method: Download a file from the project
+
+---prototype---
+GET http[s]://[domain_or_ip]/services/filedownload/[project_id]/[path-to-a-file-within-a-project]?login=[your-login]&ws_token=[your-ws_token]&project_id=[project_id]
+---------------
+
+Returns:
+
+  an octet stream contatining the given file (content type will be "application/octet-stream").
+
+  On error, returns a JSON:
+---code---
+{
+  "error": "{message}"
+}

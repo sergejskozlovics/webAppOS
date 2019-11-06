@@ -1,0 +1,50 @@
+document: WebDAV Service API
+
+group: Introduction
+
+The WebDAV service implements WebDAV protocol to access
+user's home folder at webAppOS server (including mounted remote folders).
+
+group: Access URL
+
+The WebDAV service is accessible via the following URLs:
+---code---
+https[or http]://[domain_or_ip]/services/webdav/relative/path
+https[or http]://webdav_service.[domain]/relative/path
+----------
+
+
+group: Authentication
+
+All requests must provide valid user credentials. Use "Basic" autorization with Base64 encoding:
+---code---
+Authorization: Basic [login:password in Base64 encoding]
+----------
+
+Since the password is not encrypted, it is strongly adviced to use the
+WebDAV service via the HTTPS connection.
+
+group: Mounting from GNU/Linux
+
+First, install davfs2:
+---code---
+sudo apt install davfs2
+----------
+
+Then mount using:
+---code---
+mkdir /mnt/mount-point
+mount -t davfs -o noexec [your-WebDAV-service-URL-with-path] /mnt/mount-point 
+----------
+
+group: service.properties for the WebDAV service
+
+The following properties can be specified in service.properties for the WebDAV service:
+
+ResourceHandlerImplementation - the name of the Java class implementing the file system store
+
+                                Example: org.webappos.service.webdav.HomeFS_WebdavStore
+
+rootpath - the root directory
+
+           Example: /$WEBAPPOS_ROOT/home
