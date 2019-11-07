@@ -40,8 +40,8 @@ public abstract class ConfigStatic {
 	public Properties properties = new Properties();
 	
 	public boolean hasOnlyIP = false;
-	public String simple_domain_or_ip = "localhost";
-	public String domain_or_ip = "localhost:4570";
+	public String simple_domain_or_ip = "127.0.0.1";
+	public String domain_or_ip = "127.0.0.1:4570";
 	public int port = 4570;
 	public int secure_port = 4571;
 	
