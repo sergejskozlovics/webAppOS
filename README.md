@@ -1,6 +1,6 @@
 [![License](http://img.shields.io/:license-EUPL-brightgreen.svg)](https://raw.githubusercontent.com/LUMII-Syslab/webAppOS/master/COPYING)
 
-![webAppOS logo](http://webappos.org/top-logo.png)
+[![webAppOS logo](http://webappos.org/top-logo.png)](http://webappos.org)
 
 # webAppOS
 This repository contains webAppOS sources.
