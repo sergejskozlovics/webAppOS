@@ -1,7 +1,8 @@
 [![License](http://img.shields.io/:license-EUPL-brightgreen.svg)](https://raw.githubusercontent.com/LUMII-Syslab/webAppOS/master/COPYING)
 
 # webAppOS
-webAppOS files at github
+This repository contains webAppOS sources.
+For documentation and other info, visit [webAppOS homepage](http://webappos.org).
 
 ## Installation
 
