@@ -11,6 +11,13 @@ cd webAppOS/src
 ./gradlew build
 ./gradlew install
 cd ../..
+```
+Please, notice that the build step is essential - it compiles certain webAppOS applications and
+services, which do not have the install task.
+
+## Initial Configuration
+
+```bash
 cd webAppOS/dist/apps/Login.webservice/
 cp webservice.properties.template webservice.properties
 pico webservice.properties
@@ -20,6 +27,8 @@ copy webappos.properties.template webappos.properties
 pico webappos.properties
 cd ../../..
 ```
+You can use any text editor instead of pico. Default (unchanged) configuration should work
+well on localhost (127.0.0.1).
 
 ## Starting webAppOS
 From the webAppOS directory, run:
