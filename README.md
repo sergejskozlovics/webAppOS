@@ -27,8 +27,8 @@ copy webappos.properties.template webappos.properties
 pico webappos.properties
 cd ../../..
 ```
-You can use any text editor instead of pico. Default (unchanged) configuration should work
-well on localhost (127.0.0.1).
+You can use any text editor instead of pico. The default (unchanged) configuration should work
+well on localhost (127.0.0.1:4570).
 
 ## Starting webAppOS
 From the webAppOS directory, run:
