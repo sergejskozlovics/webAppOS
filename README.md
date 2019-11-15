@@ -39,3 +39,13 @@ From the webAppOS directory, run:
 cd webAppOS/dist/bin
 ./webappos
 ```
+## Developing using Eclipse
+
+Eclipse for Java developers is needed.
+
+1. In Eclipse, right click on the Package Explorer window (usually, on the left).
+2. In the popup menu, click "Import...".
+3. In the Import wizard, choose "Existing Projects into Workspace".
+4. In the "Select root directory" input field, choose the webAppOS cloned git directory. Eclipse
+   will start searching for projects.
+5. Choose the projects to import and click "Finish".

@@ -5,10 +5,6 @@ import org.webappos.email.IEmailSender;
 import org.webappos.email.TLS_SMTP_EmailSender;
 import org.webappos.fs.HomeFS;
 import org.webappos.fs.IFileSystem;
-import org.webappos.memory.IMRAM;
-import org.webappos.memory.IMRAMWrapper;
-import org.webappos.memory.MRAM;
-import org.webappos.memory.OfflineMRAM;
 import org.webappos.properties.IPropertiesManager;
 import org.webappos.properties.IPropertiesManagerWrapper;
 import org.webappos.properties.PropertiesManager;
@@ -25,6 +21,10 @@ import org.webappos.util.Ports;
 import org.webappos.webcaller.IWebCaller;
 import org.webappos.webcaller.IWebCallerWrapper;
 import org.webappos.webcaller.WebCaller;
+import org.webappos.webmem.IWebMemoryArea;
+import org.webappos.webmem.IWebMemoryAreaWrapper;
+import org.webappos.webmem.OfflineWebMemoryArea;
+import org.webappos.webmem.WebMemoryArea;
 import org.webappos.webproc.IRWebProcessor;
 import org.webappos.webproc.IRWebProcessorBusService;
 import org.webappos.webproc.WebProcessorBusService;
@@ -60,7 +60,7 @@ public class API {
 		}
 		
 		try {
-			dataMemory = new MRAM();
+			dataMemory = new WebMemoryArea();
 		} catch (RemoteException e) {
 		}
 		
@@ -141,7 +141,7 @@ public class API {
 			
 			propertiesManager = new IPropertiesManagerWrapper(wpbService.getPropertiesManager());
 			
-		    dataMemory = new IMRAMWrapper(wpbService.getDataMemory());
+		    dataMemory = new IWebMemoryAreaWrapper(wpbService.getWebMemoryArea());
 		    registry = new IRegistryWrapper(wpbService.getRegistry());
 		    status = new IStatusWrapper(wpbService.getStatus());
 
@@ -172,7 +172,7 @@ public class API {
 		} catch (RemoteException e1) {
 		}
 		
-		dataMemory = new OfflineMRAM();		
+		dataMemory = new OfflineWebMemoryArea();		
 		
 		try {
 			status = new NoStatus();
@@ -229,7 +229,7 @@ public class API {
 	public static ConfigStatic config = null;
 	
 	// DATA
-	public static IMRAM dataMemory = null;
+	public static IWebMemoryArea dataMemory = null;
 	
 	// CODE
 	public static IWebCaller webCaller = null;	

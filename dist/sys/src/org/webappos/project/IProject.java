@@ -55,7 +55,7 @@ public interface IProject {
 	public boolean createFromTemplate(WebAppProperties appProps, String templateFileName, String desiredName, String login, RAAPI_Synchronizer sync, IEventsCommandsHook hook);
 	
 	/**
-	 * Bootstraps a new project with the given app (initial_webcall property must be specified in app.properties)
+	 * Bootstraps a new project with the given app (the "main" property must be specified in app.properties)
 	 * @param appProps app properties of the app that will be used to bootstrap the project
 	 * @param desiredName the desired name of the project (project_id or file name); optional for zipped projects, required for cloud projects (for cloud projects we need a user name and a subfolder specified in the desiredName)
 	 * @return whether the operation succeeded

@@ -1,4 +1,4 @@
-package org.webappos.memory;
+package org.webappos.webmem;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -8,18 +8,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.webappos.bridge.GlobalSenderThread;
-
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 
-public class SynchronizerToIRMRAM implements RAAPI_Synchronizer {
+public class SynchronizerToIRWebMemoryArea implements RAAPI_Synchronizer {
 	
 	private String project_id;
-	private IRMRAM rmram;
+	private IRWebMemoryArea wmarea;
 	
-	public SynchronizerToIRMRAM(String _project_id, IRMRAM _rmram) {
+	public SynchronizerToIRWebMemoryArea(String _project_id, IRWebMemoryArea _rmram) {
 		project_id = _project_id;
-		rmram = _rmram;
+		wmarea = _rmram;
 	}
 
 		
@@ -445,7 +443,7 @@ public class SynchronizerToIRMRAM implements RAAPI_Synchronizer {
 		
 		
 		try {
-			rmram.syncChanges_R(project_id, nActions, actions, sb.toString());
+			wmarea.syncChanges_R(project_id, nActions, actions, sb.toString());
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -457,7 +455,7 @@ public class SynchronizerToIRMRAM implements RAAPI_Synchronizer {
 		sendAndClearBuffersNow();
 		
 		try {
-			rmram.syncChanges_R(project_id, nActions, actions, delimitedStrings);
+			wmarea.syncChanges_R(project_id, nActions, actions, delimitedStrings);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -499,7 +497,7 @@ public class SynchronizerToIRMRAM implements RAAPI_Synchronizer {
 				if (bufS!=null) {
 					try {
 						// rmram.syncChanges_R(project_id, pos/8, bufA.asDoubleBuffer().array(), s);						
-						rmram.syncChanges_R(project_id, pos/8, bufAToArray(pos/8), s);
+						wmarea.syncChanges_R(project_id, pos/8, bufAToArray(pos/8), s);
 						
 					} catch (RemoteException e) {
 						e.printStackTrace();
@@ -508,7 +506,7 @@ public class SynchronizerToIRMRAM implements RAAPI_Synchronizer {
 				else {
 					try {
 						//rmram.syncChanges_R(project_id, pos/8, bufA.asDoubleBuffer().array(), "");
-						rmram.syncChanges_R(project_id, pos/8, bufAToArray(pos/8), "");
+						wmarea.syncChanges_R(project_id, pos/8, bufAToArray(pos/8), "");
 					} catch (RemoteException e) {
 						e.printStackTrace();
 					}					

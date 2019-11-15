@@ -6,16 +6,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webappos.server.API;
 import org.webappos.webcaller.IJsonWebCallsAdapter;
-import org.webappos.webcaller.ITdaWebCallsAdapter;
+import org.webappos.webcaller.IWebMemWebCallsAdapter;
+import org.webappos.webmem.IWebMemory;
 
-import lv.lumii.tda.raapi.RAAPI;
 
-public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapter {
+public class WebCallsAdapter implements IJsonWebCallsAdapter, IWebMemWebCallsAdapter {
 	private static Logger logger =  LoggerFactory.getLogger(WebCallsAdapter.class);
 	
 	
 	@Override
-	public void tdacall(String location, String pwd, long rObject, RAAPI raapi, String project_id, String appFullName,
+	public void webmemcall(String location, String pwd, long rObject, IWebMemory raapi, String project_id, String appFullName,
 			String login) {
 		// location must be in the form className#functionName
 		if (location == null)
@@ -33,11 +33,11 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 		
 		Method m = null, m1 = null;;
 		try {
-			m = c.getMethod(location.substring(i+1), RAAPI.class, Long.TYPE);
+			m = c.getMethod(location.substring(i+1), IWebMemory.class, Long.TYPE);
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		try {
-			m1 = c.getMethod(location.substring(i+1), RAAPI.class, String.class, Long.TYPE);
+			m1 = c.getMethod(location.substring(i+1), IWebMemory.class, String.class, Long.TYPE);
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		
@@ -82,17 +82,17 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 			return null;
 		
 		Method m00=null, m0=null, m1=null, m2=null, m3=null, m4=null;
-		RAAPI raapi = API.dataMemory.getTDAKernel(project_id);
+		IWebMemory webmem = API.dataMemory.getWebMemory(project_id);
 		try {
 			m00 = c.getMethod(location.substring(i+1), String.class, String.class, String.class, String.class); // project_id, arg, login, appFullName
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		try {
-			m0 = c.getMethod(location.substring(i+1), RAAPI.class, String.class, String.class, String.class); // raapi, arg, login, appFullName
+			m0 = c.getMethod(location.substring(i+1), IWebMemory.class, String.class, String.class, String.class); // raapi, arg, login, appFullName
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		try {
-			m1 = c.getMethod(location.substring(i+1), RAAPI.class, String.class, String.class); // raapi, arg, login
+			m1 = c.getMethod(location.substring(i+1), IWebMemory.class, String.class, String.class); // raapi, arg, login
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		try {
@@ -101,7 +101,7 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 		}
 		
 		try {
-			m3 = c.getMethod(location.substring(i+1), RAAPI.class, String.class); // raapi, arg
+			m3 = c.getMethod(location.substring(i+1), IWebMemory.class, String.class); // raapi, arg
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		
@@ -118,17 +118,17 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 			}
 		}
 		else
-		if ((m0!=null) && (m0.getReturnType() == String.class) && (raapi!=null) && (login!=null) && (appFullName!=null)) {			
+		if ((m0!=null) && (m0.getReturnType() == String.class) && (webmem!=null) && (login!=null) && (appFullName!=null)) {			
 			try {
-				return (String)m0.invoke(null, raapi, argument, login, appFullName);
+				return (String)m0.invoke(null, webmem, argument, login, appFullName);
 			} catch (Throwable t) {
 				return null;
 			}
 		}
 		else
-		if ((m1!=null) && (m1.getReturnType() == String.class) && (raapi!=null) && (login!=null)) {
+		if ((m1!=null) && (m1.getReturnType() == String.class) && (webmem!=null) && (login!=null)) {
 			try {
-				return (String)m1.invoke(null, raapi, argument, login);
+				return (String)m1.invoke(null, webmem, argument, login);
 			} catch (Throwable t) {
 				return null;
 			}
@@ -143,9 +143,9 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, ITdaWebCallsAdapte
 			}
 		}
 		else
-		if ((m3!=null) && (m3.getReturnType() == String.class) && (raapi!=null)) {
+		if ((m3!=null) && (m3.getReturnType() == String.class) && (webmem!=null)) {
 			try {
-				return (String)m3.invoke(null, raapi, argument);
+				return (String)m3.invoke(null, webmem, argument);
 			} catch (Throwable t) {
 				return null;
 			}

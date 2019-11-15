@@ -1,4 +1,4 @@
-package org.webappos.memory;
+package org.webappos.webmem;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -7,7 +7,7 @@ import org.webappos.project.IProject;
 
 import lv.lumii.tda.kernel.TDAKernel;
 
-public class OfflineMRAM implements IMRAM {
+public class OfflineWebMemoryArea implements IWebMemoryArea {
 	
 	private Set<IProject> list = new HashSet<IProject>();
 	
@@ -16,7 +16,7 @@ public class OfflineMRAM implements IMRAM {
 	}
 
 	@Override
-	public TDAKernel getTDAKernel(String project_id) {
+	public TDAKernel getWebMemory(String project_id) {
 		for (IProject p : list)
 			if (project_id.equals(p.getName()))
 				return p.getTDAKernel();
@@ -49,7 +49,7 @@ public class OfflineMRAM implements IMRAM {
 	}
 
 	@Override
-	public void faultMRAM(String project_id) {
+	public void webMemoryFault(String project_id) {
 		for (IProject p : list)
 			if (project_id.equals(p.getName())) {
 				list.remove(p);

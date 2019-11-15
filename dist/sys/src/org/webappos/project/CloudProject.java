@@ -221,7 +221,7 @@ public class CloudProject implements IProject {
 		}		
 		
 		
-		if ((appProps.initial_webcall == null) || (appProps.initial_webcall.isEmpty())) {
+		if ((appProps.main == null) || (appProps.main.isEmpty())) {
 			// initial webcall not found
 			return false;
 		}
@@ -272,7 +272,7 @@ public class CloudProject implements IProject {
 				if (!tdaKernel.upgradeToTDA(bootstrap, login, false)) {
 					String project_id = CloudProject.this.name; 
 					cleanup(true, true);
-					API.dataMemory.faultMRAM(project_id);
+					API.dataMemory.webMemoryFault(project_id);
 				}
 				else {
 					if (sync!=null)

@@ -1,8 +1,5 @@
-package org.webappos.memory;
+package org.webappos.webmem;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
@@ -23,34 +20,14 @@ import lv.lumii.tda.kernel.TDAKernel;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 import lv.lumii.tda.raapi.RAAPI_WR;
 
-public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
+public class WebMemoryArea extends UnicastRemoteObject implements IWebMemoryArea, IRWebMemoryArea {
 	
-	public MRAM() throws RemoteException {
+	public WebMemoryArea() throws RemoteException {
 		super();
 	}
 
 	private static final long serialVersionUID = 1L;
-	private static Logger logger =  LoggerFactory.getLogger(MRAM.class);
-	
-	/*
-	private static Thread shmsyncThread = new Thread() {
-		@Override
-		public void run() {
-			for(;;) {
-				try {
-					Thread.sleep(10); // TODO: configure this
-				} catch (InterruptedException e) {
-					logger.error("SHM SYNC THREAD INTERRUPTED");
-					break;
-				}
-				// shmsync all active contexts
-			}
-        }				
-	};
-	
-	static {
-		shmsyncThread.start();
-	}*/
+	private static Logger logger =  LoggerFactory.getLogger(WebMemoryArea.class);
 	
 	private static class Slot {
 		public Vector<RAAPI_Synchronizer> allSynchronizers = new Vector<RAAPI_Synchronizer>();
@@ -59,10 +36,8 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 
 		public IProject project = null;
 		public RAAPI_WR raapi_wr = null;
-		//public Map<String, Runnable> ws_tokens = new HashMap<String, Runnable>(); // connected clients and their onFault runnables
 		public HashMultiset<String> ws_tokens = HashMultiset.create();
-		//public Map<MRAM_Handle, Runnable> onFaultRunnables = new HashMap<String, Runnable>(); // connected clients and their onFault runnables
-		public Set<MRAM_Handle> handles = new HashSet<MRAM_Handle>(); // handles of connected clients		
+		public Set<WebMemoryHandle> handles = new HashSet<WebMemoryHandle>(); // handles of connected clients		
 		public Set<Long> usedPredefinedBitsValues = new HashSet<Long>();
 		private long lastUsedPredefinedBits = 0;
 		public WebAppProperties appProps = null;
@@ -147,7 +122,7 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 			}
 			
 			if (fault) {
-				for (MRAM_Handle h : this.handles) {
+				for (WebMemoryHandle h : this.handles) {
 					Runnable r = h.onFault;
 					if (r!=null) {
 						try {
@@ -170,12 +145,16 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 	
 	private Map<String, Slot> projectIdToSlotMap = new HashMap<String, Slot>();
 	
-	public class MRAM_Handle {
+	/**
+	 * A handle to web memory.
+	 * There can be multiple web memory handles (e.g., serving multiple clients).
+	 */
+	public class WebMemoryHandle {
 		public String project_id;
 		public String login;
 		private String ws_token;
 		public RAAPI_Synchronizer currentSynchronizer;
-		public TDAKernel kernel; // with all synchronizers
+		public IWebMemory webmem; // with all synchronizers
 		public RAAPI_WR raapi_wr; // without synchronizers
 		public RAAPI_Synchronizer otherSynchronizers; // other synchronizers (excluding currentSynchronizer)
 		private long predefinedBitsValues;
@@ -243,7 +222,7 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		slot.singleSynchronizer = singleSynchronizer; 		
 	}
 	
-	synchronized public TDAKernel getTDAKernel(String project_id) {
+	synchronized public IWebMemory getWebMemory(String project_id) {
 		Slot slot = projectIdToSlotMap.get(project_id);
 		if (slot == null)
 			return null;
@@ -288,7 +267,7 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		if (b) {
 			projectIdToSlotMap.remove(project_id);
 			projectIdToSlotMap.put(new_project_id, slot);
-			for (MRAM_Handle h : slot.handles) {
+			for (WebMemoryHandle h : slot.handles) {
 				h.project_id = new_project_id;
 			}
 			
@@ -300,7 +279,7 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 	// returns null if ack sync failed (need to re-connect without ack);
 	// or e.g. when this ws_token is already used to connect to this project
 	// TODO: throw exceptions to inform about errors in detail?
-	synchronized public MRAM_Handle connectToMRAM(boolean bootstrap, String app_url_name, String template, String project_id, String login, String ws_token, long available_action_for_ack, RAAPI_Synchronizer sync, Runnable onFault) {
+	synchronized public WebMemoryHandle connectClientAndGetHandle(boolean bootstrap, String app_url_name, String template, String project_id, String login, String ws_token, long available_action_for_ack, RAAPI_Synchronizer sync, Runnable onFault) {
 		if ((project_id==null) || (login==null) || (ws_token==null) || (sync==null))
 			return null;
 		
@@ -320,16 +299,19 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		
 		boolean inited = false;
 		if (slot==null) {
-				slot = new Slot();
-								
-				if (slot.init(bootstrap, app_url_name, template, project_id, login, sync)) {
-					project_id = slot.project.getName(); // bootstrap or creating from template could modify desired project_id
-					projectIdToSlotMap.put(project_id, slot);
-					
-					inited = true;
-				}
-				else
-					return null;
+			if ("*".equals(app_url_name))
+				return null; // connection to an existing slot is expected
+			
+			slot = new Slot();
+							
+			if (slot.init(bootstrap, app_url_name, template, project_id, login, sync)) {
+				project_id = slot.project.getName(); // bootstrap or creating from template could modify desired project_id
+				projectIdToSlotMap.put(project_id, slot);
+				
+				inited = true;
+			}
+			else
+				return null;
 		}
 
 		long newPredefinedBitsValues;
@@ -375,12 +357,12 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 		}
 		
 
-		MRAM_Handle retVal = new MRAM_Handle();
+		WebMemoryHandle retVal = new WebMemoryHandle();
 		retVal.project_id = project_id;
 		retVal.login = login;
 		retVal.ws_token = ws_token;
 		retVal.currentSynchronizer = sync;		
-		retVal.kernel = slot.project.getTDAKernel();
+		retVal.webmem = slot.project.getTDAKernel();
 		retVal.raapi_wr = slot.raapi_wr;
 		retVal.otherSynchronizers = new MultiSynchronizer(slot.allSynchronizers, sync);
 		retVal.predefinedBitsValues = newPredefinedBitsValues;
@@ -393,7 +375,7 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 	// synchronizers MUST be disconnected on bridge socket close; otherwise, MRAM slot will remain occupied;
 	// also, the user won't be able to reconnect to this project with the same ws_token;
 	// the handle must be the same as returned by connectToMRAM 
-	synchronized public void disconnectFromMRAM(MRAM_Handle h) {
+	synchronized public void disconnectClientAndFreeHandle(WebMemoryHandle h) {
 		if (h==null)
 			return;
 		
@@ -416,14 +398,14 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 	}
 	
 	/**
-	 * Clears the MRAM slot for the given project and disconnects all users by calling onFault runnables (within slot.done()).
+	 * Clears the web memory slot for the given project and disconnects all users by calling onFault runnables (within slot.done()).
 	 * @param project_id the project_id for which to perform "MRAM fault" action.
 	 */
-	synchronized public void faultMRAM(String project_id) {
+	synchronized public void webMemoryFault(String project_id) {
 		Slot slot = projectIdToSlotMap.remove(project_id);
 		if (slot==null)
 			return;
-		slot.done(true/*MRAM fault*/);
+		slot.done(true/*web memory fault*/);
 	}
 
 	@Override
@@ -442,8 +424,8 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 	}
 
 	@Override
-	public void faultMRAM_R(String project_id) throws RemoteException {
-		this.faultMRAM(project_id);
+	public void webMemoryFault_R(String project_id) throws RemoteException {
+		this.webMemoryFault(project_id);
 	}
 
 	@Override
@@ -461,11 +443,5 @@ public class MRAM extends UnicastRemoteObject implements IMRAM, IRMRAM {
 			return;
 		s.syncBulk(nActions, actions, delimitedStrings);
 	}
-
 	
-	/*
-	// should be called on bridge socket disconnect (for any reason)
-	synchronized public void setLastAck(String project_id, String ws_token, long last_ack) {
-		// stores into the registry (?)
-	}*/
 }

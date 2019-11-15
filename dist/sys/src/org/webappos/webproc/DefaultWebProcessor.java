@@ -13,12 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webappos.server.API;
 import org.webappos.webcaller.IJsonWebCallsAdapter;
-import org.webappos.webcaller.ITdaWebCallsAdapter;
+import org.webappos.webcaller.IWebMemWebCallsAdapter;
 import org.webappos.webcaller.IWebCaller.CallingConventions;
 import org.webappos.webcaller.IWebCaller.WebCallDeclaration;
 import org.webappos.webcaller.IWebCaller.WebCallSeed;
+import org.webappos.webmem.IWebMemory;
+import org.webappos.webmem.WebMemoryContext;
 
-import lv.lumii.tda.kernel.TDAKernel;
 
 public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebProcessor {
 	private String id;
@@ -54,9 +55,6 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 		catch(Throwable t) {
 			return false;
 		}
-		
-		
-//		return "lua".equals(name);  // TODO: move to webcalls adapters API
 	}
 	
 	@Override
@@ -97,17 +95,17 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 					if (adapter == null)
 						return;
 					
-					TDAKernel kernel = API.dataMemory.getTDAKernel(seed.project_id);
+					IWebMemory webmem = API.dataMemory.getWebMemory(seed.project_id);
 					String jsonResult = null;
 													
 					if ((seed.callingConventions == CallingConventions.JSONCALL) && (adapter instanceof IJsonWebCallsAdapter)) {
 						boolean newOwner = false;
-						if (kernel!=null && kernel.getOwner()==null) {
+						if (webmem!=null && webmem.getContext()==null) {
 							newOwner = true;
-							TDAKernel.Owner owner = new TDAKernel.Owner();
-							owner.login = seed.login;
-							owner.project_id = seed.project_id;
-							kernel.setOwner(owner);
+							WebMemoryContext ctx = new WebMemoryContext();
+							ctx.login = seed.login;
+							ctx.project_id = seed.project_id;
+							webmem.setContext(ctx);
 						}
 						try {
 							jsonResult = ((IJsonWebCallsAdapter)adapter).jsoncall(action.resolvedLocation, action.pwd, seed.jsonArgument, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
@@ -116,27 +114,27 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 							jsonResult = "ERROR:"+t.getMessage();
 						}
 						if (newOwner)
-							kernel.setOwner(null);
+							webmem.setContext(null);
 					}
 					else
-					if ((seed.callingConventions == CallingConventions.TDACALL) && (adapter instanceof ITdaWebCallsAdapter)) {
+					if ((seed.callingConventions == CallingConventions.WEBMEMCALL) && (adapter instanceof IWebMemWebCallsAdapter)) {
 						boolean newOwner = false;
-						if (kernel!=null && kernel.getOwner()==null) {
+						if (webmem!=null && webmem.getContext()==null) {
 							newOwner = true;
-							TDAKernel.Owner owner = new TDAKernel.Owner();
-							owner.login = seed.login;
-							owner.project_id = seed.project_id;
-							kernel.setOwner(owner);							
+							WebMemoryContext ctx = new WebMemoryContext();
+							ctx.login = seed.login;
+							ctx.project_id = seed.project_id;
+							webmem.setContext(ctx);							
 						}
 						
 						try {
-							((ITdaWebCallsAdapter)adapter).tdacall(action.resolvedLocation, action.pwd, seed.tdaArgument, kernel, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
+							((IWebMemWebCallsAdapter)adapter).webmemcall(action.resolvedLocation, action.pwd, seed.webmemArgument, webmem, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
 						}
 						catch(Throwable t) {
 							jsonResult = "ERROR:"+t.getMessage();
 						}
 						if (newOwner)
-							kernel.setOwner(null);
+							webmem.setContext(null);
 					}
 					else {
 						logger.error("Could not peform server-side web call "+seed.actionName+" within web processor `"+id+"'since calling conventions do not match. ");

@@ -1,0 +1,4 @@
+webmemcall\ InsertMetamodelCommand=staticjava:org.webappos.weblibrary.tdaengine.TDAEngine_webcalls#executeInsertMetamodelCommand
+webmemcall\ LaunchTransformationCommand=staticjava:org.webappos.weblibrary.tdaengine.TDAEngine_webcalls#executeLaunchTransformationCommand
+webmemcall\ LaunchTransformationInBackgroundCommand=staticjava:org.webappos.weblibrary.tdaengine.TDAEngine_webcalls#executeLaunchTransformationCommand
+webmemcall\ ExecTransfCmd=staticjava:org.webappos.weblibrary.tdaengine.TDAEngine_webcalls#executeExecTransfCmd

@@ -6,7 +6,7 @@ package org.webappos.webcaller;
  * Each adapter must be implemented as Java class with the full name
  * org.webappos.adapters.webcalls.[adapter_name].WebCallsAdapter.
  *
- * The same adapter can implemented {@link ITdaWebCallsAdapter} as well.
+ * The same adapter can implement {@link IWebMemWebCallsAdapter} as well.
  * 
  * @author Sergejs Kozlovics
  *

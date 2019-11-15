@@ -1,0 +1,19 @@
+  apply plugin: 'java'
+
+
+  dependencies {
+    compile project(':sys')
+    compile files('../../sys/bin')
+  }
+
+  sourceSets {
+    main.java.srcDirs = ['src']
+    main {
+      output.resourcesDir = file('bin')
+      java.outputDir = file('bin')
+    }
+  }
+
+
+  jar.enabled = false
+

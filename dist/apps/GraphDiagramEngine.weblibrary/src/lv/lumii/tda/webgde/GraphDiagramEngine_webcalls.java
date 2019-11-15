@@ -8,10 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webappos.server.API;
 import org.webappos.webcaller.WebCaller;
+import org.webappos.webmem.IWebMemory;
+import org.webappos.webmem.WebMemoryContext;
 
 import lv.lumii.tda.ee.mm.Option;
-import lv.lumii.tda.kernel.TDAKernel;
-import lv.lumii.tda.raapi.RAAPI;
 
 
 public class GraphDiagramEngine_webcalls {
@@ -19,7 +19,7 @@ public class GraphDiagramEngine_webcalls {
 	
 	private static Logger logger =  LoggerFactory.getLogger(GraphDiagramEngine_webcalls.class);
 	
-	public static boolean onFrameActivatedEvent(RAAPI raapi, long r)
+	public static boolean onFrameActivatedEvent(IWebMemory raapi, long r)
 	{
 		lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory eeFactory = new lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory();
 		try {
@@ -109,7 +109,6 @@ public class GraphDiagramEngine_webcalls {
 				o.setCaption(te.getCaption());
 				o.setImage(te.getPicture());
 				o.setLocation("TOOLBAR");
-				// TODO?: create another event handler, which will convert event to ToolbarElementSelectEvent
 				o.setOnOptionSelectedEvent("GDE.defaultHandlerForOptionSelectedEvent");
 				
 				o.setFrame(frame);
@@ -133,7 +132,7 @@ public class GraphDiagramEngine_webcalls {
 		return true;
 	}
 	
-	public static boolean onOptionSelectedEvent(RAAPI raapi, long r) { // for converting to ToolbarElementSelectEvent
+	public static boolean onOptionSelectedEvent(IWebMemory raapi, long r) { // for converting to ToolbarElementSelectEvent
 		
 		lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory eeFactory = new lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory();
 		try {
@@ -175,11 +174,11 @@ public class GraphDiagramEngine_webcalls {
 	}
 
 	
-	public static boolean onCloseFrameRequestedEvent(RAAPI raapi, long r)
+	public static boolean onCloseFrameRequestedEvent(IWebMemory webmem, long r)
 	{
 		lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory eeFactory = new lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory();
 		try {
-			eeFactory.setRAAPI(raapi, "", true);
+			eeFactory.setRAAPI(webmem, "", true);
 		} catch (Throwable e) {
 			e.printStackTrace();
 			return false;
@@ -216,7 +215,7 @@ public class GraphDiagramEngine_webcalls {
 	}
 	
 
-	public static void prepareCommand(RAAPI raapi, long r)
+	public static void prepareCommand(IWebMemory webmem, long r)
 	{		
 		if (r==0)
 			return;
@@ -226,7 +225,7 @@ public class GraphDiagramEngine_webcalls {
 	
 			factory = new lv.lumii.tda.webgde.mm.GraphDiagramEngineMetamodelFactory();
 			try {
-				factory.setRAAPI(raapi, "", false);
+				factory.setRAAPI(webmem, "", false);
 			} catch (lv.lumii.tda.webgde.mm.GraphDiagramEngineMetamodelFactory.ElementReferenceException e) {
 				e.printStackTrace();
 				return;
@@ -307,22 +306,18 @@ public class GraphDiagramEngine_webcalls {
 
 			
 			
-			if (!(raapi instanceof TDAKernel))
-				return;
-			
 			WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();
 			
 			seed.actionName = "continue"+cmd.getClass().getSimpleName();
 			
-			seed.callingConventions = WebCaller.CallingConventions.TDACALL;
-			seed.tdaArgument = ((TDAKernel)raapi).replicateEventOrCommand(r);
+			seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
+			seed.webmemArgument = webmem.replicateObject(r);			
 			
-			
-			TDAKernel.Owner o = ((TDAKernel)raapi).getOwner();
+			WebMemoryContext ctx = webmem.getContext();
 
-			if (o != null) {
-				seed.login = o.login;
-				seed.project_id = o.project_id;
+			if (ctx != null) {
+				seed.login = ctx.login;
+				seed.project_id = ctx.project_id;
 			}
 	  		
 	  		API.webCaller.invokeNow(seed);//.enqueue(seed);
@@ -337,7 +332,7 @@ public class GraphDiagramEngine_webcalls {
 		}
 	}
 	
-	public static String layoutGraphDiagram(RAAPI raapi, String _json) {
+	public static String layoutGraphDiagram(IWebMemory webmem, String _json) {
 		// reads coordinates from the repository, lays out the diagram (json = stringified diagram reference),
 		// and puts the new coordinates back into the repository (AZ location encoding);
 		
@@ -354,7 +349,7 @@ public class GraphDiagramEngine_webcalls {
 				long r;
 				try {
 					r = json.getLong("reference");
-					factory.setRAAPI(raapi, "", false);
+					factory.setRAAPI(webmem, "", false);
 				} catch (lv.lumii.tda.webgde.mm.GraphDiagramEngineMetamodelFactory.ElementReferenceException e) {
 					logger.error("setRAAPI exception: "+e.getMessage());
 					return null;

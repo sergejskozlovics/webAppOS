@@ -2,11 +2,9 @@ package lv.lumii.tda.webde;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webappos.server.API;
-import org.webappos.util.StackTrace;
 import org.webappos.webcaller.WebCaller;
-
-import lv.lumii.tda.kernel.TDAKernel;
-import lv.lumii.tda.raapi.RAAPI;
+import org.webappos.webmem.IWebMemory;
+import org.webappos.webmem.WebMemoryContext;
 
 public class DialogEngine_webcalls {
 
@@ -55,11 +53,11 @@ public class DialogEngine_webcalls {
 	}*/
 
 	
-	public static boolean onCloseFrameRequestedEvent(RAAPI raapi, long r)
+	public static boolean onCloseFrameRequestedEvent(IWebMemory webmem, long r)
 	{
 		lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory eeFactory = new lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory();
 		try {
-			eeFactory.setRAAPI(raapi, "", true);
+			eeFactory.setRAAPI(webmem, "", true);
 		} catch (Throwable e) {
 			e.printStackTrace();
 			return false;
@@ -104,7 +102,7 @@ public class DialogEngine_webcalls {
 		}
 	}
 	
-	public static boolean prepareCommand(RAAPI raapi, long r)
+	public static boolean prepareCommand(IWebMemory webmem, long r)
 	{
 		System.out.println("DLG prepareCommand "+r);
 		lv.lumii.tda.webde.mm.DialogEngineMetamodelFactory factory = null;
@@ -112,7 +110,7 @@ public class DialogEngine_webcalls {
 	
 			factory = new lv.lumii.tda.webde.mm.DialogEngineMetamodelFactory();
 			try {
-				factory.setRAAPI(raapi, "", true);
+				factory.setRAAPI(webmem, "", true);
 			} catch (lv.lumii.tda.webde.mm.DialogEngineMetamodelFactory.ElementReferenceException e) {
 				logger.error("Could not access Dialog Engine Metamodel from Java.");
 				return false;
@@ -142,9 +140,6 @@ public class DialogEngine_webcalls {
 					if (((lv.lumii.tda.webde.mm.D_SHARP_Command)cmd).getReceiver().isEmpty())
 						((lv.lumii.tda.webde.mm.D_SHARP_Command)cmd).setReceiver(cmpnt); // linking context (to be able to find the frame)
 					
-					long rit = raapi.getIteratorForDirectObjectClasses(cmpnt.getRAAPIReference());
-					long rCls = raapi.resolveIteratorFirst(rit);
-					raapi.freeIterator(rit);
 					if (cmpnt instanceof lv.lumii.tda.webde.mm.D_SHARP_Form) {
 						ensureFrame(factory, (lv.lumii.tda.webde.mm.D_SHARP_Form)cmpnt, "ShowModal".equalsIgnoreCase(((lv.lumii.tda.webde.mm.D_SHARP_Command) cmd).getInfo()));
 					}
@@ -153,20 +148,15 @@ public class DialogEngine_webcalls {
 					logger.error("Component not found for D#Command "+((lv.lumii.tda.webde.mm.D_SHARP_Command)cmd).getInfo()+"!");
 			}
 			
-			if (!(raapi instanceof TDAKernel))
-				return false;
-			
 			WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();
 			
 			seed.actionName = "continueD#Command";
 						
 			
-			seed.callingConventions = WebCaller.CallingConventions.TDACALL;
-//			System.out.println("replicate1 "+r);
-			seed.tdaArgument = ((TDAKernel)raapi).replicateEventOrCommand(r);
-//			System.out.println("replicate2 "+seed.tdaArgument);
+			seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
+			seed.webmemArgument = webmem.replicateObject(r);
 			
-			TDAKernel.Owner o = ((TDAKernel)raapi).getOwner();
+			WebMemoryContext o = webmem.getContext();
 
 			if (o != null) {
 				seed.login = o.login;

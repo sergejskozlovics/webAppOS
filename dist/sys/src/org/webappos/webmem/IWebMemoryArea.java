@@ -1,21 +1,21 @@
-package org.webappos.memory;
+package org.webappos.webmem;
 
-import lv.lumii.tda.kernel.TDAKernel;
+import org.webappos.webmem.IWebMemory;
 
 /**
- * Interface used by the server-side bridge and by server-side web processors to access server-side MRAM slots.
+ * Interface used by the server-side bridge and by server-side web processors to access server-side web memory slots.
 
  * @author Sergejs Kozlovics
  *
  */
-public interface IMRAM {
+public interface IWebMemoryArea {
 
 	/**
-	 * Returns the TDA kernel (or some wrapper using webAppOS memory bus) associated with the given project id.
-	 * @param project_id the project_id for which to get a TDA Kernel
-	 * @return an initialized TDAKernel instance or null if the project is not active/not found
+	 * Returns an object (it can be a wrapper) that can be used to access web memory of the given project.
+	 * @param project_id the project_id for which web memory to get access 
+	 * @return a pointer to web memory or null if the project is not active/not found
 	 */
-	public TDAKernel getTDAKernel(String project_id);
+	public IWebMemory getWebMemory(String project_id);
 
 	/**
 	 * Returns the cache folder for the given webAppOS project.
@@ -41,8 +41,8 @@ public interface IMRAM {
 	public boolean renameActiveProject(String project_id, String new_project_id);
 
 	/**
-	 * Clears the MRAM slot for the given project and disconnects all users by calling onFault runnables (within slot.done()).
-	 * @param project_id the project_id for which to perform "MRAM fault" action.
+	 * Clears the web memory slot for the given project and disconnects all users by calling onFault runnables (within slot.done()).
+	 * @param project_id the project_id for which to perform "web memory fault" action.
 	 */
-	public void faultMRAM(String project_id);
+	public void webMemoryFault(String project_id);
 }

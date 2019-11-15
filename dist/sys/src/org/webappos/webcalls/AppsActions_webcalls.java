@@ -1,16 +1,23 @@
 package org.webappos.webcalls;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.List;
 
 import org.webappos.fs.HomeFS;
 import org.webappos.fs.IFileSystem.PathInfo;
 import org.webappos.properties.WebAppProperties;
+import org.webappos.properties.WebLibraryProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
 import org.webappos.webcaller.IWebCaller;
+import org.webappos.webmem.IWebMemory;
 
-import lv.lumii.tda.kernel.TDAKernel;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import lv.lumii.tda.kernel.mmdparser.MetamodelInserter;
 
 public class AppsActions_webcalls {
 
@@ -66,7 +73,7 @@ public class AppsActions_webcalls {
 
 	public static String appRequiresTemplate(String appFullName) { // no raapi, no login		
 		WebAppProperties props = API.propertiesManager.getWebAppPropertiesByFullName(appFullName);		
-		boolean b = (props==null) || (props.initial_webcall==null) || (props.initial_webcall.isEmpty());
+		boolean b = (props==null) || (props.main==null) || (props.main.isEmpty());
 		String s = "{\"result\":"+b+"}";
 		return s;
 	}
@@ -185,34 +192,78 @@ public class AppsActions_webcalls {
 		return retVal;
 	}
 
+	private static boolean insertSomeMetamodels(String someFullName, IWebMemory raapi)
+	{
+		File dir = new File(ConfigStatic.APPS_DIR+File.separator+someFullName);
+		File[] files = dir.listFiles();
+		if (files==null)
+			return false;
+		
+		boolean ok = true;
+		for (File f : files) {
+			if (f.isFile()) {
+				if (f.getName().endsWith(".mmd") || f.getName().endsWith(".ecore")) {										 
+					// trying to insert this metamodel...
+					try {
+						if (!MetamodelInserter.insertMetamodel(f.toURI().toURL(), raapi))
+							ok = false;
+					} catch (MalformedURLException e) {
+						ok = false;
+					}
+					
+				}
+			}
+		}
+		
+		return ok;
+	}
 	
 	public static String initializeProject(String project_id, String arg, String login, String fullAppName) {
 		
 		WebAppProperties props = API.propertiesManager.getWebAppPropertiesByFullName(fullAppName);
 		if (props==null)
-			return "{}";
+			return "{\"error\":\"Web app not found.\"}";
 		
-		TDAKernel kernel = API.dataMemory.getTDAKernel(project_id);
-		if (kernel==null)
-			return "{}";
-		
-		
-		
-		long it = kernel.getIteratorForAllClassObjects(kernel.KMM.SUBMITTER);
-		long rSubmitter = kernel.resolveIteratorFirst(it);
-		kernel.freeIterator(it);
-		
-		// loading engines...
-		for (String engineName : props.requires_web_libraries) {
-			long rCmd = kernel.createObject(kernel.KMM.ATTACHENGINECOMMAND);
-			kernel.setAttributeValue(rCmd, kernel.KMM.ATTACHENGINECOMMAND_NAME, engineName);
-			kernel.createLink(rCmd, rSubmitter, kernel.KMM.COMMAND_SUBMITTER);			
+		IWebMemory webmem = API.dataMemory.getWebMemory(project_id);
+		if (webmem==null)
+			return "{\"error\":\"Server-side web memory not found.\"}";
+
+		boolean bootstrapped = false;
+		try {
+			JsonElement jelement = new JsonParser().parse(arg);
+			JsonObject o = jelement.getAsJsonObject();
+			JsonElement el = o.get("bootstrapped");
+			bootstrapped = el.getAsBoolean();
+		}
+		catch(Throwable t) {			
+		}
+						
+		// loading required web libraries...
+		for (String fullLibraryName : props.requires_web_libraries) {
+			if (bootstrapped)
+				insertSomeMetamodels(fullLibraryName, webmem);
+			
+			WebLibraryProperties wlprops = API.propertiesManager.getWebLibraryPropertiesByFullName(fullLibraryName);
+			if ((wlprops != null) && (wlprops.on_load!=null) && (!wlprops.on_load.isEmpty())) {
+				IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
+				seed.callingConventions = IWebCaller.CallingConventions.WEBMEMCALL;
+				seed.actionName = props.main;
+				seed.webmemArgument = 0;
+				seed.login = login;
+				seed.project_id = project_id;
+				seed.jsonResult = null;
+				
+				API.webCaller.enqueue(seed);				
+			}
 		}
 		
+		if (bootstrapped)
+			insertSomeMetamodels(fullAppName, webmem);
+		
 		IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
-		seed.callingConventions = IWebCaller.CallingConventions.TDACALL;
-		seed.actionName = props.initial_webcall;
-		seed.tdaArgument = 0;
+		seed.callingConventions = IWebCaller.CallingConventions.WEBMEMCALL;
+		seed.actionName = props.main;
+		seed.webmemArgument = 0;
 		seed.login = login;
 		seed.project_id = project_id;
 		seed.jsonResult = null;

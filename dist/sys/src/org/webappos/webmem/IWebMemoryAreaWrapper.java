@@ -1,4 +1,4 @@
-package org.webappos.memory;
+package org.webappos.webmem;
 
 import java.rmi.RemoteException;
 
@@ -8,19 +8,19 @@ import org.webappos.server.API;
 
 import lv.lumii.tda.kernel.TDAKernel;
 
-public class IMRAMWrapper implements IMRAM {
+public class IWebMemoryAreaWrapper implements IWebMemoryArea {
 	
-	private IRMRAM delegate; 
+	private IRWebMemoryArea delegate; 
 	
 	private String cached_project_id = null;
 	private TDAKernel cached_kernel = null;
 	
-	public IMRAMWrapper(IRMRAM _delegate) {
+	public IWebMemoryAreaWrapper(IRWebMemoryArea _delegate) {
 		delegate = _delegate;
 	}
 
 	@Override
-	public TDAKernel getTDAKernel(String project_id) {
+	public TDAKernel getWebMemory(String project_id) {
 		if (project_id==null)
 			return null;
 		if (project_id.equals(cached_project_id))
@@ -44,7 +44,7 @@ public class IMRAMWrapper implements IMRAM {
 			return null;
 		}
 		
-		cached_kernel.attachSynchronizer(new SynchronizerToIRMRAM(project_id, delegate), false, -1/*ignored*/);
+		cached_kernel.attachSynchronizer(new SynchronizerToIRWebMemoryArea(project_id, delegate), false, -1/*ignored*/);
 		cached_kernel.setEventsCommandsHook(BridgeEventsCommandsHook.INSTANCE);
 		cached_kernel.upgradeToTDA(false, "", true);		
 		
@@ -81,9 +81,9 @@ public class IMRAMWrapper implements IMRAM {
 	}
 	
 	@Override
-	public void faultMRAM(String project_id) {
+	public void webMemoryFault(String project_id) {
 		try {
-			delegate.faultMRAM_R(project_id);
+			delegate.webMemoryFault_R(project_id);
 		} catch (RemoteException e) {
 		}
 	}

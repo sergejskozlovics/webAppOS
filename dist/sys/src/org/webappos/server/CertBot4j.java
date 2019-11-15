@@ -379,12 +379,14 @@ public class CertBot4j {
         Certificate certificate = reg.requestCertificate(csrb.getEncoded());
 
         // Download the leaf certificate and certificate chain.
-        X509Certificate cert = certificate.download();
-        X509Certificate[] chain = certificate.downloadChain();
+        //--rem deprecated: X509Certificate cert = certificate.download();
+        //--rem deprecated: X509Certificate[] chain = certificate.downloadChain();
+        X509Certificate[] chain = certificate.downloadFullChain();
 
         // Write a combined file containing the certificate and chain.
         try (FileWriter fw = new FileWriter(certsFolder+File.separator+DOMAIN_CHAIN_FILE_NAME)) {
-            CertificateUtils.writeX509CertificateChain(fw, cert, chain);
+            //--rem deprecated: CertificateUtils.writeX509CertificateChain(fw, cert, chain);
+        	CertificateUtils.writeX509Certificates(fw, chain);
         }
         
         // Save current date + renewAfterDays

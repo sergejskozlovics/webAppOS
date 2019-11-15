@@ -1,10 +1,10 @@
-package org.webappos.memory;
+package org.webappos.webmem;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 
-public interface IRMRAM extends Remote {
+public interface IRWebMemoryArea extends Remote {
 
 	/**
 	 * Returns the cache folder for the given webAppOS project.
@@ -32,15 +32,14 @@ public interface IRMRAM extends Remote {
 	public boolean renameActiveProject_R(String project_id, String new_project_id) throws RemoteException;
 
 	/**
-	 * Clears the MRAM slot for the given project and disconnects all users by calling onFault runnables (within slot.done()).
-	 * @param project_id the project_id for which to perform "MRAM fault" action.
+	 * Clears the web memory slot for the given project and disconnects all users by calling onFault runnables (within slot.done()).
+	 * @param project_id the project_id for which to perform "fault" action.
 	 */
-	public void faultMRAM_R(String project_id) throws RemoteException;
+	public void webMemoryFault_R(String project_id) throws RemoteException;
 	
 	
 	/**
-	 * Syncs the given actions+strings via the synchronizer attached to the TDA Kernel of
-	 * the MRAM slot with the given project_id.
+	 * Syncs the given actions+strings via the synchronizer attached to web memory of the given project_id.
 	 * @param project_id the project_id for which to sync changes with clients
 	 * @param nActions the length of the actions array to sync
 	 * @param actions the actions array corresponding to the AR repository format

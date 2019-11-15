@@ -3,12 +3,12 @@ package org.webappos.webproc;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import org.webappos.memory.IRMRAM;
 import org.webappos.properties.IRPropertiesManager;
 import org.webappos.registry.IRRegistry;
 import org.webappos.server.ConfigStatic;
 import org.webappos.status.IRStatus;
 import org.webappos.webcaller.IRWebCaller;
+import org.webappos.webmem.IRWebMemoryArea;
 
 /**
  * Used by server-side and remote server-side web processors to register
@@ -56,11 +56,11 @@ public interface IRWebProcessorBusService extends Remote {
 	 */
 	public IRPropertiesManager getPropertiesManager() throws RemoteException;	
 	/**
-	 * Called when initializing server-side API inside web processors to obtain a pointer to MRAM API.
-	 * @return a pointer to MRAM API via RMI
+	 * Called when initializing server-side API inside web processors to obtain a pointer to web memory area API.
+	 * @return a pointer to web memory area API via RMI
 	 * @throws RemoteException on Web Processor Bus error
 	 */
-    public IRMRAM getDataMemory() throws RemoteException;
+    public IRWebMemoryArea getWebMemoryArea() throws RemoteException;
 	/**
 	 * Called when initializing server-side API inside web processors to obtain a pointer to Registry API.
 	 * @return a pointer to Registry API via RMI

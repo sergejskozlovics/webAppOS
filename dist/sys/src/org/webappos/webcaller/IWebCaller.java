@@ -4,11 +4,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-
-import lv.lumii.tda.raapi.RAAPI_Synchronizer;
-
 /**
- * Used by the server-side bridge and server-side actions to make web calls. 
+ * Used by the server-side bridge and server-side web calls actions to make web calls. 
 
  * @author Sergejs Kozlovics
  *
@@ -16,15 +13,13 @@ import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 public interface IWebCaller {
 	
 	/**
-	 * Specifies the calling convention for web calls. Currently, jsoncall and tdacall are supported.
+	 * Specifies the calling convention for web calls. Currently, jsoncall and webmemcall are supported.
 	 * @author Sergejs Kozlovics
 	 *
 	 */
-	public static enum CallingConventions { JSONCALL, TDACALL };
+	public static enum CallingConventions { JSONCALL, WEBMEMCALL };
 	/**
 	 * A class for storing all necessary information required to make a web call.
-	 * @author Sergejs Kozlovics
-	 *
 	 */
 	public static class WebCallSeed implements Serializable {
 		private static final long serialVersionUID = 1L; 
@@ -35,7 +30,7 @@ public interface IWebCaller {
 		public CallingConventions callingConventions = CallingConventions.JSONCALL;		
 		public String jsonArgument = null;
 		public CompletableFuture<String> jsonResult = null; // if null, no result is expected
-		public long tdaArgument = 0;
+		public long webmemArgument = 0;
 		
 		// other known info:
 		public String login = null;
@@ -45,37 +40,6 @@ public interface IWebCaller {
   		// time-to-live: (how many times this seed can be enqueued)
   		public int timeToLive = 10;
 	};
-
-	/**
-	 * A class used only by the server-side bridge to store information for web calls
-	 * not originated at the server side. In certain cases, web calls originated at the server side
-	 * can also be repackaged as SyncedWebCallSeed-s for technical reasons. 
-	 * @author Sergejs Kozlovics
-	 *
-	 */
-	public static class SyncedWebCallSeed extends WebCallSeed { // used only from the bridge		
-		private static final long serialVersionUID = 1L;
-		public RAAPI_Synchronizer singleSynchronizer = null; 
-			// if null, use multi synchronizer from kernel;
-			// otherwise, either singleSynchronizer or multi synchronizer from the kernel is used
-			// depending on whether the action is single
-		public SyncedWebCallSeed() {
-			super();
-		}
-		public SyncedWebCallSeed(WebCallSeed seed) {
-			this.actionName = seed.actionName;
-			this.callingConventions = seed.callingConventions;
-			this.jsonArgument = seed.jsonArgument;
-			this.jsonResult = seed.jsonResult;
-			this.tdaArgument = seed.tdaArgument;
-			this.login = seed.login;
-			this.project_id = seed.project_id;
-			this.fullAppName = seed.fullAppName;
-			this.timeToLive = seed.timeToLive;
-	  		if (seed instanceof SyncedWebCallSeed)
-	  			this.singleSynchronizer = ((SyncedWebCallSeed) seed).singleSynchronizer;
-		}
-	}
 	
 	/**
 	 * A class for storing one parsed web call declaration from some .webcalls file. 

@@ -18,7 +18,7 @@ public class WebAppProperties extends SomeProperties {
 	private static final long serialVersionUID = 1L;
 	public String app_full_name;
 	public String app_displayed_name;
-	public String app_url_name;
+	public String app_url_name; 
 	public String project_extension; // without a dot; default is app_url_name
 	public String app_icon_url;
 	
@@ -33,7 +33,7 @@ public class WebAppProperties extends SomeProperties {
 	public String app_type = "html";
 	public boolean requires_root_url_paths = false;
 	
-	public String initial_webcall = "";	
+	public String main = "";	
 	
 	public enum MemoryScope { NONE, USER, PROJECT, TEMP };
 	public MemoryScope memory_scope = MemoryScope.PROJECT;
@@ -148,7 +148,7 @@ public class WebAppProperties extends SomeProperties {
 			catch(Throwable t) {				
 			}
 			
-			initial_webcall = properties.getProperty("initial_webcall", initial_webcall);
+			main = properties.getProperty("main", main);
 			
 			String s = properties.getProperty("memory_scope", "PROJECT").trim().toUpperCase();
 			if (s.equals("NONE") || s.isEmpty())

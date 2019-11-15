@@ -14,18 +14,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webappos.antiattack.ValidityChecker;
 import org.webappos.auth.UsersManager;
-import org.webappos.memory.MRAM;
-import org.webappos.memory.MRAM.MRAM_Handle;
 import org.webappos.server.API;
+import org.webappos.webcaller.IWebCaller;
 import org.webappos.webcaller.WebCaller;
+import org.webappos.webmem.WebMemoryArea;
+import org.webappos.webmem.WebMemoryArea.WebMemoryHandle;
 
+import lv.lumii.tda.kernel.TDAKernel;
 import lv.lumii.tda.kernel.TDAKernelDelegate;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 
-// for each project connection there is a bridge socket instance;
-// if project sharing is allowed, there may be multiple BridgeSockets to one project 
+/**
+ * Implements a web socket that is activated on each new connection from the client
+ * (for collaborative projects, each connected client has its own BridgeSocket).
+ * 
+ * The same BridgeSocket class implements the RAAPI_Synchronizer interface to be used
+ * for performing the initial and further sync of web memory back the client. 
+ * 
+ * Uses internal:
+ *   TDAKernel.getSynchronizer(),
+ *   RAAPI_WR,
+ *   TDAKernelDelegate (to avoid infinite recursion during synchronization),
+ *   RAAPI_Synchronizer,
+ *   WebCaller.SyncedWebCallSeed.
+ * @author Sergejs Kozlovics
+ *
+ */
 public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
-// RAAPI_Synchronizer interface is needed for MRAM slot that will use <this> to sync the repository
 {
 
 	private static Logger logger = LoggerFactory.getLogger(BridgeSocket.class);
@@ -63,7 +78,7 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 	private String login = null;
 	private boolean closed = false;
 
-	private MRAM_Handle h = null;
+	private WebMemoryHandle h = null;
 
 	private long lastActivity = System.currentTimeMillis();
 
@@ -96,8 +111,8 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 
 	private void cleanup() {
 		if (h != null) {
-			if (API.dataMemory instanceof MRAM)
-				((MRAM) API.dataMemory).disconnectFromMRAM(h);
+			if (API.dataMemory instanceof WebMemoryArea)
+				((WebMemoryArea) API.dataMemory).disconnectClientAndFreeHandle(h);
 		}
 		authenticated = false;
 		login = null;
@@ -125,7 +140,7 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 			// message is in the form: OPEN|REOPEN|OPEN_TEMPLATE|NEW LOGIN TOKEN
 			// [ACK_FOR_REOPEN] [TEMPLATE_ID] PROJECT_ID|DESIRED_PROJECT_ID
 
-			logger.debug("AUTH MSG=`" + message + "'");
+			logger.trace("AUTH MSG=`" + message + "'");
 			int i = message.indexOf(' ');
 			if (i < 0) {
 				kick();
@@ -258,22 +273,23 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 			authenticated = true;
 			final String ws_token1 = ws_token;
 
-			if (!(API.dataMemory instanceof MRAM)) {
+			if (!(API.dataMemory instanceof WebMemoryArea)) {
 				kick();
 				return -1;
 			}
 
-			h = ((MRAM) API.dataMemory).connectToMRAM(bootstrap, app_url_name, template, project_id, this.login,
+			h = ((WebMemoryArea) API.dataMemory).connectClientAndGetHandle(bootstrap, app_url_name, template, project_id, this.login,
 					ws_token, available_action_for_ack, this, new Runnable() {
 
 						@Override
 						public void run() {
 							logger.debug(
-									"MRAM fault for " + project_id + " - kicking client with ws_token=" + ws_token1);
+									"WebMemoryArea fault for " + project_id + " - kicking client with ws_token=" + ws_token1);
 							BridgeSocket.this.kick(); // on memory fault
 						}
 
 					});
+			
 			if (h == null) {
 				if (available_action_for_ack >= 0) {
 					ByteBuffer bb = ByteBuffer.allocate(8);
@@ -288,17 +304,6 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 				kick(); // could not connect
 				return -1;
 			}
-
-			/*
-			 * sent during init... if ((project_id==null) ||
-			 * (!project_id.equals(h.project_id))) { // sending back the updated
-			 * project_id... ByteBuffer bb = ByteBuffer.allocate(8);
-			 * bb.order(ByteOrder.LITTLE_ENDIAN); bb.putDouble(0xFC); // update project_id
-			 * bb.rewind(); try { s.getRemote().sendBytes(bb);
-			 * s.getRemote().sendString(RAAPI_Synchronizer.sharpenString(h.project_id)); }
-			 * catch (IOException e) { } }
-			 */
-			// TODO: Registry.setValue("users/"+login+"/recent/"+appName, value);
 
 			return +1;
 		} else
@@ -428,7 +433,7 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 				synchronized (o1) {
 					String curval = h.raapi_wr.getAttributeValue(recvArrCopy[1], recvArrCopy[2]);
 					if (curval == null) {
-						h.kernel.getSynchronizer().syncDeleteAttributeValue(recvArrCopy[1], recvArrCopy[2]);
+						((TDAKernel)h.webmem).getSynchronizer().syncDeleteAttributeValue(recvArrCopy[1], recvArrCopy[2]);
 					} else {
 						String message2 = RAAPI_Synchronizer.unsharpenString(message);
 						if (!message2.equals(curval)) {
@@ -437,7 +442,7 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 								h.otherSynchronizers.syncSetAttributeValue(recvArrCopy[1], recvArrCopy[2], message2,
 										curval);
 							} else
-								h.kernel.getSynchronizer().syncSetAttributeValue(recvArrCopy[1], recvArrCopy[2], curval,
+								((TDAKernel)h.webmem).getSynchronizer().syncSetAttributeValue(recvArrCopy[1], recvArrCopy[2], curval,
 										message2);
 						}
 					}
@@ -470,12 +475,12 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 
 				int i = message.indexOf('/');
 				if (i < 0) {
-					logger.trace("tdacall " + message);
+					logger.trace("webmemcall " + message);
 
 					WebCaller.SyncedWebCallSeed seed = new WebCaller.SyncedWebCallSeed();
 					seed.actionName = message;
-					seed.callingConventions = WebCaller.CallingConventions.TDACALL;
-					seed.tdaArgument = recvArrCopy[1];
+					seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
+					seed.webmemArgument = recvArrCopy[1];
 					seed.singleSynchronizer = h.currentSynchronizer;
 					seed.login = this.login;
 					seed.project_id = h.project_id;
@@ -609,15 +614,15 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 				h.otherSynchronizers.syncDeleteAssociation(recvArrCopy[1]);
 				break;
 			case 0x06:
-				if (h.kernel.creatingSubmitLink(recvArrCopy[1], recvArrCopy[2], recvArrCopy[3])) {
+				if (h.webmem.creatingSubmitLink(recvArrCopy[1], recvArrCopy[2], recvArrCopy[3])) {
 					long r = recvArrCopy[1];
-					if (h.kernel.isSubmitter(r))
+					if (h.webmem.isSubmitter(r))
 						r = recvArrCopy[2];
-					if (h.kernel.isEvent(r))
-						BridgeEventsCommandsHook.INSTANCE.handleSyncedEvent(h.kernel, r, h.currentSynchronizer, h.login,
+					if (h.webmem.isEvent(r))
+						BridgeEventsCommandsHook.INSTANCE.handleSyncedEvent(h.webmem, r, h.currentSynchronizer, h.login,
 								h.project_id, h.getFullAppName());
-					else if (h.kernel.isCommand(r))
-						BridgeEventsCommandsHook.INSTANCE.executeSyncedCommand(h.kernel, r, h.currentSynchronizer,
+					else if (h.webmem.isCommand(r))
+						BridgeEventsCommandsHook.INSTANCE.executeSyncedCommand(h.webmem, r, h.currentSynchronizer,
 								h.login, h.project_id, h.getFullAppName());
 				} else {
 					h.raapi_wr.createLink(recvArrCopy[1], recvArrCopy[2], recvArrCopy[3]);
@@ -625,15 +630,15 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 				}
 				break;
 			case 0x16:
-				if (h.kernel.creatingSubmitLink(recvArrCopy[1], recvArrCopy[2], recvArrCopy[3])) {
+				if (h.webmem.creatingSubmitLink(recvArrCopy[1], recvArrCopy[2], recvArrCopy[3])) {
 					long r = recvArrCopy[1];
-					if (h.kernel.isSubmitter(r))
+					if (h.webmem.isSubmitter(r))
 						r = recvArrCopy[2];
-					if (h.kernel.isEvent(r))
-						BridgeEventsCommandsHook.INSTANCE.handleSyncedEvent(h.kernel, r, h.currentSynchronizer, h.login,
+					if (h.webmem.isEvent(r))
+						BridgeEventsCommandsHook.INSTANCE.handleSyncedEvent(h.webmem, r, h.currentSynchronizer, h.login,
 								h.project_id, h.getFullAppName());
-					else if (h.kernel.isCommand(r))
-						BridgeEventsCommandsHook.INSTANCE.executeSyncedCommand(h.kernel, r, h.currentSynchronizer,
+					else if (h.webmem.isCommand(r))
+						BridgeEventsCommandsHook.INSTANCE.executeSyncedCommand(h.webmem, r, h.currentSynchronizer,
 								h.login, h.project_id, h.getFullAppName());
 				} else {
 					h.raapi_wr.createOrderedLink(recvArrCopy[1], recvArrCopy[2], recvArrCopy[3], (int) recvArrCopy[4]);
@@ -652,7 +657,7 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 				else {
 					// the link does not exist;
 					// we force to delete the link at all synchronizers
-					h.kernel.getSynchronizer().syncDeleteLink(recvArrCopy[1], recvArrCopy[2], recvArrCopy[3]);
+					((TDAKernel)h.webmem).getSynchronizer().syncDeleteLink(recvArrCopy[1], recvArrCopy[2], recvArrCopy[3]);
 				}
 				break;
 			case 0xBB: // saveBall
@@ -665,8 +670,8 @@ public class BridgeSocket extends WebSocketAdapter implements RAAPI_Synchronizer
 				boolean b1 = false, b2 = false;
 				boolean err = false;
 				try {
-					b1 = h.kernel.startSave();
-					b2 = h.kernel.finishSave();
+					b1 = ((TDAKernel)h.webmem).startSave();
+					b2 = ((TDAKernel)h.webmem).finishSave();
 				} catch (Throwable t) {
 					err = true;
 				}

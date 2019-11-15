@@ -1,31 +1,31 @@
 package org.webappos.webcaller;
 
-import lv.lumii.tda.raapi.RAAPI;
+import org.webappos.webmem.IWebMemory;
 
 /**
- * Interface for webAppOS server-side web calls adapters implementing the "tdacall" calling conventions.
+ * Interface for webAppOS server-side web calls adapters implementing the "webmemcall" calling conventions.
  * Each adapter must be implemented as Java class with the full name
  * org.webappos.adapters.webcalls.[adapter_name].WebCallsAdapter.
  *
- * The same adapter can implemented {@link IJsonWebCallsAdapter} as well.
+ * The same adapter can implement {@link IJsonWebCallsAdapter} as well.
  * 
  * @author Sergejs Kozlovics
  *
  */
-public interface ITdaWebCallsAdapter {
+public interface IWebMemWebCallsAdapter {
 	
 
 	/**
-	 * Performs a web call according to the "tdacall" calling conventions.
+	 * Performs a web call according to the "webmemcall" calling conventions.
 	 * 
 	 * @param resolvedLocation adapter-specific location of code to execute
 	 * @param pwd the directory, where the .webcalls file was located
 	 * @param rObject a repository object (usually, an instance of TDAKernel::Command or TDAKernel::Event)
-	 * @param raapi a pointer to the underlying model repository implementing RAAPI
+	 * @param webmem a pointer to web memory
 	 * @param project_id the current project_id
 	 * @param appFullName the name of the current app
 	 * @param login the current user login
 	 */
-	public void tdacall(String resolvedLocation, String pwd, long rObject, RAAPI raapi, String project_id, String appFullName, String login);
+	public void webmemcall(String resolvedLocation, String pwd, long rObject, IWebMemory webmem, String project_id, String appFullName, String login);
 
 }

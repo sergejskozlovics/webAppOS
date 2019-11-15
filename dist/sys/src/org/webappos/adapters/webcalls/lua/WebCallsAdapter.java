@@ -6,8 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import lv.lumii.tda.raapi.RAAPI;
-
 import org.luaj.vm2.*;
 import org.luaj.vm2.compiler.LuaC;
 import org.luaj.vm2.lib.*;
@@ -18,11 +16,12 @@ import org.webappos.properties.WebAppProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
 import org.webappos.util.StackTrace;
-import org.webappos.webcaller.ITdaWebCallsAdapter;
+import org.webappos.webcaller.IWebMemWebCallsAdapter;
+import org.webappos.webmem.IWebMemory;
 
 import java.util.PriorityQueue;
 
-public class WebCallsAdapter implements ITdaWebCallsAdapter {
+public class WebCallsAdapter implements IWebMemWebCallsAdapter {
 	private static Logger logger =  LoggerFactory.getLogger(WebCallsAdapter.class);
 		
 	private static int MAX_CACHE = 10;
@@ -111,7 +110,7 @@ public class WebCallsAdapter implements ITdaWebCallsAdapter {
 	}
 	
 	@Override
-	public void tdacall(String location, String pwd, long rObject, RAAPI raapi, String project_id, String appFullName,
+	public void webmemcall(String location, String pwd, long rObject, IWebMemory raapi, String project_id, String appFullName,
 			String login) {
 
 		 

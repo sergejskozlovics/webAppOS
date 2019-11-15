@@ -19,16 +19,26 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.webappos.memory.MRAM;
 import org.webappos.properties.SomeProperties;
 import org.webappos.properties.WebAppProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
+import org.webappos.webmem.IWebMemory;
+import org.webappos.webmem.WebMemoryArea;
 import org.webappos.webproc.WebProcessorBusService;
 
 import lv.lumii.tda.kernel.TDAKernel;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 
+/**
+ * The main class for executing web calls from the server side.
+ * Normally, the enqueue function (from the IWebCaller interface) is used for that.
+ * 
+ * Uses internally: TDAKernel.getSynchronizer(), RAAPI_Synchronizer. 
+ * 
+ * @author Sergejs Kozlovics
+ *
+ */
 public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebCaller {
 	private static final long serialVersionUID = 1L;
 	private static Logger logger =  LoggerFactory.getLogger(WebCaller.class);
@@ -60,6 +70,36 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 	}
 	
 	/**
+	 * A class used only by the server-side bridge to store information for web calls
+	 * not originated at the server side. In certain cases, web calls originated at the server side
+	 * can also be repackaged as SyncedWebCallSeed-s for technical reasons. 
+	 */
+	public static class SyncedWebCallSeed extends WebCallSeed { // used only from the bridge		
+		private static final long serialVersionUID = 1L;
+		public RAAPI_Synchronizer singleSynchronizer = null; 
+			// if null, use multi synchronizer from kernel;
+			// otherwise, either singleSynchronizer or multi synchronizer from the kernel is used
+			// depending on whether the action is single
+		public SyncedWebCallSeed() {
+			super();
+		}
+		public SyncedWebCallSeed(WebCallSeed seed) {
+			this.actionName = seed.actionName;
+			this.callingConventions = seed.callingConventions;
+			this.jsonArgument = seed.jsonArgument;
+			this.jsonResult = seed.jsonResult;
+			this.webmemArgument = seed.webmemArgument;
+			this.login = seed.login;
+			this.project_id = seed.project_id;
+			this.fullAppName = seed.fullAppName;
+			this.timeToLive = seed.timeToLive;
+	  		if (seed instanceof SyncedWebCallSeed)
+	  			this.singleSynchronizer = ((SyncedWebCallSeed) seed).singleSynchronizer;
+		}
+	}
+	
+	
+	/**
 	 * p2q maps each project_id to a queue of web calls
 	 */
 	private Map<String, Queue<WebCallSeed> > p2q = new HashMap<String, Queue<WebCallSeed> >();	
@@ -75,15 +115,15 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		}
 		
 		// patches for singleSynchronizer
-		if (!(_seed instanceof IWebCaller.SyncedWebCallSeed) || (((IWebCaller.SyncedWebCallSeed)_seed).singleSynchronizer==null)) {
-			if (API.dataMemory instanceof MRAM) {
-				RAAPI_Synchronizer sync = ((MRAM)API.dataMemory).getSingleSynchronizer(_seed.project_id);
+		if (!(_seed instanceof SyncedWebCallSeed) || (((SyncedWebCallSeed)_seed).singleSynchronizer==null)) {
+			if (API.dataMemory instanceof WebMemoryArea) {
+				RAAPI_Synchronizer sync = ((WebMemoryArea)API.dataMemory).getSingleSynchronizer(_seed.project_id);
 				if (sync!=null) {
-					if (_seed instanceof IWebCaller.SyncedWebCallSeed)
-						((IWebCaller.SyncedWebCallSeed)_seed).singleSynchronizer = sync;
+					if (_seed instanceof SyncedWebCallSeed)
+						((SyncedWebCallSeed)_seed).singleSynchronizer = sync;
 					else {
-						_seed = new IWebCaller.SyncedWebCallSeed(_seed);
-						((IWebCaller.SyncedWebCallSeed)_seed).singleSynchronizer = sync;
+						_seed = new SyncedWebCallSeed(_seed);
+						((SyncedWebCallSeed)_seed).singleSynchronizer = sync;
 					}
 				}
 			}
@@ -125,7 +165,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					
 					try {
 						
-						logger.trace("WebCaller dequeue "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id)+",arg="+seed2.tdaArgument);
+						logger.trace("WebCaller dequeue "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",kernel="+API.dataMemory.getWebMemory(seed2.project_id)+",arg="+seed2.webmemArgument);
 						WebCallDeclaration action = map.get(seed2.actionName);
 						if (action == null && seed2.fullAppName!=null) {
 							// Lua patch...
@@ -133,7 +173,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 							if (i>=0) {
 								WebAppProperties props = API.propertiesManager.getWebAppPropertiesByFullName(seed2.fullAppName);
 								action = new WebCallDeclaration(seed2.actionName, props.app_dir);
-								action.callingConventions = CallingConventions.TDACALL;
+								action.callingConventions = CallingConventions.WEBMEMCALL;
 							}
 						}
 						
@@ -158,14 +198,17 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 								
 								RAAPI_Synchronizer sync = null;
 								if (action.isSingle) {
-									if (seed2 instanceof IWebCaller.SyncedWebCallSeed)
-										sync = ((IWebCaller.SyncedWebCallSeed) seed2).singleSynchronizer;
+									if (seed2 instanceof SyncedWebCallSeed)
+										sync = ((SyncedWebCallSeed) seed2).singleSynchronizer;
 									else
-										if (API.dataMemory instanceof MRAM)
-											sync = ((MRAM)API.dataMemory).getSingleSynchronizer(seed2.project_id);
+										if (API.dataMemory instanceof WebMemoryArea)
+											sync = ((WebMemoryArea)API.dataMemory).getSingleSynchronizer(seed2.project_id);
 								}
-								else
-									sync = API.dataMemory.getTDAKernel(seed2.project_id).getSynchronizer();
+								else {
+									IWebMemory webmem = API.dataMemory.getWebMemory(seed2.project_id);
+									if (webmem instanceof TDAKernel)
+										sync = ((TDAKernel)webmem).getSynchronizer();
+								}
 								
 								if (sync != null)	 {
 									sync.flush();
@@ -197,17 +240,20 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 								
 								RAAPI_Synchronizer sync = null;
 								if (action.isSingle) {
-									if (seed2 instanceof IWebCaller.SyncedWebCallSeed)
-										sync = ((IWebCaller.SyncedWebCallSeed) seed2).singleSynchronizer;
+									if (seed2 instanceof SyncedWebCallSeed)
+										sync = ((SyncedWebCallSeed) seed2).singleSynchronizer;
 									else
-										if (API.dataMemory instanceof MRAM)
-											sync = ((MRAM)API.dataMemory).getSingleSynchronizer(seed2.project_id);
+										if (API.dataMemory instanceof WebMemoryArea)
+											sync = ((WebMemoryArea)API.dataMemory).getSingleSynchronizer(seed2.project_id);
 								}
-								else
-									sync = API.dataMemory.getTDAKernel(seed2.project_id).getSynchronizer();
+								else {
+									IWebMemory webmem = API.dataMemory.getWebMemory(seed2.project_id);
+									if (webmem instanceof TDAKernel)
+										sync = ((TDAKernel)webmem).getSynchronizer();
+								}
 								
 								if (sync != null)						
-									sync.syncRawAction(new double[] {0xC0, seed2.tdaArgument}, RAAPI_Synchronizer.sharpenString(seed2.actionName));
+									sync.syncRawAction(new double[] {0xC0, seed2.webmemArgument}, RAAPI_Synchronizer.sharpenString(seed2.actionName));
 								else
 									logger.error("Could not forward client-side TDACALL web call "+seed2.actionName);
 								
@@ -238,10 +284,10 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 							seed2.timeToLive--;
 							if (seed2.timeToLive>0) {
 								tryAgain = true;
-								logger.info("reschedule/enqueue "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id)+",ttl="+seed2.timeToLive);					
+								logger.info("reschedule/enqueue "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",kernel="+API.dataMemory.getWebMemory(seed2.project_id)+",ttl="+seed2.timeToLive);					
 							}
 							else {
-								logger.info("seed time-to-live expired: "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id));
+								logger.info("seed time-to-live expired: "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",kernel="+API.dataMemory.getWebMemory(seed2.project_id));
 							}
 						}
 						
@@ -284,15 +330,15 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		}
 
 		// patches for singleSynchronizer
-		if (!(_seed instanceof IWebCaller.SyncedWebCallSeed) || (((IWebCaller.SyncedWebCallSeed)_seed).singleSynchronizer==null)) {
-			if (API.dataMemory instanceof MRAM) {
-				RAAPI_Synchronizer sync = ((MRAM)API.dataMemory).getSingleSynchronizer(_seed.project_id);
+		if (!(_seed instanceof SyncedWebCallSeed) || (((SyncedWebCallSeed)_seed).singleSynchronizer==null)) {
+			if (API.dataMemory instanceof WebMemoryArea) {
+				RAAPI_Synchronizer sync = ((WebMemoryArea)API.dataMemory).getSingleSynchronizer(_seed.project_id);
 				if (sync!=null) {
-					if (_seed instanceof IWebCaller.SyncedWebCallSeed)
-						((IWebCaller.SyncedWebCallSeed)_seed).singleSynchronizer = sync;
+					if (_seed instanceof SyncedWebCallSeed)
+						((SyncedWebCallSeed)_seed).singleSynchronizer = sync;
 					else {
-						_seed = new IWebCaller.SyncedWebCallSeed(_seed);
-						((IWebCaller.SyncedWebCallSeed)_seed).singleSynchronizer = sync;
+						_seed = new SyncedWebCallSeed(_seed);
+						((SyncedWebCallSeed)_seed).singleSynchronizer = sync;
 					}
 				}
 			}
@@ -303,7 +349,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		
 
 	
-		logger.trace("WebCaller trying to invoke now "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof IWebCaller.SyncedWebCallSeed)+",kernel="+API.dataMemory.getTDAKernel(seed2.project_id)+",arg="+seed2.tdaArgument);
+		logger.trace("WebCaller trying to invoke now "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",kernel="+API.dataMemory.getWebMemory(seed2.project_id)+",arg="+seed2.webmemArgument);
 		WebCallDeclaration action = map.get(seed2.actionName);
 		if (action==null && seed2.fullAppName!=null) {
 			// Lua patch...
@@ -311,7 +357,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 			if (i>=0) {
 				WebAppProperties props = API.propertiesManager.getWebAppPropertiesByFullName(seed2.fullAppName);
 				action = new WebCallDeclaration(seed2.actionName, props.app_dir);
-				action.callingConventions = CallingConventions.TDACALL;
+				action.callingConventions = CallingConventions.WEBMEMCALL;
 			}
 		}
 		
@@ -336,14 +382,17 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 				
 				RAAPI_Synchronizer sync = null;
 				if (action.isSingle) {
-					if (seed2 instanceof IWebCaller.SyncedWebCallSeed)
-						sync = ((IWebCaller.SyncedWebCallSeed) seed2).singleSynchronizer;
+					if (seed2 instanceof SyncedWebCallSeed)
+						sync = ((SyncedWebCallSeed) seed2).singleSynchronizer;
 					else
-						if (API.dataMemory instanceof MRAM)
-							sync = ((MRAM)API.dataMemory).getSingleSynchronizer(seed2.project_id);
+						if (API.dataMemory instanceof WebMemoryArea)
+							sync = ((WebMemoryArea)API.dataMemory).getSingleSynchronizer(seed2.project_id);
 				}
-				else
-					sync = API.dataMemory.getTDAKernel(seed2.project_id).getSynchronizer();
+				else {
+					IWebMemory webmem = API.dataMemory.getWebMemory(seed2.project_id);
+					if (webmem instanceof TDAKernel)
+						sync = ((TDAKernel)webmem).getSynchronizer();
+				}
 				
 				if (sync != null)	 {
 					sync.flush();
@@ -364,23 +413,26 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 				
 			}
 			else {
-				// TDACALL
+				// WEBMEMCALL
 				
 				RAAPI_Synchronizer sync = null;
 				if (action.isSingle) {
-					if (seed2 instanceof IWebCaller.SyncedWebCallSeed)
-						sync = ((IWebCaller.SyncedWebCallSeed) seed2).singleSynchronizer;
+					if (seed2 instanceof SyncedWebCallSeed)
+						sync = ((SyncedWebCallSeed) seed2).singleSynchronizer;
 					else
-						if (API.dataMemory instanceof MRAM)
-							sync = ((MRAM)API.dataMemory).getSingleSynchronizer(seed2.project_id);
+						if (API.dataMemory instanceof WebMemoryArea)
+							sync = ((WebMemoryArea)API.dataMemory).getSingleSynchronizer(seed2.project_id);
 				}
-				else
-					sync = API.dataMemory.getTDAKernel(seed2.project_id).getSynchronizer();
+				else {
+					IWebMemory webmem = API.dataMemory.getWebMemory(seed2.project_id);
+					if (webmem instanceof TDAKernel)
+						sync = ((TDAKernel)webmem).getSynchronizer();					
+				}
 				
 				if (sync != null)						
-					sync.syncRawAction(new double[] {0xC0, seed2.tdaArgument}, RAAPI_Synchronizer.sharpenString(seed2.actionName));
+					sync.syncRawAction(new double[] {0xC0, seed2.webmemArgument}, RAAPI_Synchronizer.sharpenString(seed2.actionName));
 				else
-					logger.error("Could not forward client-side TDACALL web call "+seed2.actionName);
+					logger.error("Could not forward client-side WEBMEMCALL web call "+seed2.actionName);
 				
 				if (seed2.jsonResult!=null) {
 					if (sync == null)
@@ -410,7 +462,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 			return false;
 		}
 		
-		TDAKernel kernel = API.dataMemory.getTDAKernel(seed2.project_id);
+		IWebMemory kernel = API.dataMemory.getWebMemory(seed2.project_id);
 		String jsonResult = null;
 										
 		if ((seed2.callingConventions == CallingConventions.JSONCALL) && (adapter instanceof IJsonWebCallsAdapter)) {
@@ -427,9 +479,9 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 			return true;
 		}
 		else
-		if ((seed2.callingConventions == CallingConventions.TDACALL) && (adapter instanceof ITdaWebCallsAdapter)) {
+		if ((seed2.callingConventions == CallingConventions.WEBMEMCALL) && (adapter instanceof IWebMemWebCallsAdapter)) {
 			try {
-				((ITdaWebCallsAdapter)adapter).tdacall(action.resolvedLocation, action.pwd, seed2.tdaArgument, kernel, seed2.project_id, seed2.fullAppName, seed2.login);
+				((IWebMemWebCallsAdapter)adapter).webmemcall(action.resolvedLocation, action.pwd, seed2.webmemArgument, kernel, seed2.project_id, seed2.fullAppName, seed2.login);
 				if (seed2.jsonResult!=null)
 					seed2.jsonResult.complete(jsonResult);
 			}
@@ -492,7 +544,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 				i = key.indexOf("tdacall ");
 				if (i>=0) {
 					key = key.substring(0, i)+key.substring(i+8);
-					action.callingConventions = WebCaller.CallingConventions.TDACALL;
+					action.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
 				}
 				i = key.indexOf("jsoncall ");
 				if (i>=0) {
@@ -524,7 +576,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					}
 				
 				// TDACALL implies !isPublic && !isStatic
-				if (action.callingConventions == CallingConventions.TDACALL)
+				if (action.callingConventions == CallingConventions.WEBMEMCALL)
 					if (action.isPublic || action.isStatic) {
 						logger.debug("web call "+value+" not added: tdacall must be neither public, nor static");
 						continue;

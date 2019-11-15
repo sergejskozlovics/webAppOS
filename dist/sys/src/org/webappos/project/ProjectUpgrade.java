@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.webappos.memory.OfflineMRAM;
 import org.webappos.properties.WebAppProperties;
 import org.webappos.properties.PropertiesManager;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
 import org.webappos.webcaller.WebCaller;
+import org.webappos.webmem.OfflineWebMemoryArea;
 
 import lv.lumii.tda.raapi.RAAPI;
 
@@ -82,10 +82,10 @@ public class ProjectUpgrade {
 			
 			API.initOfflineAPI();			
 			assert (API.propertiesManager instanceof PropertiesManager);
-			assert (API.dataMemory instanceof OfflineMRAM);
+			assert (API.dataMemory instanceof OfflineWebMemoryArea);
 			assert (API.webCaller instanceof WebCaller);
 
-			((OfflineMRAM)API.dataMemory).addProject(p);
+			((OfflineWebMemoryArea)API.dataMemory).addProject(p);
 			
 			
 			for (File f : new File(ConfigStatic.APPS_DIR).listFiles()) {

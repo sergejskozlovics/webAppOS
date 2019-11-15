@@ -1727,17 +1727,14 @@ script_label: {
   /**
    * Function: webappos.init_web_memory (iframe-specific)
    * 
-   * Initializes the web socket connection for synchronizing "web memory" (by calling tda.model.init).
-   * Performs the initial synchronization and keeps on synchronizing.
+   * Performs the initial synchronization of web memory and keeps on synchronizing.
    * 
-   * Requires the "project_id" scope of "webappos_scopes" (since user credentials and project_id are taken from the webappos object).
+   * The function is called from the webappose_scopes web service. It uses login, ws_token, and project_id, and calls tda.model.init internally.
    * 
    * If the server closes the web socket connection (or if the connection is lost for some other reason), the corresponding error message will be displayed with the option to refresh the page.
    * 
    * Normally, the connection is active until the user closes the current browser tab (or desktop iframe), or 
    * webappos.close_current_project is called (which replaces the current page with some other).
-   * 
-   * webappos.init_web_memory() is automatically called for TDA-based apps that use Environment Engine
    * 
    * Returns:
    *   nothing (possible async execution)
@@ -1759,15 +1756,17 @@ script_label: {
 
       window.tda_defined_here = true;
       /**
-       * Variable: tda
+       * Variable: webmem (tda)
        * 
        * Provides access to "web memory". This object becomes available only when web memory has been initialized by
-       * calling <webappos.init_web_memory> The object will be the same for the iframe that initialized web memory and all descendant iframes that will include webappos.js.
+       * calling <webappos.init_web_memory>. The object will be the same for the iframe that initialized web memory and all descendant iframes that will include webappos.js.
        * 
        * See "JavaScript Model Format" doc for more detail: http://webappos.org/dev/doc/index.html#File4:webappos.js_internals.txt:JavaScript_Model_Format
        * 
        */
       window.tda = {};
+
+      window.webmem = window.tda;
 
       tda.synced = false;
 

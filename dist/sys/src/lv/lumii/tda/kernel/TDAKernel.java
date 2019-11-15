@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 //import org.webappos.util.ForegroundThread;
 //import org.webappos.web.server.Config;
+import org.webappos.webmem.IWebMemory;
+import org.webappos.webmem.WebMemoryContext;
 
 import lv.lumii.tda.kernel.mm.Submitter;
 import lv.lumii.tda.kernel.mm.TDAKernelMetamodelFactory.ElementReferenceException;
@@ -22,7 +24,7 @@ import lv.lumii.tda.raapi.RAAPI_Synchronizable;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 import lv.lumii.tda.raapi.RAAPI_WR;
 
-public class TDAKernel extends DelegatorToRepositoryBase implements IEventsCommandsHelper
+public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 {
 	
 	private static Logger logger =  LoggerFactory.getLogger(TDAKernel.class);
@@ -44,31 +46,10 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IEventsComma
 			new HashMap<java.util.UUID,TDAKernel>();
 	
 	
-	private Owner owner = null;
+	private WebMemoryContext webmemContext = null;
 	
 	
-	/*package*/IEventsCommandsHook hook = new IEventsCommandsHook() {
-		private IEventsCommandsHook directHook = new DirectEventsCommandsHook();
-
-		@Override
-		public boolean handleEvent(TDAKernel kernel, long rEvent) {
-			int res = kernel.tryToHandleKernelEvent(rEvent);
-			if (res!=0)
-				return (res==+1);
-			else
-				return directHook.handleEvent(kernel, rEvent);
-		}
-
-		@Override
-		public boolean executeCommand(TDAKernel kernel, long rCommand) {
-			int res = kernel.tryToExecuteKernelCommand(rCommand);
-			if (res!=0)
-				return (res==+1);
-			else
-				return directHook.executeCommand(kernel, rCommand);
-		}
-	};
-	
+	private IEventsCommandsHook hook = null;	
 		
 	public TDAKernel()
 	{
@@ -84,17 +65,12 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IEventsComma
 		
 	}
 	
-	public static class Owner {
-		public String login;
-		public String project_id;
-	}
-
-	public void setOwner(Owner _owner) {
-		this.owner = _owner;
+	public void setContext(WebMemoryContext _ctx) {
+		this.webmemContext = _ctx;
 	}
 	
-	public Owner getOwner() {
-		return this.owner;
+	public WebMemoryContext getContext() {
+		return this.webmemContext;
 	}
 	
 	private String mainTransformation = null;
@@ -695,6 +671,13 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IEventsComma
 		return synchronizer;
 	}
 	
+	@Override
+	public void flush() {
+		if (synchronizer!=null)
+			synchronizer.flush();
+	}
+	
+	
 	public void close()
 	{
 		
@@ -953,553 +936,6 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IEventsComma
 		return retVal;						
 	}
 
-	@Override
-	public boolean launchMainTransformation(long rArgument) {
-		if (mainTransformation == null)
-			return false;
-		int i = mainTransformation.indexOf(':');
-		ITransformationAdapter adapter = this.getTransformationAdapter(mainTransformation.substring(0, i));
-		if (adapter == null)
-			return false;
-		
- 		return adapter.launchTransformation(mainTransformation.substring(i+1), rArgument);
-	}
-
-	@Override
-	public int tryToExecuteKernelCommand(long rCommand) {
-		RAAPI raapi = this;
-		
-		String className = RAAPIHelper.getObjectClassName(raapi, rCommand);
-		
-		if (className == null) {
-			logger.error("TDA Kernel was unable to try to execute command "+rCommand+" since class name is null");
-			return -1;
-		}
-		
-		if (className.equals("TDAKernel::AttachEngineCommand")) {
-			long rCls = RAAPIHelper.getObjectClass(raapi, rCommand);
-			long rAttr = raapi.findAttribute(rCls, "name");
-			if (rAttr == 0) {
-				raapi.freeReference(rCls);
-				logger.error("Attribute 'name' not found in class TDAKernel::AttachEngineCommand.");
-				return -1;
-			}
-			String engineName = raapi.getAttributeValue(rCommand, rAttr);
-			raapi.freeReference(rCls);
-			raapi.freeReference(rAttr);
-			
-			boolean retVal = (this.getEngineAdapter(engineName) != null);
-			
-			if (retVal) {
-				// linking engine instance to the TDA Kernel instance...												
-				long rEngineCls = raapi.findClass(engineName);
-				if (rEngineCls == 0) {
-					rEngineCls = raapi.createClass(engineName);
-				}
-				
-				long rEngineSuperCls = raapi.findClass("TDAKernel::Engine");
-				if (!raapi.isDerivedClass(rEngineCls, rEngineSuperCls)) {
-					raapi.createGeneralization(rEngineCls, rEngineSuperCls);
-				}
-				raapi.freeReference(rEngineSuperCls);
-				
-				long rEngineObj = 0;
-				long it = raapi.getIteratorForAllClassObjects(rEngineCls);
-				if (it!=0) {
-					rEngineObj = raapi.resolveIteratorFirst(it);
-					raapi.freeIterator(it);
-				}
-				if (rEngineObj == 0)
-					rEngineObj = raapi.createObject(rEngineCls);
-				
-				
-				long rKernel = RAAPIHelper.getSingletonObject(raapi, "TDAKernel::TDAKernel");
-				long rKernelCls = RAAPIHelper.getObjectClass(raapi, rKernel);
-				long rKernelToEngineAssoc = raapi.findAssociationEnd(rKernelCls, "attachedEngine");
-				
-				if (!raapi.linkExists(rKernel, rEngineObj, rKernelToEngineAssoc))
-					raapi.createLink(rKernel, rEngineObj, rKernelToEngineAssoc);
-				raapi.freeReference(rKernel);
-				raapi.freeReference(rKernelCls);
-				raapi.freeReference(rEngineCls);
-				raapi.freeReference(rEngineObj);
-				raapi.freeReference(rKernelToEngineAssoc);
-				
-			}
-			
-			return retVal?+1:-1;			
-		}
-		
-		if (className.equals("TDAKernel::InsertMetamodelCommand")) {
-			long rCls = RAAPIHelper.getObjectClass(raapi, rCommand);
-			long rAttr = raapi.findAttribute(rCls, "url");
-			if (rAttr == 0) {
-				raapi.freeReference(rCls);
-				logger.error("Attribute 'url' not found in class TDAKernel::InsertMetamodelCommand.");
-				return -1;
-			}
-			String url_str = raapi.getAttributeValue(rCommand, rAttr);
-			raapi.freeReference(rCls);
-			raapi.freeReference(rAttr);
-			
-			try {
-				StringBuffer errorMessages = new StringBuffer();
-				boolean retVal = MetamodelInserter.insertMetamodel(new java.net.URL(url_str), raapi, errorMessages);
-				if (!retVal || (errorMessages.length()>0))
-					logger.error("Error inserting metamodel at "+url_str+"\n"+errorMessages.toString());
-				return retVal?+1:-1;
-			} catch (MalformedURLException e) {
-				logger.error("TDA Kernel: Error executing InsertMetamodelCommand. "+e.getMessage());
-				return -1;
-			}
-		}
-
-		/*if (className.equals("TDAKernel::MountRepositoryCommand")) {
-			long rCls = getObjectClass(raapi, r);
-			long rAttr = raapi.findAttribute(rCls, "uri");
-			if (rAttr == 0) {
-				raapi.freeReference(rCls);
-				System.err.println("Attribute uri of class TDAKernel::MountRepositoryCommand not found.");
-				return false;
-			}
-			String uri = raapi.getAttributeValue(r, rAttr);
-			raapi.freeReference(rAttr);
-			
-			rAttr = raapi.findAttribute(rCls, "mountPoint");
-			if (rAttr == 0) {
-				raapi.freeReference(rCls);
-				System.err.println("Attribute mountPoint of class TDAKernel::MountRepositoryCommand not found.");
-				return false;
-			}
-			String mountPoint = raapi.getAttributeValue(r, rAttr);
-			raapi.freeReference(rAttr);
-			
-			raapi.freeReference(rCls);
-
-			if (((Delegator6WithProxyReferences)getKernel().delegators[6]).mountRepository(uri, mountPoint)) {				
-				return true;
-			}
-			else {
-				System.err.println("TDA Kernel: Error executing MountRepositoryCommand (uri="+uri+", mountPoint="+mountPoint+").");
-				return false;
-			}
-		}
-
-		if (className.equals("TDAKernel::UnmountRepositoryCommand")) {
-			long rCls = getObjectClass(raapi, r);
-			
-			long rAttr = raapi.findAttribute(rCls, "mountPoint");
-			if (rAttr == 0) {
-				raapi.freeReference(rCls);
-				System.err.println("Attribute mountPoint of class TDAKernel::UnmountRepositoryCommand not found.");
-				return false;
-			}
-			String mountPoint = raapi.getAttributeValue(r, rAttr);
-			raapi.freeReference(rAttr);
-			
-			raapi.freeReference(rCls);
-
-			if (((Delegator6WithProxyReferences)getKernel().delegators[6]).unmountRepository(mountPoint)) {				
-				return true;
-			}
-			else {
-				System.err.println("TDA Kernel: Error executing UnmountRepositoryCommand (mountPoint="+mountPoint+").");
-				return false;
-			}
-		}*/
-		
-		long rLaunchTransformationCommand = raapi.findClass("TDAKernel::LaunchTransformationCommand"); 
-		if (raapi.isKindOf(rCommand, rLaunchTransformationCommand)) {
-			raapi.freeReference(rLaunchTransformationCommand);
-			long rCls = RAAPIHelper.getObjectClass(raapi, rCommand);
-			long rAttr = raapi.findAttribute(rCls, "uri");
-			if (rAttr == 0) {
-				raapi.freeReference(rCls);
-				logger.error("Attribute 'uri' not found in class TDAKernel::LaunchTransformationCommand (or in its descendants).");
-				return -1;
-			}
-			String transformationName = raapi.getAttributeValue(rCommand, rAttr);
-			raapi.freeReference(rAttr);
-			raapi.freeReference(rCls);
-			
-		
-			String type = TDAKernel.getAdapterTypeFromURI(transformationName);
-			final String location = TDAKernel.getLocationFromURI(transformationName);
-			
-			if (type == null) {
-				logger.error("The transformation name "+transformationName+" is not in TDA 2 format.");
-				return -1;
-			}
-
-			long _transformationArgument;
-			String oldType = type;
-			int i = type.indexOf('(');
-			if ((i>=0) && type.endsWith(")")) {
-				long parsed;
-				try {
-					parsed = Long.parseLong(type.substring(i+1, type.length()-1));
-				}
-				catch (Throwable t) {
-					parsed = 0;
-				}
-				_transformationArgument = parsed;
-				type = type.substring(0, i);
-			}
-			else
-				_transformationArgument = rCommand;			
-			
-			long it =raapi.getIteratorForDirectObjectClasses(rCommand);
-			long rrr = raapi.resolveIteratorFirst(it);
-			raapi.freeIterator(it);
-			
-			it = raapi.getIteratorForDirectObjectClasses(_transformationArgument);
-			rrr = raapi.resolveIteratorFirst(it);
-			raapi.freeIterator(it);
-			
-			
-			final long transformationArgument = _transformationArgument;
-			
-			final ITransformationAdapter adapter = this.getTransformationAdapter(type);
-			if (adapter == null) {
-				return -1;
-			}
-			
-			return adapter.launchTransformation(location, transformationArgument)?+1:-1;
-		}
-		else
-			raapi.freeReference(rLaunchTransformationCommand);
-		
-		long rLaunchTransformationInBackgroundCommand = raapi.findClass("TDAKernel::LaunchTransformationInBackgroundCommand"); 		
-		if (raapi.isKindOf(rCommand, rLaunchTransformationInBackgroundCommand)) {
-			raapi.freeReference(rLaunchTransformationInBackgroundCommand);
-			long rCls = RAAPIHelper.getObjectClass(raapi, rCommand);
-			long rAttr = raapi.findAttribute(rCls, "uri");
-			if (rAttr == 0) {
-				raapi.freeReference(rCls);
-				logger.error("Attribute 'uri' not found in class TDAKernel::LaunchTransformationCommand (or in its descendants).");
-				return -1;
-			}
-			String transformationName = raapi.getAttributeValue(rCommand, rAttr);
-			raapi.freeReference(rAttr);
-			raapi.freeReference(rCls);
-			
-		
-			String type = TDAKernel.getAdapterTypeFromURI(transformationName);
-			final String location = TDAKernel.getLocationFromURI(transformationName);
-			
-			if (type == null) {
-				logger.error("The transformation name "+transformationName+" is not in TDA 2 format.");
-				return -1;
-			}
-
-			final long transformationArgument;
-			int i = type.indexOf('(');
-			if ((i>=0) && type.endsWith(")")) {
-				long parsed;
-				try {
-					parsed = Long.parseLong(type.substring(i+1, type.length()-1));
-				}
-				catch (Throwable t) {
-					parsed = 0;
-				}
-				transformationArgument = parsed;
-				type = type.substring(0, i);
-			}
-			else
-				transformationArgument = rCommand;			
-			
-			final ITransformationAdapter adapter = this.getTransformationAdapter(type);
-			if (adapter == null) {
-				return -1;
-			}
-			
-			
-			new Thread() {
-				public void run() {
-					boolean result = adapter.launchTransformation(location, transformationArgument);
-					if (!result)
-						logger.error("launchTransformation for the background transformation `"+location+"' returned false");
-					raapi.deleteObject(transformationArgument);
-				}
-			}.start();
-			return +1;
-		}
-		else
-			raapi.freeReference(rLaunchTransformationInBackgroundCommand);
-
-		return 0; // non-TDAKernel command
-	}
-
-	@Override
-	public int tryToHandleKernelEvent(long rEvent) {
-		RAAPI raapi = this;
-		String className = RAAPIHelper.getObjectClassName(raapi, rEvent);
-		if (className == null)
-			return -1;
-		
-		try {			
-			if (className.equals("ProjectOpenedEvent")) {
-				// Executing project_upgrade transformations...
-				long rEECls = raapi.findClass("EnvironmentEngine");
-				if (rEECls != 0) {
-					long rAttr = raapi.findAttribute(rEECls, "specificBinDirectory");
-					long rAttr2 = raapi.findAttribute(rEECls, "lastToolVersion");
-					if (rAttr2 == 0) {
-						rAttr2 = raapi.createAttribute(rEECls, "lastToolVersion", raapi.findPrimitiveDataType("String"));					
-					}
-					if (rAttr != 0) {
-						long it = raapi.getIteratorForAllClassObjects(rEECls);
-						long rEEObj = 0;
-						if (it!=0) {
-							rEEObj = raapi.resolveIteratorFirst(it);
-							raapi.freeIterator(it);
-						}
-						if (rEEObj != 0) {
-							String toolBin = raapi.getAttributeValue(rEEObj, rAttr);
-							File f =new File(toolBin+File.separator+"project_upgrade"+File.separator+"project_upgrade.properties");
-							if ((toolBin != null) && f.exists()) {
-								
-								
-								
-								Properties p = new Properties();
-								try {
-									p.load(new BufferedInputStream(new FileInputStream(f)));
-									
-									String lastToolVersion = raapi.getAttributeValue(rEEObj, rAttr2);
-									
-									boolean allOK = true;
-									
-									for (Object _key : p.keySet()) {
-										String key = (String)_key;
-										if ((lastToolVersion == null) || (lastToolVersion.compareTo(key)<0)) {
-											String transformationName = p.getProperty(key);
-											logger.debug("Executing project_upgrade transformation "+key+" -> "+transformationName+"...");
-											String type = TDAKernel.getAdapterTypeFromURI(transformationName);
-											String location = TDAKernel.getLocationFromURI(transformationName);
-											
-											ITransformationAdapter adapter = this.getTransformationAdapter(type);
-											if (adapter != null) {
-												boolean ok = false;
-												try {
-													 ok = adapter.launchTransformation(location, 0);
-												}
-												catch (Throwable t) {}
-												logger.debug("Execution of project_upgrade transformation "+transformationName+" returned "+ok);
-												if (!ok)
-													allOK = false;
-												if (allOK)
-													raapi.setAttributeValue(rEEObj, rAttr2, key);
-											}
-										}
-										else {
-											logger.debug("DO NOT executing already performed project_upgrade transformation "+key+".");
-										}
-									}
-									
-									
-								}
-								catch (Throwable t) {
-									// ignore
-								}
-								
-							}
-						}
-							
-						raapi.freeReference(rAttr);
-					}
-					raapi.freeReference(rEECls);
-				}
-				
-				
-				
-				// load already attached engines...
-				
-				long rKernelObj = RAAPIHelper.getSingletonObject(raapi, "TDAKernel::TDAKernel");
-				long rKernelCls = RAAPIHelper.getObjectClass(raapi, rKernelObj);
-				long rAssoc = raapi.findAssociationEnd(rKernelCls, "attachedEngine");
-				
-				long it = raapi.getIteratorForLinkedObjects(rKernelObj, rAssoc);
-				
-				raapi.freeReference(rKernelObj);
-				raapi.freeReference(rKernelCls);
-				raapi.freeReference(rAssoc);
-				
-				long rEngineObj = raapi.resolveIteratorFirst(it);
-				while (rEngineObj != 0) {
-					long rEngineCls = RAAPIHelper.getObjectClass(raapi, rEngineObj);
-					String engineName = raapi.getClassName(rEngineCls);
-					raapi.freeReference(rEngineCls);
-					
-					if (this.getEngineAdapter(engineName) == null) {
-						logger.error("Could not load attached engine "+engineName);
-						raapi.freeReference(rEngineObj);
-						raapi.freeIterator(it);
-						return 0;
-					}
-					
-					raapi.freeReference(rEngineObj);
-					rEngineObj = raapi.resolveIteratorNext(it);
-				}
-				raapi.freeIterator(it);
-					
-				return 0; // returning that this is not TDA Kernel event
-			}
-	
-			return 0; // returning that this is not TDA Kernel event
-		
-		}
-		catch(Throwable t) {
-			logger.error("Error trying to handle TDA Kernel event - "+t.getMessage());
-			return 0;
-		}
-		
-	}
-
-	@Override
-	public String getEngineForEventOrCommand(String eventOrCommandName) {
-		if (eventOrCommandName == null)
-			return null;
-		RAAPI raapi = this;
-		long rKernelClass = raapi.findClass("TDAKernel::TDAKernel");
-		if (rKernelClass == 0) {
-			return null;
-		}
-		long rAttr = raapi.findAttribute(rKernelClass, "engineFor"+eventOrCommandName);
-		if (rAttr == 0) {
-			raapi.freeReference(rKernelClass);			
-			return null;
-		}
-				
-		long it = raapi.getIteratorForAllClassObjects(rKernelClass);
-		if (it == 0) {
-			raapi.freeReference(rAttr);
-			raapi.freeReference(rKernelClass);
-			return null;			
-		}
-		raapi.freeReference(rKernelClass);			
-		
-		long rKernel = raapi.resolveIteratorFirst(it);
-		raapi.freeIterator(it);
-		if (rKernel == 0) {
-			raapi.freeReference(rAttr);
-			return null;			
-		}
-		
-		String engineName = raapi.getAttributeValue(rKernel, rAttr);
-		raapi.freeReference(rAttr);
-		raapi.freeReference(rKernel);
-
-		return engineName;
-	}
-
-	@Override
-	public String[] getEventHandlers(long rEvent) {
-		String transformationName = null;
-		
-		RAAPI raapi = this;
-		
-		String className = RAAPIHelper.getObjectClassName(raapi, rEvent);
-		if (className == null)
-			return null;
-		
-		String shortClassName = className.substring( className.lastIndexOf(':')+1 );
-		
-		// searching on<EventName> in the context of the event...
-		long rEventClass = RAAPIHelper.getObjectClass(raapi, rEvent);
-		if (rEventClass != 0) {				
-			long it = raapi.getIteratorForAllOutgoingAssociationEnds(rEventClass);
-			if (it != 0) {
-				long rAssoc = raapi.resolveIteratorFirst(it);
-				while (rAssoc != 0) {
-					
-					long rCls2 = raapi.getTargetClass(rAssoc);
-					long rAttr2 = raapi.findAttribute(rCls2, "on"+shortClassName);
-					if ((rCls2 !=0) && (rAttr2 != 0)) {
-					
-						long itLinked = raapi.getIteratorForLinkedObjects(rEvent, rAssoc);
-						long r2 = raapi.resolveIteratorFirst(itLinked);
-						while (r2 != 0) {
-							String val = raapi.getAttributeValue(r2, rAttr2);
-							if (val != null)
-								transformationName = val;
-							
-							raapi.freeReference(r2);
-							if (transformationName != null)
-								break;
-							r2 = raapi.resolveIteratorNext(itLinked);
-						}
-						raapi.freeIterator(itLinked);
-					}
-					
-					raapi.freeReference(rCls2);
-					raapi.freeReference(rAttr2);
-					
-					raapi.freeReference(rAssoc);
-					if (transformationName != null)
-						break;
-					rAssoc = raapi.resolveIteratorNext(rAssoc);
-				}
-				raapi.freeIterator(it);					
-			}				
-			raapi.freeReference(rEventClass);
-		}
-									
-		
-		// searching on<EventName> in the corresponding engine...
-		if (transformationName == null) {
-			String engineName = this.getEngineForEventOrCommand(shortClassName);
-			if (engineName == null) {
-				if (shortClassName.equals("SaveStartedEvent") || shortClassName.equals("SaveFinishedEvent") || shortClassName.equals("SaveFailedEvent"))
-					engineName = "TDAKernel::TDAKernel";
-				else					
-					return null;
-			}
-					
-			long rEngine = RAAPIHelper.getSingletonObject(raapi, engineName);
-			if (rEngine == 0)
-				return null;
-			
-			long rCls = RAAPIHelper.getObjectClass(raapi, rEngine);
-			long rAttr = raapi.findAttribute(rCls, "on"+shortClassName);
-			raapi.freeReference(rCls);
-			if (rAttr == 0) {
-				raapi.freeReference(rEngine);
-				return null;
-			}
-			
-			transformationName = raapi.getAttributeValue(rEngine, rAttr);
-			raapi.freeReference(rEngine);
-			raapi.freeReference(rAttr);
-		}
-		
-		// TODO: search other possible places, where on<EventName> attribute can be found		
-		
-		if (transformationName != null) {
-			ArrayList<String> arr = new ArrayList<String>();
-			StringTokenizer tknz = new StringTokenizer(transformationName, ",;");
-			while (tknz.hasMoreTokens()) {
-			
-				transformationName = tknz.nextToken();
-				
-				// legacy fix:
-				if (transformationName.startsWith("lua_engine#lua."))
-					transformationName = "lua:"+transformationName.substring(15);
-				
-				arr.add(transformationName);
-			}
-			
-			return arr.toArray(new String[] {});
-		}			
-		else
-			return null; // no transformation was assigned; nothing needed to be called
-	}
-
-	@Override
-	public long replicateEventOrCommand(long rEvent) {
-		return TDACopier.copyObject(this, rEvent);
-	}
-	
-	
 	public void setEventsCommandsHook(IEventsCommandsHook _hook) {
 		hook = _hook;
 		delegate.setEventsCommandsHook(hook);
@@ -1508,4 +944,5 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IEventsComma
 	public IEventsCommandsHook getEventsCommandsHook() {
 		return hook;
 	}
+
 }

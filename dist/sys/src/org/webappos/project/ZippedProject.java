@@ -337,8 +337,8 @@ public class ZippedProject implements IProject {
 				seed.actionName = awc;
 				seed.project_id = this.getName();
 				
-				seed.callingConventions = WebCaller.CallingConventions.TDACALL;
-				seed.tdaArgument = 0;			
+				seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
+				seed.webmemArgument = 0;			
 		
 		  		API.webCaller.enqueue(seed);
 			}

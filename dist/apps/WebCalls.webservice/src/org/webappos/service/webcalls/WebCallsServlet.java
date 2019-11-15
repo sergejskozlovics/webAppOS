@@ -29,13 +29,11 @@ import org.webappos.properties.WebAppProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
 import org.webappos.webcaller.IWebCaller;
+import org.webappos.webmem.IWebMemory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import lv.lumii.tda.kernel.TDAKernel;
-
 
 
 @SuppressWarnings( "serial" )
@@ -114,18 +112,6 @@ public class WebCallsServlet extends HttpServlet
 	
 	public void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-		
-/*		Cookie[] cookies = request.getCookies();
-
-		if (cookies != null)
-			for (int i = 0; i < cookies.length; i++) {
-			  String name = cookies[i].getName();
-			  String value = cookies[i].getValue();
-			  System.out.println("COOKIE "+name+"="+value);
-			}
-		else {
-			System.out.println("NO COOKIE");
-		}*/
 		
 		String fullAppName = null, app_url_name=null;
         String action = request.getPathInfo(); 
@@ -224,7 +210,7 @@ public class WebCallsServlet extends HttpServlet
 				}
 			}
 						
-			TDAKernel kernel = null;
+			IWebMemory webmem = null;
 			
 			if (login != null) {			
 				ValidityChecker.checkLogin(login, false);
@@ -240,28 +226,12 @@ public class WebCallsServlet extends HttpServlet
 				}
 				
 				if (project_id!=null) {
-					kernel = API.dataMemory.getTDAKernel(project_id);				
-					if (kernel == null)
+					webmem = API.dataMemory.getWebMemory(project_id);				
+					if (webmem == null)
 						throw new RuntimeException("Project not active");
 					
-										
-					// validate project content...
-					// !!!TODO: validate projectDir
-					// validate other system-specific settings, e.g., language, country codes...
-
 				}
 			}
-			
-/*			if (cookies == null) {
-				Cookie cookie = new Cookie("login", login);
-				response.addCookie(cookie);
-				Cookie cookie2 = new Cookie("ws_token", ws_token);
-				cookie2.setHttpOnly(true);
-				cookie2.setPath("/");
-				//cookie2.setSecure(true);
-				response.addCookie(cookie2);
-			}*/
-			
 			
 			if (isJsonData) {
 				String data = IOUtils.toString(request.getInputStream(), utf8_charset);
@@ -361,7 +331,7 @@ public class WebCallsServlet extends HttpServlet
 					try {
 						IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
 						seed.actionName = action;
-						seed.callingConventions = IWebCaller.CallingConventions.TDACALL;
+						seed.callingConventions = IWebCaller.CallingConventions.WEBMEMCALL;
 						if ((tdaArgument == 0) && (argument!=null)) {
 							try {
 								tdaArgument = Long.parseLong(argument);
@@ -369,7 +339,7 @@ public class WebCallsServlet extends HttpServlet
 							catch(Throwable t) {								
 							}
 						}
-						seed.tdaArgument = tdaArgument;
+						seed.webmemArgument = tdaArgument;
 						seed.login = login;
 						seed.project_id = project_id;
 						seed.fullAppName = fullAppName;

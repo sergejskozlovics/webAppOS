@@ -36,8 +36,8 @@ public class HelloWorld {
 			WebCallSeed seed2 = new WebCallSeed();
 			seed2.actionName = "ShowMessageFromWebMemory";
 			seed2.project_id = project_id;
-			seed2.tdaArgument = objectWithMessage.getRAAPIReference();
-			seed2.callingConventions = IWebCaller.CallingConventions.TDACALL;
+			seed2.webmemArgument = objectWithMessage.getRAAPIReference();
+			seed2.callingConventions = IWebCaller.CallingConventions.WEBMEMCALL;
 			API.webCaller.enqueue(seed2);
 
 		} catch (Throwable e) {

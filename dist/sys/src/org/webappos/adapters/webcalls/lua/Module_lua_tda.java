@@ -23,6 +23,8 @@ import org.webappos.server.ConfigStatic;
 import org.webappos.util.StackTrace;
 import org.webappos.webcaller.IWebCaller;
 import org.webappos.webcaller.WebCaller;
+import org.webappos.webmem.IWebMemory;
+import org.webappos.webmem.WebMemoryContext;
 
 import lv.lumii.tda.kernel.TDAKernel;
 import lv.lumii.tda.raapi.RAAPI;
@@ -39,7 +41,7 @@ public class Module_lua_tda extends TwoArgFunction {
 	public static Module_lua_tda LIB = null;
 	
 	private static LuaTable globals;
-	private RAAPI raapi;
+	private IWebMemory webmem;
 	private String project_id;
 	private String appFullName;
 	private String login;
@@ -52,23 +54,23 @@ public class Module_lua_tda extends TwoArgFunction {
 	private long rEventSubmitterAssoc = 0;
 	private long rCommandSubmitterAssoc = 0;
 	
-    public Module_lua_tda(LuaTable _globals, RAAPI _raapi, String _project_id, String _appFullName, String _login) {
+    public Module_lua_tda(LuaTable _globals, IWebMemory _raapi, String _project_id, String _appFullName, String _login) {
         LIB = this;
         globals = _globals;
-        raapi = _raapi;
+        webmem = _raapi;
         project_id = _project_id;
         appFullName = _appFullName;
         login = _login;
         
-		rSubmitterCls = raapi.findClass("TDAKernel::Submitter");
-		long it = raapi.getIteratorForAllClassObjects(rSubmitterCls);
-		rSubmitterObj = raapi.resolveIteratorFirst(it);
-		raapi.freeIterator(it);
+		rSubmitterCls = webmem.findClass("TDAKernel::Submitter");
+		long it = webmem.getIteratorForAllClassObjects(rSubmitterCls);
+		rSubmitterObj = webmem.resolveIteratorFirst(it);
+		webmem.freeIterator(it);
 		
-		rEventCls = raapi.findClass("TDAKernel::Event");
-		rCommandCls = raapi.findClass("TDAKernel::Command");
-		rEventSubmitterAssoc = raapi.findAssociationEnd(rEventCls, "submitter");
-		rCommandSubmitterAssoc = raapi.findAssociationEnd(rCommandCls, "submitter");        
+		rEventCls = webmem.findClass("TDAKernel::Event");
+		rCommandCls = webmem.findClass("TDAKernel::Command");
+		rEventSubmitterAssoc = webmem.findAssociationEnd(rEventCls, "submitter");
+		rCommandSubmitterAssoc = webmem.findAssociationEnd(rCommandCls, "submitter");        
     }
 
 	@Override
@@ -95,16 +97,16 @@ public class Module_lua_tda extends TwoArgFunction {
 	}
 
 	private String getEEAttribute(String attrName) {
-		long rEECls = raapi.findClass("EnvironmentEngine");
-		long rAttr = raapi.findAttribute(rEECls, attrName);
-		long it = raapi.getIteratorForDirectClassObjects(rEECls);
-		long r = raapi.resolveIteratorFirst(it);
-		raapi.freeIterator(it);
+		long rEECls = webmem.findClass("EnvironmentEngine");
+		long rAttr = webmem.findAttribute(rEECls, attrName);
+		long it = webmem.getIteratorForDirectClassObjects(rEECls);
+		long r = webmem.resolveIteratorFirst(it);
+		webmem.freeIterator(it);
 		
-		String specificBin = raapi.getAttributeValue(r, rAttr);
-		raapi.freeReference(r);
-		raapi.freeReference(rAttr);
-		raapi.freeReference(rEECls);
+		String specificBin = webmem.getAttributeValue(r, rAttr);
+		webmem.freeReference(r);
+		webmem.freeReference(rAttr);
+		webmem.freeReference(rEECls);
 		return specificBin;
 	}
 
@@ -230,44 +232,44 @@ public class Module_lua_tda extends TwoArgFunction {
 	}
 
 	private boolean skipCommand(long r, long rCls) {
-		long rAssoc = raapi.findAssociationEnd(rCls, "receiver"); // D#Form
+		long rAssoc = webmem.findAssociationEnd(rCls, "receiver"); // D#Form
 		if (rAssoc==0)
-			rAssoc = raapi.findAssociationEnd(rCls, "graphDiagram"); // GraphDiagram
+			rAssoc = webmem.findAssociationEnd(rCls, "graphDiagram"); // GraphDiagram
 		if (rAssoc==0)
 			return false;		
-		long rInvAssoc = raapi.getInverseAssociationEnd(rAssoc);
+		long rInvAssoc = webmem.getInverseAssociationEnd(rAssoc);
 		if (rInvAssoc==0)
 			return false;
 		
-		long rAttr = raapi.findAttribute(rCls, "info");
+		long rAttr = webmem.findAttribute(rCls, "info");
 		if (rAttr != 0) {
-			String val = raapi.getAttributeValue(r, rAttr);
+			String val = webmem.getAttributeValue(r, rAttr);
 			if (!"Refresh".equalsIgnoreCase(val))
 				return false;
 		}
 		
 		
-		long it = raapi.getIteratorForLinkedObjects(r, rAssoc);
-		long rr = raapi.resolveIteratorFirst(it);
+		long it = webmem.getIteratorForLinkedObjects(r, rAssoc);
+		long rr = webmem.resolveIteratorFirst(it);
 		boolean retVal = false;
 		
 		while (rr!=0) {
-			long itInv = raapi.getIteratorForLinkedObjects(rr, rInvAssoc);
-			long rrInv = raapi.resolveIteratorFirst(itInv);
-			rrInv = raapi.resolveIteratorNext(itInv);
-			raapi.freeIterator(itInv);
+			long itInv = webmem.getIteratorForLinkedObjects(rr, rInvAssoc);
+			long rrInv = webmem.resolveIteratorFirst(itInv);
+			rrInv = webmem.resolveIteratorNext(itInv);
+			webmem.freeIterator(itInv);
 			if (rrInv!=0) {
 				// there are at least 2 commands, which means that we have
 				// found some other command for the same D#Form/GraphDiagram
 				retVal = true;
 				logger.debug("Skipping object "+r);
-				raapi.deleteObject(r); // deleting object
+				webmem.deleteObject(r); // deleting object
 				break; 
 			}
 
-			rr = raapi.resolveIteratorNext(it);
+			rr = webmem.resolveIteratorNext(it);
 		}
-		raapi.freeIterator(it);
+		webmem.freeIterator(it);
 		return retVal;
 	}
 
@@ -276,23 +278,15 @@ public class Module_lua_tda extends TwoArgFunction {
 		@Override
 		synchronized public LuaValue call(LuaValue v) {
 			
-			/*
-			System.out.println("lua replicate1 "+v.tolong());
-			long r2 = ((TDAKernel)raapi).replicateEventOrCommand(v.tolong());
-			System.out.println("lua replicate2 "+r2);*/
-			
 			long r2 = v.tolong();
 			
-			//boolean retVal = raapi.createLink(r2, rSubmitterObj, rCommandSubmitterAssoc);
-			//return LuaValue.valueOf(retVal);
+			WebMemoryContext ctx = webmem.getContext();
 			
-			TDAKernel.Owner o = ((TDAKernel)raapi).getOwner();
-			
-			long it = raapi.getIteratorForDirectObjectClasses(r2);
-			long rCls = raapi.resolveIteratorFirst(it);		
-			String className = raapi.getClassName(rCls);
-			raapi.freeReference(rCls);
-			raapi.freeIterator(it);
+			long it = webmem.getIteratorForDirectObjectClasses(r2);
+			long rCls = webmem.resolveIteratorFirst(it);		
+			String className = webmem.getClassName(rCls);
+			webmem.freeReference(rCls);
+			webmem.freeIterator(it);
 			
 			if (className == null)
 				return LuaValue.valueOf(false);
@@ -309,12 +303,12 @@ public class Module_lua_tda extends TwoArgFunction {
 			
 			seed.actionName = className;
 			
-			seed.callingConventions = WebCaller.CallingConventions.TDACALL;
-			seed.tdaArgument = r2;			
+			seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
+			seed.webmemArgument = r2;			
 	
-			if (o!=null) {
-				seed.login = o.login;
-				seed.project_id = o.project_id;
+			if (ctx!=null) {
+				seed.login = ctx.login;
+				seed.project_id = ctx.project_id;
 			}
 	  		
 	  		API.webCaller.enqueue(seed);
@@ -330,23 +324,15 @@ public class Module_lua_tda extends TwoArgFunction {
 		@Override
 		synchronized public LuaValue call(LuaValue v) {
 			
-			/*
-			System.out.println("lua replicate1 "+v.tolong());
-			long r2 = ((TDAKernel)raapi).replicateEventOrCommand(v.tolong());
-			System.out.println("lua replicate2 "+r2);*/
-			
 			long r2 = v.tolong();
 			
-			//boolean retVal = raapi.createLink(r2, rSubmitterObj, rCommandSubmitterAssoc);
-			//return LuaValue.valueOf(retVal);
+			WebMemoryContext ctx = webmem.getContext();
 			
-			TDAKernel.Owner o = ((TDAKernel)raapi).getOwner();
-			
-			long it = raapi.getIteratorForDirectObjectClasses(r2);
-			long rCls = raapi.resolveIteratorFirst(it);		
-			String className = raapi.getClassName(rCls);
-			raapi.freeReference(rCls);
-			raapi.freeIterator(it);
+			long it = webmem.getIteratorForDirectObjectClasses(r2);
+			long rCls = webmem.resolveIteratorFirst(it);		
+			String className = webmem.getClassName(rCls);
+			webmem.freeReference(rCls);
+			webmem.freeIterator(it);
 			
 			if (className == null)
 				return LuaValue.valueOf(false);
@@ -354,8 +340,8 @@ public class Module_lua_tda extends TwoArgFunction {
 			if (className.equals("ExecTransfCmd")) {		//do we need it???		
 				// executing now...
 			
-				long rAttr = raapi.findAttribute(rCls, "info");
-				String location = raapi.getAttributeValue(r2, rAttr);
+				long rAttr = webmem.findAttribute(rCls, "info");
+				String location = webmem.getAttributeValue(r2, rAttr);
 				
 				if (location == null)
 					return LuaValue.valueOf(false);	
@@ -400,12 +386,12 @@ public class Module_lua_tda extends TwoArgFunction {
 			logger.debug("lua invokeNow "+className+" r="+r2);
 			seed.actionName = className;
 			
-			seed.callingConventions = WebCaller.CallingConventions.TDACALL;
-			seed.tdaArgument = r2;			
+			seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
+			seed.webmemArgument = r2;			
 	
-			if (o!=null) {
-				seed.login = o.login;
-				seed.project_id = o.project_id;
+			if (ctx!=null) {
+				seed.login = ctx.login;
+				seed.project_id = ctx.project_id;
 			}
 	  		
 	  		/*API.webCaller.enqueue(seed);*/
