@@ -1427,8 +1427,11 @@ public class ARSharedMemoryArrays implements IARMemory {
 			ai = a2s_a.get(i);
 			if (ai <= 0)
 				continue;
-			if (actions.get(ai) == 0x01) // createClass
-				arr.add((long) actions.get(ai + 1));
+			if (actions.get(ai) == 0x01) { // createClass
+				long r = (long) actions.get(ai + 1);
+				if (r!=0)
+					arr.add(r);
+			}
 			else {
 				if (actions.get(ai) == 0x25) { // createAdvancedAssociation
 					boolean associationClass = actions.get(ai + 2) == 1.0;
@@ -1443,7 +1446,8 @@ public class ARSharedMemoryArrays implements IARMemory {
 		int i = 0;
 
 		for (Long l : arr)
-			retVal[i++] = l;
+			if (l!=0)
+				retVal[i++] = l;
 
 		return retVal;
 	}

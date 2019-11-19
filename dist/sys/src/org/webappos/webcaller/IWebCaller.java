@@ -86,7 +86,7 @@ public interface IWebCaller {
 					"\"isInline\":"+isInline+","+
 					"\"isSingle\":"+isSingle+","+
 					"\"isClient\":"+isClient+","+
-					"\"callingConventions\":\""+(callingConventions==CallingConventions.JSONCALL?"jsoncall":"tdacall")+"\""+
+					"\"callingConventions\":\""+(callingConventions==CallingConventions.JSONCALL?"jsoncall":"webmemcall")+"\""+
 					"}";
 		}
 	}

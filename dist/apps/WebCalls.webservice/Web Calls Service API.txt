@@ -54,14 +54,13 @@ GET http[s]://[domain_or_ip]/services/webcalls/[action-name]?login=[login]&ws_to
 GET http[s]://[domain_or_ip]/services/webcalls/[action-name]?login=[login]&ws_token=[ws_token]&project_id=[project_id]&[property1]=[value1]&[property2]=[value2]&...
 ----------
 
-For tdacall calling conventions, specify the argument (object reference) via the argument or tda_argument
+For webmemcall calling conventions, specify the argument (object reference) via the argument
 query parameter:
 
 Example:
 
 ---code---
 GET http[s]://[domain_or_ip]/services/webcalls/[action-name]?login=[login]&ws_token=[ws_token]&project_id=[project_id]&argument=[reference]
-GET http[s]://[domain_or_ip]/services/webcalls/[action-name]?login=[login]&ws_token=[ws_token]&project_id=[project_id]&tda_argument=[reference]
 ----------
 
 group: Sending an argument via the POST method

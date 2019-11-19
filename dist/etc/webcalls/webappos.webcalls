@@ -443,7 +443,7 @@ static\ webappos.setUserRegistryValue(JSON)=staticjava:org.webappos.webcalls.Reg
 #          isInline: true|false,
 #          isSingle: true|false,
 #          isClient: true|false,
-#          callingConventions: "tdacall" or "jsoncall"
+#          callingConventions: "webmemcall" or "jsoncall"
 #        },
 #        ...
 #      }

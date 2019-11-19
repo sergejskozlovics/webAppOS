@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import lv.lumii.tda.raapi.RAAPI_Synchronizable;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 
 public interface IARMemory {

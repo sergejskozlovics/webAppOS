@@ -45,7 +45,7 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, IWebMemWebCallsAda
 			try {
 				m.invoke(null, raapi, rObject);
 			} catch (Throwable t) {
-				logger.error("tdacall webcall "+location+" invocation exception (2 args)");
+				logger.error("webmemcall webcall "+location+" invocation exception (2 args)");
 				t.printStackTrace();
 			}
 		}
@@ -54,11 +54,11 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, IWebMemWebCallsAda
 			try {
 				m1.invoke(null, raapi, project_id, rObject);
 			} catch (Throwable t) {
-				logger.error("tdacall webcall "+location+" invocation exception (3 args)");
+				logger.error("webmemcall webcall "+location+" invocation exception (3 args)");
 			}			
 		}
 		else {
-			logger.error("tdacall webcall "+location+" not found");
+			logger.error("webmemcall webcall "+location+" not found");
 		}
 	}
 

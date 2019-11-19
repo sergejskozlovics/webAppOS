@@ -327,7 +327,7 @@ public class WebCallsServlet extends HttpServlet
 		        	}
 				}
 				else {
-					// tdacall
+					// webmemcall
 					try {
 						IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
 						seed.actionName = action;

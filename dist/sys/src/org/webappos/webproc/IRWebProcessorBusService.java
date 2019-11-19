@@ -37,7 +37,7 @@ public interface IRWebProcessorBusService extends Remote {
 	 * After webCallFinished, Web Caller assumes that the current web processor is now available to execute other web calls.
 	 * @param webProcId the ID of the current web processor, which has just finished a web call 
 	 * @param webcallResult the result of the web call (a stringified JSON in case of "jsoncall" calling conventions, or
-	 * null in case of "tdacall")
+	 * null in case of "webmemcall")
 	 * @throws RemoteException on Web Processor Bus error
 	 */
 	public void webCallFinished(String webProcId, String webcallResult) throws RemoteException;

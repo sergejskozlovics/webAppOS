@@ -172,7 +172,12 @@ public class Module_lua_raapi extends TwoArgFunction {
 
 		@Override
 		synchronized public LuaValue call(LuaValue arg0) {
-			return LuaValue.valueOf(raapi.getClassName(arg0.tolong()));
+			try {
+				return LuaValue.valueOf(raapi.getClassName(arg0.tolong()));
+			}
+			catch(Throwable t) {
+				return LuaValue.NIL;
+			}
 		}
 
 	}

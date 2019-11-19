@@ -236,7 +236,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 									clientCallNo++;
 							}
 							else {
-								// TDACALL
+								// webmemcall
 								
 								RAAPI_Synchronizer sync = null;
 								if (action.isSingle) {
@@ -255,7 +255,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 								if (sync != null)						
 									sync.syncRawAction(new double[] {0xC0, seed2.webmemArgument}, RAAPI_Synchronizer.sharpenString(seed2.actionName));
 								else
-									logger.error("Could not forward client-side TDACALL web call "+seed2.actionName);
+									logger.error("Could not forward client-side webmemcall web call "+seed2.actionName);
 								
 								if (seed2.jsonResult!=null) {
 									if (sync == null)
@@ -541,11 +541,16 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					key = key.substring(0, i)+key.substring(i+7);
 					action.isSingle = true;
 				}
-				i = key.indexOf("tdacall ");
+				i = key.indexOf("webmemcall ");
+				if (i>=0) {
+					key = key.substring(0, i)+key.substring(i+11);
+					action.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
+				}
+				/*i = key.indexOf("tdacall "); // legacy; deprecated
 				if (i>=0) {
 					key = key.substring(0, i)+key.substring(i+8);
 					action.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
-				}
+				}*/
 				i = key.indexOf("jsoncall ");
 				if (i>=0) {
 					key = key.substring(0, i)+key.substring(i+9);
@@ -575,10 +580,10 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 						continue;
 					}
 				
-				// TDACALL implies !isPublic && !isStatic
+				// webmemcall implies !isPublic && !isStatic
 				if (action.callingConventions == CallingConventions.WEBMEMCALL)
 					if (action.isPublic || action.isStatic) {
-						logger.debug("web call "+value+" not added: tdacall must be neither public, nor static");
+						logger.debug("web call "+value+" not added: webmemcall must be neither public, nor static");
 						continue;
 					}
 				
@@ -588,7 +593,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 				if (loaded != null)
 					loaded.add(key);
 				
-				logger.debug("web call: "+(action.isPublic?"public":"[private]")+" "+(action.isStatic?"static":"[project]")+" "+(action.isInline?"inline":"[inproc]")+" "+(action.isSingle?"single":"[multi]")+" "+(action.callingConventions==CallingConventions.JSONCALL?"jsoncall":"tdacall")+" "+(action.isClient?"[[client-side]]":"[[server-side]]")+" function `"+key+"' added, resolving to `"+value+"'");
+				logger.debug("web call: "+(action.isPublic?"public":"[private]")+" "+(action.isStatic?"static":"[project]")+" "+(action.isInline?"inline":"[inproc]")+" "+(action.isSingle?"single":"[multi]")+" "+(action.callingConventions==CallingConventions.JSONCALL?"jsoncall":"webmemcall")+" "+(action.isClient?"[[client-side]]":"[[server-side]]")+" function `"+key+"' added, resolving to `"+value+"'");
 			}
 			logger.info("Web calls loaded from "+fileName+".");
 
