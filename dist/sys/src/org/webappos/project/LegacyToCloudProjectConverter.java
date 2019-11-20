@@ -333,7 +333,7 @@ public class LegacyToCloudProjectConverter {
 			return null;
 		}
 		
-		b = lv.lumii.tda.kernel.TDACopier.makeCopy(k1, k2, !true);
+		b = lv.lumii.tda.kernel.TDACopier.makeCopy(k1, k2, true);
 		if (!b) {
 			System.err.println("Copy failed at step 1.");			
 			k1.close();

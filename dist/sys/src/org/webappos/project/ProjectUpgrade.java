@@ -10,15 +10,15 @@ import org.webappos.properties.PropertiesManager;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
 import org.webappos.webcaller.WebCaller;
+import org.webappos.webmem.IWebMemory;
 import org.webappos.webmem.OfflineWebMemoryArea;
 
-import lv.lumii.tda.raapi.RAAPI;
 
 public class ProjectUpgrade {
 
 	private static ZippedProject p = new ZippedProject(true); // offline
 	
-	public static boolean closeAndExit(RAAPI raapi, long __rObj) {
+	public static boolean closeAndExit_webcall(IWebMemory raapi, long __rObj) {
 		
 		String dir = p.getFolderName();
 		
@@ -155,13 +155,18 @@ public class ProjectUpgrade {
 						appProps = list.iterator().next();
 				}
 				
-				if ((appProps!=null)&&(args.length>=3)) {
-					// adding auto.webcalls
-					appProps.webcallsFiles.add(args[2]);
-					appProps.classpaths.add(new File(args[2]).getParent());
+				if (appProps!=null) {
+					System.out.println("App found: "+appProps.app_full_name);
+					if ((appProps!=null)&&(args.length>=3)) {
+						// adding auto.webcalls
+						appProps.webcallsFiles.add(args[2]);
+						appProps.classpaths.add(new File(args[2]).getParent());
+					}
+					
+					((WebCaller)API.webCaller).loadWebCalls(appProps);
 				}
-				
-				((WebCaller)API.webCaller).loadWebCalls(appProps);
+				else
+					System.out.println("App not found for the target file extension.");
 				
 				API.config.inline_webcalls = true;
 

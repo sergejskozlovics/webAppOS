@@ -25,6 +25,7 @@ import org.webappos.webcaller.WebCaller;
 
 import lv.lumii.tda.kernel.IEventsCommandsHook;
 import lv.lumii.tda.kernel.TDAKernel;
+import lv.lumii.tda.raapi.IRepository;
 import lv.lumii.tda.raapi.RAAPIHelper;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 import javafx.scene.control.Alert;
@@ -129,8 +130,10 @@ public class ZippedProject implements IProject {
 			appProps = API.propertiesManager.getWebAppPropertiesByFullName(toolName);
 		}
 		else {
-			if (appProps == null)
+			if (appProps == null) {
+				logger.error("Web app properties (webapp.properties) are not found for this project.");
 				return false;
+			}
 		}
 		
 		logger.debug("appName="+appProps.app_full_name);
@@ -180,7 +183,49 @@ public class ZippedProject implements IProject {
 				zipFolder = null;
 				return false;
 			}
+			
+	/*		System.err.println("Checking for the need to convert Ecore...");
+			IRepository k1 = TDAKernel.newRepositoryAdapter("ecore");
+			if (k1 != null) {
+				String location = zipFolder.getFolder().toUri().toString()+"/data.xmi";
+				if (k1.exists(location)) {
+					System.err.println("Ecore exists. Converting...");					
+					boolean b = k1.open(location);
+					if (b) {
+
+						TDAKernel k2 = new TDAKernel();
+						
+						String targetLocation = IProject.DEFAULT_REPOSITORY+":"+zipFolder.getFolder().toUri().toString();
+						
+						if (k2.exists(targetLocation))
+							k2.drop(targetLocation);
+						
+						b = k2.open(targetLocation);
+						if (b) {
+							b = lv.lumii.tda.kernel.TDACopier.makeCopy(k1, k2, !true);
+							if (!b) {
+								System.err.println("Copy failed.");			
+							}
+							k2.close();
+						}
+						else {
+							System.err.println("Could not create target repository "+targetLocation);
+						}
+						
+						
+						k1.close();
+					}
+					else 
+						System.err.println("Could not open the Ecore project in "+location);
+					
+					if (!b)
+						return false;
+				}
+			}
+			else
+				System.err.println("Error: could not initialize a repository adapter for ecore.");*/			
 		}
+		
 		String folder = zipFolder.getFolder().toAbsolutePath().toString();
 
 		if (!validateProjectFolder(folder, filename, appProps)) {

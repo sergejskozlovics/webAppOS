@@ -156,11 +156,19 @@ public class PropertiesManager extends UnicastRemoteObject implements IPropertie
 	
 	// TODO: findAssociatedApps (returns the list of apps; the first is the most preferred)
 	
-	public synchronized List<WebAppProperties> getWebAppPropertiesByExtension(String extension) {
-		if (extension == null)
+	public synchronized List<WebAppProperties> getWebAppPropertiesByExtension(String ext) {
+		if (ext == null)
 			return null;
 		
-		return extensionsMap.get(extension); // TODO: return read-only?
+		ext = ext.trim();
+		while (!ext.isEmpty() && ext.charAt(0)=='.')
+			ext = ext.substring(1);
+		ext = ext.trim();
+
+		if (ext.isEmpty())
+			return null;
+		
+		return extensionsMap.get(ext); // TODO: return read-only?
 	}
 
 	public synchronized WebAppProperties getWebAppPropertiesByUrlName(String urlName) {

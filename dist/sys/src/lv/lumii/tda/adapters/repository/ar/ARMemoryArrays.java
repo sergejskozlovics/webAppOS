@@ -1406,6 +1406,8 @@ private double firstActionWhere(double r) {
 
 	@Override
 	public long newReference() {
+		if (maxReference<0)
+			maxReference = getMaxReference();
 		maxReference = (((maxReference>>predefinedBitsCount)+1) << predefinedBitsCount) | predefinedBitsValues;
 		return maxReference;
 	}

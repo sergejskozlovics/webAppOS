@@ -9,6 +9,8 @@ import org.webappos.webcaller.IJsonWebCallsAdapter;
 import org.webappos.webcaller.IWebMemWebCallsAdapter;
 import org.webappos.webmem.IWebMemory;
 
+import lv.lumii.tda.raapi.RAAPI;
+
 
 public class WebCallsAdapter implements IJsonWebCallsAdapter, IWebMemWebCallsAdapter {
 	private static Logger logger =  LoggerFactory.getLogger(WebCallsAdapter.class);
@@ -37,7 +39,17 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, IWebMemWebCallsAda
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		try {
+			if (m==null)
+				m = c.getMethod(location.substring(i+1), RAAPI.class, Long.TYPE);
+		} catch (NoSuchMethodException | SecurityException e) {
+		}
+		try {
 			m1 = c.getMethod(location.substring(i+1), IWebMemory.class, String.class, Long.TYPE);
+		} catch (NoSuchMethodException | SecurityException e) {
+		}
+		try {
+			if (m1==null)
+				m1 = c.getMethod(location.substring(i+1), RAAPI.class, String.class, Long.TYPE);
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		
@@ -92,7 +104,17 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, IWebMemWebCallsAda
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		try {
+			if (m0==null)
+				m0 = c.getMethod(location.substring(i+1), RAAPI.class, String.class, String.class, String.class); // raapi, arg, login, appFullName
+		} catch (NoSuchMethodException | SecurityException e) {
+		}
+		try {
 			m1 = c.getMethod(location.substring(i+1), IWebMemory.class, String.class, String.class); // raapi, arg, login
+		} catch (NoSuchMethodException | SecurityException e) {
+		}
+		try {
+			if (m1==null)
+				m1 = c.getMethod(location.substring(i+1), RAAPI.class, String.class, String.class); // raapi, arg, login
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		try {
@@ -102,6 +124,11 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, IWebMemWebCallsAda
 		
 		try {
 			m3 = c.getMethod(location.substring(i+1), IWebMemory.class, String.class); // raapi, arg
+		} catch (NoSuchMethodException | SecurityException e) {
+		}
+		try {
+			if (m3==null)
+				m3 = c.getMethod(location.substring(i+1), RAAPI.class, String.class); // raapi, arg
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		

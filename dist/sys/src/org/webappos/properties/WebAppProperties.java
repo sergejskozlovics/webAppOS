@@ -118,8 +118,13 @@ public class WebAppProperties extends SomeProperties {
 			String _supported_extensions = properties.getProperty("supported_extensions", "").trim();			
 			ArrayList<String> arr1 = new ArrayList<String>();			
 			for (String ext : _supported_extensions.split(",")) {
-				if (!ext.trim().isEmpty())
-					arr1.add(ext.trim());
+				ext = ext.trim();
+				while (!ext.isEmpty() && ext.charAt(0)=='.')
+					ext = ext.substring(1);
+				ext = ext.trim();
+				if (!ext.isEmpty()) {				
+					arr1.add(ext);
+				}
 			}
 			supported_extensions = arr1.toArray(new String[] {});
 			

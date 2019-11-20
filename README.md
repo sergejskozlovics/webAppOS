@@ -49,3 +49,16 @@ Eclipse for Java developers is needed.
 4. In the "Select root directory" input field, choose the webAppOS cloned git directory. Eclipse
    will start searching for projects.
 5. Choose the projects to import and click "Finish".
+6. Add a set of jars named "webAppOS user library" (referenced from some projects).
+   These jars are downloaded and put into webAppOS/dist/lib during the `./gradlew install` call.
+
+   - Right click on the "sys" project, choose Properties.
+   - Then choose "Java Build Path" on the left.
+   - Switch to the "Libraries" tab on the right.
+   - Click "Add Library...", choose "User Library".
+   - If "webAppOS user library" is present, then it has been already configured. Otherwise:
+ 
+     - click "User Libraries...",
+     - click "New..." and type "webAppOS user library", click "OK",
+     - click "Add External JARs...",
+     - select all downloaded jars from webAppOS\dist\lib, click "Open".
