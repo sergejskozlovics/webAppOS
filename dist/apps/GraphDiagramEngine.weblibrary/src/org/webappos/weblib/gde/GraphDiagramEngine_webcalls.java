@@ -216,8 +216,9 @@ public class GraphDiagramEngine_webcalls {
 	
 			factory = new org.webappos.weblib.gde.mm.GraphDiagramEngineMetamodelFactory();
 			try {
-				factory.setRAAPI(webmem, "", false);
+				factory.setRAAPI(webmem, "", true);
 			} catch (org.webappos.weblib.gde.mm.GraphDiagramEngineMetamodelFactory.ElementReferenceException e) {
+				e.printStackTrace();
 				return;
 			}
 			

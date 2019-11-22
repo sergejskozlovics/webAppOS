@@ -264,7 +264,7 @@
 							ev.setSource(c);
 
 
-							var cmd = new tda.model["TDAKernel::LaunchTransformationCommand"];
+							var cmd = new tda.model["LaunchTransformationCommand"];
 							if (c.eventHandler[i].procedureName.indexOf("lua.") == 0)
 								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName.substring(4));
 							else
@@ -303,7 +303,7 @@
 								}
 							}
 
-							var cmd = new tda.model["TDAKernel::LaunchTransformationCommand"];
+							var cmd = new tda.model["LaunchTransformationCommand"];
 							if (c.eventHandler[i].procedureName.indexOf("lua.") == 0)
 								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName.substring(4));
 							else
@@ -317,7 +317,7 @@
 							ev.setInfo("Click");
 							ev.setSource(c);
 
-							var cmd = new tda.model["TDAKernel::LaunchTransformationCommand"];
+							var cmd = new tda.model["LaunchTransformationCommand"];
 							if (c.eventHandler[i].procedureName.indexOf("lua.") == 0)
 								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName.substring(4));
 							else

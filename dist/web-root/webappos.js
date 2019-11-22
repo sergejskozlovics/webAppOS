@@ -152,7 +152,7 @@ script_label: {
     return p;
   };
 
-  window.webappos.client_webcall_tdacall = function (actionName, obj) {
+  window.webappos.client_webcall_webmemcall = function (actionName, obj) {
     var action = webappos.webcalls[actionName];
     if (!action)
       return;
@@ -170,10 +170,10 @@ script_label: {
       };
 
       require([action.resolvedInstructionSet + "_webcalls_adapter.js"], function (adapter) {
-      if (adapter.tdacall) {
-        adapter.tdacall(action.resolvedLocation, obj);
+      if (adapter.webmemcall) {
+        adapter.webmemcall(action.resolvedLocation, obj);
       } else
-        console.log("ERROR: Webcalls adapter '" + action.resolvedInstructionSet + "' does not support tdacall calling conventions.");
+        console.log("ERROR: Webcalls adapter '" + action.resolvedInstructionSet + "' does not support webmemcall calling conventions.");
     });
   };
 
@@ -182,7 +182,7 @@ script_label: {
    *   Executes the given web call synchronously via the webAppOS webcalls service.
    * Parameters:
    *   action - the name of the action to call (defined at the server side in *.webcalls files)
-   *   arg - action argument; usually, a JSON object; sometimes - a string object; for tdacall conventions: an integer representing the object reference
+   *   arg - action argument; usually, a JSON object; sometimes - a string object; for webmemcall conventions: an integer representing the object reference
    * Returns:
    *   a parsed JSON object as JavaScript object; the returned object can contain the "error" attribute (containing an error message) to specify that an error occurred
    */
@@ -250,7 +250,7 @@ script_label: {
     };
 
     if (typeof arg == "undefined") {
-      if (a.callingConventions == "tdacall")
+      if (a.callingConventions == "webmemcall")
         arg = 0;
       else
         arg = "";
@@ -266,7 +266,7 @@ script_label: {
    *   Executes the given web call asynchronously via the webAppOS webcalls service.
    * Parameters:
    *   action - the name of the action to call (defined at the server side in *.webcalls files)
-   *   arg - action argument; usually, a JSON object; sometimes - a string object; for tdacall conventions: an integer representing the object reference
+   *   arg - action argument; usually, a JSON object; sometimes - a string object; for webmemcall conventions: an integer representing the object reference
    * Returns:
    *   a Promise which resolves in a parsed resulting JSON of the web call (with jsoncall calling conventions) as a JavaScript object;
    *   the promise is rejected if the returned object contains the "error" attribute, or if some other error occurs
@@ -294,11 +294,11 @@ script_label: {
             });
           });
         } else
-        if (a.callingConventions == "tdacall") {
+        if (a.callingConventions == "webmemcall") {
           if (typeof arg == 'number')
-            webappos.client_webcall_tdacall(action, tda.model[arg]);
+            webappos.client_webcall_webmemcall(action, tda.model[arg]);
           else
-            webappos.client_webcall_tdacall(action, arg);
+            webappos.client_webcall_webmemcall(action, arg);
           resolve({});
         }
         return; // return from promise body
@@ -363,7 +363,7 @@ script_label: {
       xhr.setRequestHeader('Content-Type', 'application/json');
 
       if (typeof arg == "undefined") {
-        if (a && a.callingConventions == "tdacall")
+        if (a && a.callingConventions == "webmemcall")
           arg = 0;
         else
           arg = "";
@@ -1939,8 +1939,8 @@ script_label: {
                   });
               });
             } else
-            if (action.callingConventions == "tdacall") {
-              webappos.client_webcall_tdacall(actionName, tda.model[arg]);
+            if (action.callingConventions == "webmemcall") {
+              webappos.client_webcall_webmemcall(actionName, tda.model[arg]);
               if (callback)
                 callback({});
             }
@@ -1966,17 +1966,17 @@ script_label: {
           }
 
 
-          if ((action && action.callingConventions == "tdacall") || (!action && (typeof arg == 'number'))) {
+          if ((action && action.callingConventions == "webmemcall") || (!action && (typeof arg == 'number'))) {
             if (typeof arg == "undefined")
               arg = 0;
             if (!(typeof arg == 'number')) {
               if (callback)
                 callback({
-                  error: "tdacall argument must be a number"
+                  error: "webmemcall argument must be a number"
                 });
               return;
             }
-            // tdacall
+            // webmemcall
             var arr = new Float64Array(2);
             arr[0] = 0xC0;
             arr[1] = arg;
@@ -2573,16 +2573,16 @@ script_label: {
             console.log("checkEventOrCommand [" + r1 + "," + r2 + "," + rAssoc + " " + synced + "]: error in obj1 or obj2 classes ", obj1, obj2);
             return false;
           }
-          if (obj1.classes[0] == tda.model["TDAKernel::Submitter"]) {
+          if (obj1.classes[0] == tda.model["Submitter"]) {
             var t = obj1;
             obj1 = obj2;
             obj2 = t;
           }
-          if (obj2.classes[0] == tda.model["TDAKernel::Submitter"]) {
+          if (obj2.classes[0] == tda.model["Submitter"]) {
             var className = obj1.getClassName();
             if (webappos.webcalls[className] && webappos.webcalls[className].isClient) {
-              console.log("client-side tdacall");
-              webappos.client_webcall_tdacall(className, obj1);
+              console.log("client-side webmemcall");
+              webappos.client_webcall_webmemcall(className, obj1);
               return true; // event or command handled
             }
 
@@ -2858,7 +2858,7 @@ script_label: {
                   case 0xC0:
                     var aa = event.data.split("/"); // action/argument
                     if (aa.length == 1) {
-                      webappos.client_webcall_tdacall(tda.model.unsharpenString(aa[0]), tda.model[arr[1]]);
+                      webappos.client_webcall_webmemcall(tda.model.unsharpenString(aa[0]), tda.model[arr[1]]);
                     } else {
                       var id = arr[1];
                       webappos.client_webcall_jsoncall(tda.model.unsharpenString(aa[0]), tda.model.unsharpenString(aa[1])).then(function (result) {
@@ -3152,7 +3152,7 @@ script_label: {
        * Attaches the given command or event object to the submitter object to execute the given command or handle the given event.
        * 
        * Parameters:
-       *   obj - a TDA command or event object within the tda.model scope (some tda.model[r] of kind "TDAKernel::Command" or "TDAKernel:Event")
+       *   obj - a TDA command or event object within the tda.model scope
        * 
        * Returns:
        *   nothing (possible async execution)
@@ -3164,7 +3164,25 @@ script_label: {
         var dt = d.getTime()-webappos.connect_finished;
 
         console.log("submit" + obj.getClassName() + ", r=" + obj.reference+", time since connect finished="+dt);
-        obj.linkSubmitter(tda.model["TDAKernel::Submitter"].getFirstObject());
+
+        if (obj.linkSubmitter)
+          obj.linkSubmitter(tda.model["Submitter"].getFirstObject());
+        else {
+
+          var rsubmitter = tda.model["Submitter"].getFirstObject().reference;
+          var arr = new Float64Array(4);
+          arr[0] = 0x06;
+          arr[1] = obj.reference;
+          arr[2] = rsubmitter;
+          arr[3] = 0;
+
+          if (tda.model.checkEventOrCommand(obj.reference, rsubmitter, 0, false/*originated, not synced*/)) {
+            arr[0] = 0xE6; // already handled
+          }
+
+          tda.websocket.send(arr.buffer);
+          tda.model.registerChange();
+        }
       };
 
       /**

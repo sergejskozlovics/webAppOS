@@ -1,15 +1,15 @@
 define(function(){
   
     return {
-        tdacall: async function(action, obj) {
+        webmemcall: async function(action, obj) {
           if (!obj)
             return;
           if (tda.ee) {
-            if (obj.isKindOf("TDAKernel::Event")) {
+            if (obj.isKindOf("Event")) {
               tda.ee.searchForFrameAndHandleEvent(obj, action);
             }
             else
-            if (obj.isKindOf("TDAKernel::Command")) {
+            if (obj.isKindOf("Command")) {
               tda.ee.searchForFrameAndExecuteCommand(obj, action);
             }
           }

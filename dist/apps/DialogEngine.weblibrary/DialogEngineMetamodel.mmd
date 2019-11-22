@@ -375,9 +375,9 @@ assoc D#VTableCell.[*]vTableCell/componentType[0..1].D#TableComponent;
 compos D#VTableCell.[0..1]vTableCellOwner/component[0..1].D#TableComponent;
 
 
-rel D#Command.subClassOf.TDAKernel::Command;
+rel D#Command.subClassOf.Command;
 
-rel D#Event.subClassOf.TDAKernel::Event;
+rel D#Event.subClassOf.Event;
 assoc D#Event.[0..1]event/source[1].D#EventSource;
 assoc D#Event.[0..1]event/vTableCell[0..1].D#VTableCell;
 

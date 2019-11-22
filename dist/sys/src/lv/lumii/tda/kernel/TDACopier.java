@@ -700,7 +700,7 @@ public class TDACopier {
 				long sObjIt = sourceModel.getIteratorForDirectClassObjects(sCls);
 				long sObj = sourceModel.resolveIteratorFirst(sObjIt);
 				while (sObj != 0) {
-					//if (DEBUG) System.out.println("obj "+sObj+" of type "+sourceModel.getClassName(sCls));
+					 System.out.println("obj "+sObj+" of type "+sourceModel.getClassName(sCls));
 					if (sourceToTargetMap.containsKey(sObj)) {
 						sourceModel.freeReference(sObj);
 						

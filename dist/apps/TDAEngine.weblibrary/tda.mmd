@@ -1,2 +1,25 @@
 MMDefStart;
+ class Event;
+ class Command;
+ class Submitter;
+
+  assoc Event.[*]event/submitter[0..1].Submitter;
+  assoc Command.[*]event/submitter[0..1].Submitter;
+
+
+ class InsertMetamodelCommand;
+  rel InsertMetamodelCommand.subClassOf.Command;
+  attr InsertMetamodelCommand.url:string;
+
+ class LaunchTransformationCommand;
+  rel LaunchTransformationCommand.subClassOf.Command;
+  attr LaunchTransformationCommand.uri:string;
+
+ class LaunchTransformationInBackgroundCommand;
+  rel LaunchTransformationInBackgroundCommand.subClassOf.LaunchTransformationCommand;
+
+ class ExecTransfCmd;
+  rel ExecTransfCmd.subClassOf.Command;
+  attr ExecTransfCmd.info:string;
+
 MMDefEnd;

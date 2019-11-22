@@ -20,25 +20,6 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 	
 	private static Logger logger =  LoggerFactory.getLogger(TDAKernel.class);
 	
-	//***** LEGACY TDA PATCHES *****//
-	public long findClass(String name) {
-		if ("Command".equals(name))
-			name = "TDAKernel::Command";
-		else
-		if ("Event".equals(name))
-			name = "TDAKernel::Event";
-		long r = super.findClass(name);
-		if (r==0) {
-			int i=name.lastIndexOf(':');
-			if (r>=0) {
-				name = name.substring(i+1);
-				r = super.findClass(name);
-			}
-		}
-		return r;
-	}
-	
-	
 	//***** TDA KERNEL CONSTRUCTOR AND UUID-RELATED FUNCTIONS *****//
 	private java.util.UUID uuid; 
 	private static Map<java.util.UUID,TDAKernel> allTDAKernelsInThisJVM =
@@ -711,25 +692,18 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 			logger.error("A repository must be in OPEN_REPOSITORY_MODE");
 			return;
 		}
-		
+
+		// creating the Event and Command classes...
+		long rEventCls = this.findClass("Event");
+		if (rEventCls == 0)
+			rEventCls = this.createClass("Event");
+
+		long rCommandCls = this.findClass("Command");
+		if (rCommandCls == 0)
+			rCommandCls = this.createClass("Command");
+				
 		// creating submitter...
 		long rSubmitterCls = this.findClass("Submitter");
-		if (rSubmitterCls == 0) {
-			long it = this.getIteratorForClasses();
-			long rCls = this.resolveIteratorFirst(it);
-			while (rCls!=0) {
-				String s = this.getClassName(rCls);
-				if (s!=null)
-					if (s.endsWith(":Submitter")) {
-						rSubmitterCls = rCls;
-						break;
-					}
-				this.freeReference(rCls);
-				rCls = this.resolveIteratorNext(it);
-			}
-			this.freeIterator(it);;
-		}
-		
 		if (rSubmitterCls == 0)
 			rSubmitterCls = this.createClass("Submitter");
 		
@@ -740,6 +714,14 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 		if (rSubmitter == 0)
 			rSubmitter = this.createObject(rSubmitterCls);
 		
+		// creating associations to the Submitter class...
+		long rAs1 = this.findAssociationEnd(rEventCls, "submitter");
+		if (rAs1==0)
+			rAs1 = this.createAssociation(rEventCls, rSubmitterCls, "event", "submitter", false);
+
+		long rAs2 = this.findAssociationEnd(rCommandCls, "submitter");
+		if (rAs2==0)
+			rAs2 = this.createAssociation(rCommandCls, rSubmitterCls, "command", "submitter", false);
 
 		mode = Mode.OPEN_TDA_MODE;
 		

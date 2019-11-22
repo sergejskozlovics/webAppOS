@@ -352,27 +352,5 @@ public class RAAPIWrapper extends DelegatorBase {
 		return this.createLink(rSrc, rTgt, findAssociationEnd(getFirstObjectClass(rSrc), roleName));
 	}
 	
-	public boolean isEventOrCommand(long r)
-	{
-		return 
-				this.isKindOf(r, this.findClass("TDAKernel::Event"))
-			||	this.isKindOf(r, this.findClass("TDAKernel::Command"));		
-	}
-	
-	public void submitAndForget(long rEventOrCommand)
-	{
-		if (this.isKindOf(rEventOrCommand, this.findClass("TDAKernel::AsyncCommand"))) {
-			boolean b = createLinkByRoleName(rEventOrCommand, getFirstObjectByClassName("TDAKernel::Submitter"), "submitter");
-			if (!b)
-				this.deleteObject(rEventOrCommand);
-			else
-				this.referencesToFree.remove(rEventOrCommand); // the async procedure will free this object
-		}
-		else {
-			createLinkByRoleName(rEventOrCommand, getFirstObjectByClassName("TDAKernel::Submitter"), "submitter");
-			this.deleteObject(rEventOrCommand);			
-		}
-		
-	}
 }
 

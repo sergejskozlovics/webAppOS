@@ -5,6 +5,7 @@ import lv.lumii.tda.kernel.TDAKernel;
 import lv.lumii.tda.raapi.IRepository;
 
 import java.io.*;
+import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -265,16 +266,6 @@ public class LegacyToCloudProjectConverter {
 			System.err.println("renameRole for duplicate Edge.moveLineEndPointEvent(E) failed");
 		if (DEBUG) System.out.println("renameRole for duplicate Edge.moveLineEndPointEvent(E) returned "+retStr);
 		
-		retStr = k1.callSpecificOperation("renameClass", "Command\u001ETDAKernel::Command");
-		if (retStr == null)
-			System.err.println("renameClass for Command failed");
-		if (DEBUG) System.out.println("renameClass for Command returned "+retStr);
-		
-		retStr = k1.callSpecificOperation("renameClass", "Event\u001ETDAKernel::Event");
-		if (retStr == null)
-			System.err.println("renameClass for Event failed");
-		if (DEBUG) System.out.println("renameClass for Event returned "+retStr);
-		
 		k1.deleteObject(k1.resolveIteratorFirst(k1.getIteratorForDirectClassObjects(k1.findClass("TreeEngine"))));
 		k1.deleteObject(k1.resolveIteratorFirst(k1.getIteratorForDirectClassObjects(k1.findClass("GraphDiagramEngine"))));
 		
@@ -295,7 +286,7 @@ public class LegacyToCloudProjectConverter {
 		//b = k1.deleteAssociation(k1.findAssociationEnd(r, "command"));
 		//System.out.println("delete LastCmdPtr.command = "+b);
 		
-		long it = k1.getIteratorForAllClassObjects(k1.findClass("TDAKernel::Command"));
+		long it = k1.getIteratorForAllClassObjects(k1.findClass("Command"));
 		long r = k1.resolveIteratorFirst(it);
 		while (r!=0) {
 			long it2 = k1.getIteratorForDirectObjectClasses(r);
@@ -307,7 +298,7 @@ public class LegacyToCloudProjectConverter {
 		k1.freeIterator(it);
 
 
-		it = k1.getIteratorForAllClassObjects(k1.findClass("TDAKernel::Event"));
+		it = k1.getIteratorForAllClassObjects(k1.findClass("Event"));
 		r = k1.resolveIteratorFirst(it);
 		while (r!=0) {
 			long it2 = k1.getIteratorForDirectObjectClasses(r);
@@ -342,12 +333,6 @@ public class LegacyToCloudProjectConverter {
 			return null;
 		}
 		
-		long rrrK = k2.findClass("TDAKernel::TDAKernel");
-		long rrrIt = k2.getIteratorForAllClassObjects(rrrK);
-		long rrrO = k2.resolveIteratorFirst(rrrIt);
-		k2.freeIterator(rrrIt);
-		if (DEBUG) System.out.println("CONVERT KERNEL WAS="+rrrO);
-		
 		
 		TDAKernel kHelper = new TDAKernel(); // deletes undo history
 		
@@ -371,7 +356,7 @@ public class LegacyToCloudProjectConverter {
 			return null;
 		}
 
-		it = kHelper.getIteratorForAllClassObjects(kHelper.findClass("TDAKernel::Command"));
+		it = kHelper.getIteratorForAllClassObjects(kHelper.findClass("Command"));
 		r = kHelper.resolveIteratorFirst(it);
 		while (r!=0) {
 /*			long it2 = kHelper.getIteratorForDirectObjectClasses(r);
@@ -382,9 +367,9 @@ public class LegacyToCloudProjectConverter {
 		}
 		kHelper.freeIterator(it);
 		
-		b = lv.lumii.tda.kernel.TDACopier.makeCopy(kHelper, k2, null, true, 
+		ArrayList<String> err = new ArrayList<String>();
+		b = lv.lumii.tda.kernel.TDACopier.makeCopy(kHelper, k2, err, !true, 
 				new String[]{
-					"TDAKernel::.*",
 					".*Engine",
 					".*Event",
 					".*Command",
@@ -392,8 +377,15 @@ public class LegacyToCloudProjectConverter {
 					"Option",
 					"Frame"
 				}, null, true);
+		if (!err.isEmpty()) {
+			System.err.println("---->");
+			for (String s : err) {
+				System.err.println(s);
+			}
+			System.err.println("----<");
+		}
+		
 		if (!b) {
-			System.err.println("Copy failed at step 2.");			
 			k1.close();
 			k2.close();
 			kHelper.close();
@@ -401,9 +393,8 @@ public class LegacyToCloudProjectConverter {
 			return null;
 		}
 		
-		b = lv.lumii.tda.kernel.TDACopier.makeCopy(kHelper, k2, null, true, 
+		b = lv.lumii.tda.kernel.TDACopier.makeCopy(kHelper, k2, null, !true, 
 				new String[]{
-					"TDAKernel::HistoryStream",
 					"ActivateDgrEvent",
 					".*Cmd",
 					"GraphDiagram",
@@ -419,13 +410,6 @@ public class LegacyToCloudProjectConverter {
 			return null;
 		}
 
-		rrrK = k2.findClass("TDAKernel::TDAKernel");
-		rrrIt = k2.getIteratorForAllClassObjects(rrrK);
-		rrrO = k2.resolveIteratorFirst(rrrIt);
-		k2.freeIterator(rrrIt);
-		if (DEBUG) System.out.println("CONVERT KERNEL BECAME="+rrrO);
-		
-		//readln();
 		
 		b = k2.startSave();
 		if (b) {
@@ -437,62 +421,8 @@ public class LegacyToCloudProjectConverter {
 			System.err.println("Could not start save after copy.");
 
 		
-//	    CreateLinkType("historyStream", "", "graphDiagram",
-//                GetObjectTypeIdByName("GraphDiagram"), Card_01, Role_IndependentPartner, true,
-//                GetObjectTypeIdByName("TDAKernel::HistoryStream"), Card_01, Role_IndependentPartner, true);
-		
-		
-		long rKernelCls = k2.findClass("TDAKernel::TDAKernel");
-		it = k2.getIteratorForDirectClassObjects(rKernelCls);
-		long rKernel = k2.resolveIteratorFirst(it);
-		
-		// delete other kernels...
-		while (rKernel != 0) {
-			rKernel = k2.resolveIteratorNext(it);
-			if (rKernel!=0)
-				k2.deleteObject(rKernel);
-		}
-		k2.freeIterator(it);
-		
-		it = k2.getIteratorForDirectClassObjects(rKernelCls);
-		rKernel = k2.resolveIteratorFirst(it);
-		k2.freeIterator(it);
-		
-		long rKernelToEngine = k2.findAssociationEnd(rKernelCls, "attachedEngine");
-		
-		long rEngineCls = k2.findClass("TDAKernel::Engine");
-		//it = k2.getIteratorForAllClassObjects(rEngineCls);
-		it = k2.getIteratorForLinkedObjects(rKernel, rKernelToEngine);
-		long rEngine = k2.resolveIteratorFirst(it);
-		while (rEngine != 0) {
-			long it2 = k2.getIteratorForDirectObjectClasses(rEngine);
-			long rCls = k2.resolveIteratorFirst(it2);
-			k2.freeIterator(it2);
-			if (DEBUG) System.out.println("found engine "+k2.getClassName(rCls));
-			
-			long itAttr = k2.getIteratorForDirectAttributes(rCls);
-			long rAttr = k2.resolveIteratorFirst(itAttr);
-			while (rAttr != 0) {
-				String attrName = k2.getAttributeName(rAttr);
-				if (DEBUG) System.out.println("found attr "+attrName);
-				if (attrName.startsWith("on")) {
-					attrName = attrName.substring(2);
-					
-					long rAttr2 = k2.findAttribute(rKernelCls, "engineFor"+attrName);
-					if (rAttr2 == 0) {
-						rAttr2 = k2.createAttribute(rKernelCls, "engineFor"+attrName, k2.findPrimitiveDataType("String"));
-						b = k2.setAttributeValue(rKernel, rAttr2, k2.getClassName(rCls));
-						if (DEBUG) System.out.println("Associating "+attrName+" with "+k2.getClassName(rCls) +" = " +b );
-					}
-					
-				}
-				rAttr = k2.resolveIteratorNext(itAttr);
-			}
-			k2.freeIterator(itAttr);
-			
-			rEngine = k2.resolveIteratorNext(it);
-		}
-		k2.freeIterator(it);
+		long rKernelCls = k2.findClass("TDAKernel");
+		k2.deleteClass(rKernelCls);		
 
 		b = k2.startSave();
 		if (b) {

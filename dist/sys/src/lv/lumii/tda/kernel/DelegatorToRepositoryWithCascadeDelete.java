@@ -307,11 +307,6 @@ public class DelegatorToRepositoryWithCascadeDelete extends DelegatorToRepositor
 			long itA;
 			long rA;
 			
-/*			System.out.println("cascade delete object of class "+raapi.getClassName(rCls));
-			int x=5;
-			if (raapi.getClassName(rCls).equals("TDAKernel::TDAKernel"))
-				x++;*/
-			
 			
 			itA = raapi.getIteratorForAllAttributes(rCls);
 			rA = raapi.resolveIteratorFirst(itA);

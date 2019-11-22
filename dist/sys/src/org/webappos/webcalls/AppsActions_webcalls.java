@@ -260,15 +260,17 @@ public class AppsActions_webcalls {
 		if (bootstrapped)
 			insertSomeMetamodels(fullAppName, webmem);
 		
-		IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
-		seed.callingConventions = IWebCaller.CallingConventions.WEBMEMCALL;
-		seed.actionName = props.main;
-		seed.webmemArgument = 0;
-		seed.login = login;
-		seed.project_id = project_id;
-		seed.jsonResult = null;
-		
-		API.webCaller.enqueue(seed);
+		if (props.main!=null && !props.main.isEmpty()) {
+			IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
+			seed.callingConventions = IWebCaller.CallingConventions.WEBMEMCALL;
+			seed.actionName = props.main;
+			seed.webmemArgument = 0;
+			seed.login = login;
+			seed.project_id = project_id;
+			seed.jsonResult = null;
+			
+			API.webCaller.enqueue(seed);
+		}
 
 		return "{}";
 	}

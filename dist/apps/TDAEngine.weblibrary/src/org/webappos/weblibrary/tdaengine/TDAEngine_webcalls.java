@@ -22,7 +22,7 @@ public class TDAEngine_webcalls {
 		long rAttr = webmem.findAttribute(rCls, "url");
 		if (rAttr == 0) {
 			webmem.freeReference(rCls);
-			logger.error("Attribute 'url' not found in class TDAKernel::InsertMetamodelCommand.");
+			logger.error("Attribute 'url' not found in class InsertMetamodelCommand.");
 			return;
 		}
 		String url_str = webmem.getAttributeValue(rCommand, rAttr);
@@ -48,13 +48,13 @@ public class TDAEngine_webcalls {
 		long rAttr = webmem.findAttribute(rCls, "uri");
 		if (rAttr == 0) {
 			webmem.freeReference(rCls);
-			logger.error("Attribute 'uri' not found in class TDAKernel::LaunchTransformationCommand (or in its descendants).");
+			logger.error("Attribute 'uri' not found in class LaunchTransformationCommand (or in its descendants).");
 			return;
 		}
 		String transformationName = webmem.getAttributeValue(rCommand, rAttr);
 		if (transformationName == null) {
 			webmem.freeReference(rCls);
-			logger.error("No transformation URI specified in the given instance of TDAKernel::LaunchTransformationCommand.");
+			logger.error("No transformation URI specified in the given instance of LaunchTransformationCommand.");
 			return;
 		}
 		webmem.freeReference(rAttr);

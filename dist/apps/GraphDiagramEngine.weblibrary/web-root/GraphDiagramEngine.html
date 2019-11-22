@@ -740,7 +740,7 @@
       popUpDiv.innerHTML = '';
       $('#wrapDiv').hide();
 
-      var cmd = new tda.model["TDAKernel::LaunchTransformationCommand"];
+      var cmd = new tda.model["LaunchTransformationCommand"];
       if (name.indexOf("lua.") == 0)
         cmd.setUri("lua:" + name.substring(4));
       else

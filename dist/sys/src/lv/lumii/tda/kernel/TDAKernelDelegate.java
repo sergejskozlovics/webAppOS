@@ -30,18 +30,6 @@ public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAP
 	}
 	
 	
-	//***** LEGACY TDA PATCHES *****//
-	@Override
-	public long findClass(String name) {
-		if ("Command".equals(name))
-			name = "TDAKernel::Command";
-		else
-		if ("Event".equals(name))
-			name = "TDAKernel::Event";
-		return super.findClass(name);
-	}
-	
-	
 	///// createLink also MANAGES EVENTS AND COMMANDS /////
 	public boolean creatingSubmitLink(long rSourceObject, long rTargetObject, long rAssociationEnd) {
 		return ((rSubmitterObject!=0) &&

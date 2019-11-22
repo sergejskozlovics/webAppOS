@@ -163,8 +163,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					
 					boolean tryAgain = false;
 					
-					try {
-						
+					try {						
 						logger.trace("WebCaller dequeue "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",kernel="+API.dataMemory.getWebMemory(seed2.project_id)+",arg="+seed2.webmemArgument);
 						WebCallDeclaration action = map.get(seed2.actionName);
 						if (action == null && seed2.fullAppName!=null) {
@@ -178,7 +177,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 						}
 						
 						if (action == null) {
-							logger.error("Action "+seed2.actionName+" not found. Ignoring.");
+							logger.error("Action '"+seed2.actionName+"' not found. Ignoring.");
 							return;
 						}
 						
