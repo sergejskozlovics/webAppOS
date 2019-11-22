@@ -20,6 +20,8 @@ include ':DialogEngine.weblibrary'
 project(':DialogEngine.weblibrary').projectDir = new File('../dist/apps/DialogEngine.weblibrary')
 include ':GraphDiagramEngine.weblibrary'
 project(':GraphDiagramEngine.weblibrary').projectDir = new File('../dist/apps/GraphDiagramEngine.weblibrary')
+include ':TDAEngine.weblibrary'
+project(':TDAEngine.weblibrary').projectDir = new File('../dist/apps/TDAEngine.weblibrary')
 
 include ':HelloWorld.webapp'
 project(':HelloWorld.webapp').projectDir = new File('../dist/apps/HelloWorld.webapp')
