@@ -1,25 +1,16 @@
 package lv.lumii.tda.kernel;
 
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.io.*;
 import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-//import org.webappos.util.ForegroundThread;
-//import org.webappos.web.server.Config;
 import org.webappos.webmem.IWebMemory;
 import org.webappos.webmem.WebMemoryContext;
 
-import lv.lumii.tda.kernel.mm.Submitter;
-import lv.lumii.tda.kernel.mm.TDAKernelMetamodelFactory.ElementReferenceException;
-import lv.lumii.tda.kernel.mmdparser.MetamodelInserter;
 import lv.lumii.tda.raapi.IEngineAdapter;
 import lv.lumii.tda.raapi.IRepository;
 import lv.lumii.tda.raapi.ITransformationAdapter;
-import lv.lumii.tda.raapi.RAAPI;
-import lv.lumii.tda.raapi.RAAPIHelper;
 import lv.lumii.tda.raapi.RAAPI_Synchronizable;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 import lv.lumii.tda.raapi.RAAPI_WR;
@@ -36,7 +27,15 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 		else
 		if ("Event".equals(name))
 			name = "TDAKernel::Event";
-		return super.findClass(name);
+		long r = super.findClass(name);
+		if (r==0) {
+			int i=name.lastIndexOf(':');
+			if (r>=0) {
+				name = name.substring(i+1);
+				r = super.findClass(name);
+			}
+		}
+		return r;
 	}
 	
 	
@@ -259,118 +258,6 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 		}		
 	}
 
-	private boolean tryToLoadEngine(String engineName, String adapterTypeName)
-	{
-		IEngineAdapter adapter = newEngineAdapter(adapterTypeName);
-		if (adapter == null)
-			return false;
-		
-		// TODO: disable undo
-		
-		engineName2adapter.put(engineName, adapter); // putting into the map now, so the engine is available during load()
-		reverseOrderedEngineAdapters.add(0, adapter); // insert before to preserve the reversed order
-		
-		delegate.setEngineBeingLoaded(engineName);
-		boolean retVal = adapter.load(engineName, this);
-		delegate.setEngineBeingLoaded(null);
-		
-		if (!retVal) {
-			engineName2adapter.remove(engineName);
-			reverseOrderedEngineAdapters.remove(adapter);
-		}
-		return retVal;		
-	}
-	
-	/**
-	 * Creates new or returns an existing engine adapter for the given engine name.
-	 * 
-	 * @param engineName the name of the engine (without adapter type)
-	 * @return the engine adapter for the engine with the given name.
-	 */
-	public IEngineAdapter getEngineAdapter(String engineName)
-	{
-		IEngineAdapter adapter = engineName2adapter.get(engineName);
-		if (adapter != null)
-			return adapter;
-		
-	
-		
-		String adapterTypeName = System.getProperty("adapterFor"+engineName);
-		if (adapterTypeName != null) {
-			tryToLoadEngine(engineName, adapterTypeName);
-			IEngineAdapter retVal = engineName2adapter.get(engineName);
-			if (retVal == null)
-				logger.error("Could not load engine "+engineName+" with the "+adapterTypeName+" adapter.");
-			return retVal;
-		}
-		
-		
-		if (tryToLoadEngine(engineName, "web")) {
-			return engineName2adapter.get(engineName);
-		}
-		
-		if (tryToLoadEngine(engineName, "staticjava")) {
-			return engineName2adapter.get(engineName);
-		}
-		
-		if (tryToLoadEngine(engineName, "dll")) {
-			return engineName2adapter.get(engineName);			
-		}
-		
-/*		Set<Class<? extends lv.lumii.tda.raapi.IEngineAdapter>> classes = TDAKernel.getReflections().getSubTypesOf(lv.lumii.tda.raapi.IEngineAdapter.class);
-		
-		for (Class<? extends lv.lumii.tda.raapi.IEngineAdapter> c : classes) {
-			//if (DEBUG) System.err.println("Engine adapter found "+c.getName());
-			adapter = createAndLoadEngineAdapter(c.getName(), engineName);
-			if (adapter != null) {
-				delegator2.engineBeingLoaded = null;
-				return adapter;
-			}
-		}*/
-		
-		
-		return null;			
-	}
-	
-	/**
-	 * Creates new or returns an existing transformation adapter for the given transformation type (transformation language).
-	 * 
-	 * @param transformationType the transformation adapter type (corresponding to a transformation language), e.g., "lquery", "atl", "mola"
-	 * @return a transformation adapter for the given transformation type (transformation language).
-	 */
-	public ITransformationAdapter getTransformationAdapter(String transformationType)
-	{
-		ITransformationAdapter adapter = transformationType2adapter.get(transformationType);
-		if (adapter != null)
-			return adapter;
-		
-		adapter = newTransformationAdapter(transformationType);
-		if (adapter == null)
-			return null;
-		
-		if (adapter.load(this)) {
-			transformationType2adapter.put(transformationType, adapter);
-			return adapter;
-		}
-		
-		return null;			
-	}
-	
-	private void cleanupAdapters()
-	{
-		for (IEngineAdapter adapter : reverseOrderedEngineAdapters) {
-			adapter.unload();
-		}
-		
-		for (ITransformationAdapter adapter : transformationType2adapter.values()) {
-			adapter.unload();
-		}
-		
-		transformationType2adapter.clear();
-		engineName2adapter.clear();
-		reverseOrderedEngineAdapters.clear();
-	}
-	
 	///// FOR ADDING CACHE THAT IS ATTACHED TO THIS TDA KERNEL AND FREED BY JVM WHEN THE KERNEL IS CLOSED /////
 	private Map<String, Object> cacheMap = new HashMap<String, Object>();
 	public void storeCache(String id, Object cache) {
@@ -411,10 +298,6 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 	}
 	private Mode mode = Mode.CLOSED_MODE;
 
-	///// TDA KERNEL METAMODEL /////
-	public lv.lumii.tda.kernel.mm.TDAKernelMetamodelFactory KMM = new lv.lumii.tda.kernel.mm.TDAKernelMetamodelFactory();
-	public lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory EEMM = new lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory();
-	
 	///// DELEGATE REPOSITORY /////
 	private TDAKernelDelegate delegate = null;
 	public IRepository getDelegate()
@@ -480,112 +363,6 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 	}
 	
 	
-	/**
-	 * Switches the currently open repository to TDA mode (TDAKernel metamodel is being added, events and commands are processed).
-	 * @return whether the operation succeeded
-	 */
-	public boolean upgradeToTDA(boolean bootstrap, String login, boolean light)
-	{
-		if (mode != Mode.OPEN_REPOSITORY_MODE) {
-			logger.error("A repository must be in OPEN_REPOSITORY_MODE");
-			return false;
-		}
-		
-		try {
-			KMM.setRAAPI(this, "", true);
-		} catch (ElementReferenceException e) {
-			logger.error("Could not load TDA Kernel Metamodel.\n"+e.toString());
-			return false;
-		}
-
-/*		if (!ForegroundThread.inForegroundThread()) {
-			logger.error("You must be in the ForegroundThread to upgrade to TDA");
-		}
-		
-		if ((login!=null) && (!login.equals(ForegroundThread.getActiveLogin()))) {
-			logger.error("You must be in the ForegroundThread with login="+login+" (but the active login is "+ForegroundThread.getActiveLogin()+")");			
-		}*/
-		// Initializing TDA Kernel Metamodel with initial data...
-		lv.lumii.tda.kernel.mm.TDAKernel kernelObj = lv.lumii.tda.kernel.mm.TDAKernel.firstObject(KMM);
-		if (kernelObj == null)
-			kernelObj = KMM.createTDAKernel();
-
-		lv.lumii.tda.kernel.mm.Submitter submitterObj;
-		Iterator<lv.lumii.tda.kernel.mm.Submitter> it = (Iterator<Submitter>) lv.lumii.tda.kernel.mm.Submitter.allObjects(KMM).iterator();
-		if (it.hasNext()) {
-			submitterObj = it.next();
-			while (it.hasNext()) {
-				it.next().delete();
-			}
-		}
-		else
-			submitterObj = KMM.createSubmitter();
-		
-		//lv.lumii.tda.kernel.mm.Submitter.deleteAllObjects(KMM);
-		//lv.lumii.tda.kernel.mm.Submitter submitterObj = KMM.createSubmitter();
-		
-		
-		delegate.setKMM(KMM);
-
-		
-		delegate.setEngineBeingLoaded("EnvironmentEngine");
-		try {
-			EEMM.setRAAPI(this, "", true);
-		} catch (lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory.ElementReferenceException e) {
-			logger.error("Could not load Environment Engine Metamodel.\n"+e.toString());
-			delegate.setEngineBeingLoaded(null);
-			KMM.unsetRAAPI();
-			return false;
-		}
-		delegate.setEngineBeingLoaded(null);
-		
-		
-		
-		lv.lumii.tda.ee.mm.EnvironmentEngine eeObj = lv.lumii.tda.ee.mm.EnvironmentEngine.firstObject(EEMM);
-		if (eeObj == null)
-			eeObj = EEMM.createEnvironmentEngine();
-		
-		if ((kernelObj == null) || (submitterObj == null) || (eeObj==null)) {
-			logger.error("Could not find/create the TDAKernel object, the Submitter object, and/or the Environment Engine object");
-			KMM.unsetRAAPI();
-			EEMM.unsetRAAPI();
-			return false;
-		}
-		
-		
-		if (light) {
-			mode = Mode.OPEN_TDA_MODE;
-			return true;
-		}
-		
-		
-		// set projectDirectory and other TDA-related stuff
-		eeObj.setLanguage(System.getProperty("user.language"));
-		eeObj.setCountry(System.getProperty("user.country"));
-		eeObj.setAnyUnsavedChanges(false);
-		/*eeObj.setCommonBinDirectory(properties.getProperty("commonBinDirectory"));
-		eeObj.setSpecificBinDirectory(properties.getProperty("specificBinDirectory"));
-		eeObj.setProjectDirectory(properties.getProperty("projectDirectory"));
-		eeObj.setCloudLocation(properties.getProperty("cloudLocation"));
-		eeObj.setClientSessionId(properties.getProperty("clientSessionId"));
-		try {
-			eeObj.setClientActionIndex(Integer.parseInt(properties.getProperty("clientActionIndex")));
-		}
-		catch(Throwable t) {
-		}*/
-		
-		// TODO: check client action index
-
-		lv.lumii.tda.ee.mm.Option.deleteAllObjects(EEMM);
-		lv.lumii.tda.ee.mm.Frame.deleteAllObjects(EEMM);
-		
-		lv.lumii.tda.kernel.mm.Command.deleteAllObjects(KMM);
-		lv.lumii.tda.kernel.mm.Event.deleteAllObjects(KMM);
-		
-		mode = Mode.OPEN_TDA_MODE;
-		return true;
-	}
-
 	/**
 	 * Instructs the underlying model repository to switch to references, where the last
 	 * predefinedBitsCount bits are of certain values predefinedBitsValues. Useful, when many clients
@@ -686,19 +463,13 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 		}		
 		
 		if (mode == Mode.SAVING_MODE) {
-			logger.error("Close during saving.");			
+			logger.warn("Close during saving.");			
 		}		
 
-		if (mode == Mode.OPEN_TDA_MODE) {
-			KMM.unsetRAAPI();
-			delegate.setKMM(null);
-		}
-		
 		if (synchronizer!=null) 
 			synchronizer.flush();
 		synchronizer = null;
 		
-		cleanupAdapters();
 		getDelegate().close();
 		cacheMap.clear();
 		
@@ -905,7 +676,6 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 	@Override
 	public boolean createLink (long rSourceObject, long rTargetObject, long rAssociationEnd)
 	{
-		// TODO: via creatingSubmitLink
 		boolean retVal = getDelegate().createLink(rSourceObject, rTargetObject, rAssociationEnd);
 		
 		if ((retVal) && (synchronizer!=null)) {
@@ -937,8 +707,44 @@ public class TDAKernel extends DelegatorToRepositoryBase implements IWebMemory
 	}
 
 	public void setEventsCommandsHook(IEventsCommandsHook _hook) {
+		if (mode != Mode.OPEN_REPOSITORY_MODE) {
+			logger.error("A repository must be in OPEN_REPOSITORY_MODE");
+			return;
+		}
+		
+		// creating submitter...
+		long rSubmitterCls = this.findClass("Submitter");
+		if (rSubmitterCls == 0) {
+			long it = this.getIteratorForClasses();
+			long rCls = this.resolveIteratorFirst(it);
+			while (rCls!=0) {
+				String s = this.getClassName(rCls);
+				if (s!=null)
+					if (s.endsWith(":Submitter")) {
+						rSubmitterCls = rCls;
+						break;
+					}
+				this.freeReference(rCls);
+				rCls = this.resolveIteratorNext(it);
+			}
+			this.freeIterator(it);;
+		}
+		
+		if (rSubmitterCls == 0)
+			rSubmitterCls = this.createClass("Submitter");
+		
+		long it = this.getIteratorForAllClassObjects(rSubmitterCls);
+		long rSubmitter = this.resolveIteratorFirst(it);
+		this.freeIterator(it);
+		
+		if (rSubmitter == 0)
+			rSubmitter = this.createObject(rSubmitterCls);
+		
+
+		mode = Mode.OPEN_TDA_MODE;
+		
 		hook = _hook;
-		delegate.setEventsCommandsHook(hook);
+		delegate.setEventsCommandsHook(rSubmitter, hook);
 	}
 	
 	public IEventsCommandsHook getEventsCommandsHook() {

@@ -4,13 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -18,15 +15,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.webappos.antiattack.ValidityChecker;
 import org.webappos.properties.WebAppProperties;
-import org.webappos.properties.PropertiesManager;
 import org.webappos.server.API;
 import org.webappos.webcaller.IWebCaller;
 import org.webappos.webcaller.WebCaller;
 
 import lv.lumii.tda.kernel.IEventsCommandsHook;
 import lv.lumii.tda.kernel.TDAKernel;
-import lv.lumii.tda.raapi.IRepository;
-import lv.lumii.tda.raapi.RAAPIHelper;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -184,46 +178,6 @@ public class ZippedProject implements IProject {
 				return false;
 			}
 			
-	/*		System.err.println("Checking for the need to convert Ecore...");
-			IRepository k1 = TDAKernel.newRepositoryAdapter("ecore");
-			if (k1 != null) {
-				String location = zipFolder.getFolder().toUri().toString()+"/data.xmi";
-				if (k1.exists(location)) {
-					System.err.println("Ecore exists. Converting...");					
-					boolean b = k1.open(location);
-					if (b) {
-
-						TDAKernel k2 = new TDAKernel();
-						
-						String targetLocation = IProject.DEFAULT_REPOSITORY+":"+zipFolder.getFolder().toUri().toString();
-						
-						if (k2.exists(targetLocation))
-							k2.drop(targetLocation);
-						
-						b = k2.open(targetLocation);
-						if (b) {
-							b = lv.lumii.tda.kernel.TDACopier.makeCopy(k1, k2, !true);
-							if (!b) {
-								System.err.println("Copy failed.");			
-							}
-							k2.close();
-						}
-						else {
-							System.err.println("Could not create target repository "+targetLocation);
-						}
-						
-						
-						k1.close();
-					}
-					else 
-						System.err.println("Could not open the Ecore project in "+location);
-					
-					if (!b)
-						return false;
-				}
-			}
-			else
-				System.err.println("Error: could not initialize a repository adapter for ecore.");*/			
 		}
 		
 		String folder = zipFolder.getFolder().toAbsolutePath().toString();
@@ -247,27 +201,6 @@ public class ZippedProject implements IProject {
 		long time2 = System.currentTimeMillis();
 		logger.debug("Opened in "+(time2-time1)+" ms");
 		
-		if (logger.isDebugEnabled()) {
-			logger.debug("Open: The list of attached engines:");
-			long rKernel = RAAPIHelper.getSingletonObject(tdaKernel, "TDAKernel::TDAKernel");
-			long rKernelCls = RAAPIHelper.getObjectClass(tdaKernel, rKernel);
-			long rKernelToEngineAssoc = tdaKernel.findAssociationEnd(rKernelCls, "attachedEngine");
-			long it = tdaKernel.getIteratorForLinkedObjects(rKernel, rKernelToEngineAssoc);
-			if (it!=0) {
-				long rEngineObj = tdaKernel.resolveIteratorFirst(it);
-				while (rEngineObj!=0) {
-					logger.debug(" * "+RAAPIHelper.getObjectClassName(tdaKernel, rEngineObj));
-					
-					tdaKernel.freeReference(rEngineObj);
-					rEngineObj = tdaKernel.resolveIteratorNext(it);
-				}
-				tdaKernel.freeIterator(it);
-			}
-			tdaKernel.freeReference(rKernel);
-		}
-		time2 = System.currentTimeMillis();
-		logger.debug("Opened(2) in "+(time2-time1)+" ms");
-
 		if (postOpen(false, login, sync, hook))
 			return true;
 		else {
@@ -406,7 +339,6 @@ public class ZippedProject implements IProject {
 			migrationDir.mkdir();
 		
 		
-		tdaKernel.upgradeToTDA(bootstrap, login, false);
 		return true;
 	}
 	
@@ -466,23 +398,6 @@ public class ZippedProject implements IProject {
 		
 		if (tdaKernel == null)
 			return false;
-
-		if (logger.isDebugEnabled()) {
-			logger.debug("Save: The list of attached engines:");
-			long rKernel = RAAPIHelper.getSingletonObject(tdaKernel, "TDAKernel::TDAKernel");
-			long rKernelCls = RAAPIHelper.getObjectClass(tdaKernel, rKernel);
-			long rKernelToEngineAssoc = tdaKernel.findAssociationEnd(rKernelCls, "attachedEngine");
-			long it = tdaKernel.getIteratorForLinkedObjects(rKernel, rKernelToEngineAssoc);
-			long rEngineObj = tdaKernel.resolveIteratorFirst(it);
-			while (rEngineObj!=0) {
-				logger.debug(" * "+RAAPIHelper.getObjectClassName(tdaKernel, rEngineObj));
-				
-				tdaKernel.freeReference(rEngineObj);
-				rEngineObj = tdaKernel.resolveIteratorNext(it);
-			}
-			tdaKernel.freeIterator(it);
-			tdaKernel.freeReference(rKernel);
-		}
 
 		if (!tdaKernel.startSave()) {
 			logger.error("Could not start the save process.");

@@ -20,7 +20,7 @@ public interface IWebMemWebCallsAdapter {
 	 * 
 	 * @param resolvedLocation adapter-specific location of code to execute
 	 * @param pwd the directory, where the .webcalls file was located
-	 * @param rObject a repository object (usually, an instance of TDAKernel::Command or TDAKernel::Event)
+	 * @param rObject a repository object (usually, a command or an event)
 	 * @param webmem a pointer to web memory
 	 * @param project_id the current project_id
 	 * @param appFullName the name of the current app

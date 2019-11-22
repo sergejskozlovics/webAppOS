@@ -54,31 +54,28 @@ public class DialogEngine_webcalls {
 
 	
 	public static boolean onCloseFrameRequestedEvent(IWebMemory webmem, long r)
-	{
-		lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory eeFactory = new lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory();
-		try {
-			eeFactory.setRAAPI(webmem, "", true);
-		} catch (Throwable e) {
-			e.printStackTrace();
-			return false;
-		}
+	{		
+		long it = webmem.getIteratorForDirectObjectClasses(r);		
+		long rEventCls = webmem.resolveIteratorFirst(it);
+		webmem.freeIterator(it);		
+		long rAssociationEnd = webmem.findAssociationEnd(rEventCls, "frame");		
+		it = webmem.getIteratorForLinkedObjects(r, rAssociationEnd);
+		long rFrame = webmem.resolveIteratorFirst(it);
+		webmem.freeIterator(it);
 		
-		lv.lumii.tda.ee.mm.CloseFrameRequestedEvent ev = (lv.lumii.tda.ee.mm.CloseFrameRequestedEvent)eeFactory.findOrCreateRAAPIReferenceWrapper(r, false); 
-		lv.lumii.tda.ee.mm.Frame frame = ev.getFrame();
+		long rCommandCls = webmem.findClass("DetachFrameCommand");
+		long rCmd = webmem.createObject(rCommandCls);
+		webmem.createLink(rCmd, rFrame, webmem.findAssociationEnd(rCommandCls, "frame"));
+		webmem.setAttributeValue(rCmd, webmem.findAttribute(rCommandCls, "permanently"), "true");
 		
+		long rAssocEnd2 = webmem.findAssociationEnd(rCommandCls, "submitter");
+		long rSubmitterCls = webmem.getTargetClass(rAssocEnd2);
+		it = webmem.getIteratorForDirectClassObjects(rSubmitterCls);
+		long rSubmitter = webmem.resolveIteratorFirst(it);
+		webmem.freeIterator(it);
 		
-		
-		lv.lumii.tda.ee.mm.DetachFrameCommand dfc = eeFactory.createDetachFrameCommand();
-		dfc.setFrame(frame);
-		dfc.setPermanently(true);
-		dfc.submit();
-		
-		
-		//if (DEBUG) System.err.println("deleting frame with content uri = "+frame.getContentURI());
-		//frame.delete();		
-		
-		eeFactory.unsetRAAPI();
-		
+		webmem.createLink(rCmd, rSubmitter, rAssocEnd2); // submit
+				
 		return true;
 	}
 		

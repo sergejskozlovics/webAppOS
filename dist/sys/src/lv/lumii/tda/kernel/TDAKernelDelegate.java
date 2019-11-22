@@ -10,22 +10,8 @@ import lv.lumii.tda.raapi.RAAPI_WR;
 
 public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAPI_WR, RAAPI_Synchronizable  {
 	private static Logger logger =  LoggerFactory.getLogger(TDAKernelDelegate.class);
-	
-	
-	private String engineBeingLoaded = null;
-	public void setEngineBeingLoaded(String name) {
-		engineBeingLoaded = name;
-	}
-	
-	private lv.lumii.tda.kernel.mm.TDAKernelMetamodelFactory KMM = null;
+		
 	private long rSubmitterObject = 0;
-	public void setKMM(lv.lumii.tda.kernel.mm.TDAKernelMetamodelFactory kmm) {
-		KMM = kmm;
-		if (kmm == null)
-			rSubmitterObject = 0;
-		else
-			rSubmitterObject = lv.lumii.tda.kernel.mm.Submitter.firstObject(KMM).getRAAPIReference();
-	}
 	
 	private TDAKernel tdaKernel;
 	
@@ -38,7 +24,8 @@ public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAP
 		tdaKernel = _kernel;
 	}
 	
-	public void setEventsCommandsHook(IEventsCommandsHook _hook) {
+	public void setEventsCommandsHook(long _rSubmitterObj, IEventsCommandsHook _hook) {
+		rSubmitterObject = _rSubmitterObj;
 		hook = _hook;
 	}
 	
@@ -55,29 +42,6 @@ public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAP
 	}
 	
 	
-	///// createGeneralization also ASSOCIATES COMMANDS AND EVENTS WITH ENGINES /////
-	public boolean createGeneralization (long rSubClass, long rSuperClass)
-	{
-		if (engineBeingLoaded == null)
-			return getDelegate().createGeneralization(rSubClass, rSuperClass);
-				
-		boolean wasCommand = this.isDerivedClass(rSubClass, KMM.COMMAND);
-		boolean wasEvent = this.isDerivedClass(rSubClass, KMM.EVENT);
-
-		boolean retVal = super.createGeneralization(rSubClass, rSuperClass);
-		if (retVal) {			
-			if ((!wasCommand && this.isDerivedClass(rSubClass, KMM.COMMAND))
-				   ||
-			    (!wasEvent && this.isDerivedClass(rSubClass, KMM.EVENT))) {			
-				// rSubClass have just become derived from TDAKernel::Command or TDAKernel::Event
-				
-				IEventsCommandsHelper.associateCommandOrEventWithEngine(this, rSubClass, engineBeingLoaded);
-			}
-		}
-		return retVal;
-	}
-	
-	
 	///// createLink also MANAGES EVENTS AND COMMANDS /////
 	public boolean creatingSubmitLink(long rSourceObject, long rTargetObject, long rAssociationEnd) {
 		return ((rSubmitterObject!=0) &&
@@ -89,11 +53,26 @@ public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAP
 	}
 	
 	public boolean isEvent(long r) {
-		return this.isKindOf(r, KMM.EVENT);
+		long it = this.getIteratorForDirectObjectClasses(r);
+		long rCls = this.resolveIteratorFirst(it);
+		this.freeIterator(it);
+		
+		String s = this.getClassName(rCls);
+		if (s==null)
+			return false;
+		
+		return s.endsWith("Event") || s.endsWith("Evt");
 	}
 	
 	public boolean isCommand(long r) {
-		return this.isKindOf(r, KMM.COMMAND);
+		long it = this.getIteratorForDirectObjectClasses(r);
+		long rCls = this.resolveIteratorFirst(it);
+		this.freeIterator(it);
+		
+		String s = this.getClassName(rCls);
+		if (s==null)
+			return false;
+		return s.endsWith("Command") || s.endsWith("Cmd");
 	}
 	
 	@Override
@@ -104,19 +83,19 @@ public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAP
 			// processing as an event/command submission...			
 					
 			if (rSourceObject == rSubmitterObject) {
-				if (this.isKindOf(rTargetObject, KMM.EVENT))
+				if (isEvent(rTargetObject))
 					return hook.handleEvent(this.tdaKernel, rTargetObject);
 				else
-					if (this.isKindOf(rTargetObject, KMM.COMMAND))
+					if (isCommand(rTargetObject))
 						return hook.executeCommand(this.tdaKernel, rTargetObject);
 					else
 						return false;
 			}
 			else {
-				if (this.isKindOf(rSourceObject, KMM.EVENT))
+				if (isEvent(rSourceObject))
 					return hook.handleEvent(this.tdaKernel, rSourceObject);
 				else
-					if (this.isKindOf(rSourceObject, KMM.COMMAND))
+					if (isCommand(rSourceObject))
 						return hook.executeCommand(this.tdaKernel, rSourceObject);
 					else
 						return false;
@@ -136,19 +115,19 @@ public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAP
 			// processing as an event/command submission...			
 
 			if (rSourceObject == rSubmitterObject) {
-				if (this.isKindOf(rTargetObject, KMM.EVENT))
+				if (isEvent(rTargetObject))
 					return hook.handleEvent(this.tdaKernel, rTargetObject);
 				else
-					if (this.isKindOf(rTargetObject, KMM.COMMAND))
+					if (isCommand(rTargetObject))
 						return hook.executeCommand(this.tdaKernel, rTargetObject);
 					else
 						return false;
 			}
 			else {
-				if (this.isKindOf(rSourceObject, KMM.EVENT))
+				if (isEvent(rSourceObject))
 					return hook.handleEvent(this.tdaKernel, rSourceObject);
 				else
-					if (this.isKindOf(rSourceObject, KMM.COMMAND))
+					if (isCommand(rSourceObject))
 						return hook.executeCommand(this.tdaKernel, rSourceObject);
 					else
 						return false;

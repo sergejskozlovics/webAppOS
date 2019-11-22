@@ -341,7 +341,7 @@ public class [c.name.replace('.*::', '')/]
 		}
 	}
 
-	[if c.name.equalsIgnoreCase('TDAKernel::Event') or c.name.equalsIgnoreCase('TDAKernel::Command') or c.name.equalsIgnoreCase('TDAKernel::AsyncCommand')]
+	[if c.name.equalsIgnoreCase('Event') or c.name.equalsIgnoreCase('Command')]
 	public boolean submit()
 	{
 		// return setSubmitter([pkg.nsPrefix/].Submitter.firstObject(factory));
@@ -876,7 +876,7 @@ public class Submitter
 	{
 		if (rObject != 0) {
 			if (!takeReference) {
-				System.err.println("Unable to delete the object "+rObject+" of type TDAKernel::Submitter since the RAAPI wrapper does not take care of this reference.");
+				System.err.println("Unable to delete the object "+rObject+" of type Submitter since the RAAPI wrapper does not take care of this reference.");
 				return false;
 			}
 			factory.wrappers.remove(rObject);
@@ -908,7 +908,7 @@ public class Submitter
 	Submitter([pkg.name/]Factory _factory)
 	{
 		factory = _factory;
-		long SUBMITTER = factory.raapi.findClass("TDAKernel::Submitter"); 
+		long SUBMITTER = factory.raapi.findClass("Submitter"); 
 		rObject = factory.raapi.createObject(SUBMITTER);
 		factory.raapi.freeReference(SUBMITTER);
 		takeReference = true;
@@ -933,7 +933,7 @@ public class Submitter
 	public static Iterable<? extends Submitter> allObjects([pkg.name/]Factory factory)
 	{
 		ArrayList<Submitter> retVal = new ArrayList<Submitter>();
-		long SUBMITTER = factory.raapi.findClass("TDAKernel::Submitter"); 
+		long SUBMITTER = factory.raapi.findClass("Submitter"); 
 		long it = factory.raapi.getIteratorForAllClassObjects(SUBMITTER);
 		factory.raapi.freeReference(SUBMITTER);
 		if (it == 0)
@@ -970,7 +970,7 @@ public class Submitter
 
 	public static Submitter firstObject([pkg.name/]Factory factory)
 	{
-		long SUBMITTER = factory.raapi.findClass("TDAKernel::Submitter"); 
+		long SUBMITTER = factory.raapi.findClass("Submitter"); 
 		long it = factory.raapi.getIteratorForAllClassObjects(SUBMITTER);
 		factory.raapi.freeReference(SUBMITTER);
 		if (it == 0)
@@ -990,7 +990,7 @@ public class Submitter
 	[if fileExists(path+'/Event.java')] 
 	public List<Event> getEvent()
 	{
-		long SUBMITTER = factory.raapi.findClass("TDAKernel::Submitter");
+		long SUBMITTER = factory.raapi.findClass("Submitter");
 		long SUBMITTER_EVENT = factory.raapi.findAssociationEnd(SUBMITTER, "event");  
 		List<Event> retVal = new [pkg.name/]_RAAPILinkedObjectsList<Event>(factory, rObject, SUBMITTER_EVENT);
 		factory.raapi.freeReference(SUBMITTER);
@@ -1001,7 +1001,7 @@ public class Submitter
 	[if fileExists(path+'/Command.java')]  
 	public List<Command> getCommand()
 	{
-		long SUBMITTER = factory.raapi.findClass("TDAKernel::Submitter");
+		long SUBMITTER = factory.raapi.findClass("Submitter");
 		long SUBMITTER_COMMAND = factory.raapi.findAssociationEnd(SUBMITTER, "command");  
 		List<Command> retVal = new [pkg.name/]_RAAPILinkedObjectsList<Command>(factory, rObject, SUBMITTER_COMMAND); 
 		factory.raapi.freeReference(SUBMITTER);

@@ -264,22 +264,14 @@ public class CloudProject implements IProject {
 
 			@Override
 			public void run() {*/
-				tdaKernel.setEventsCommandsHook(null);
 				
 				tdaKernel.setPredefinedBits(API.config.project_user_predefined_bits_count, 0); // we have predefined bits 0000..000
 				
-				
-				if (!tdaKernel.upgradeToTDA(bootstrap, login, false)) {
-					String project_id = CloudProject.this.name; 
-					cleanup(true, true);
-					API.dataMemory.webMemoryFault(project_id);
-				}
-				else {
-					if (sync!=null)
-						tdaKernel.sync(sync, 1); // our first remote client will have predefined bits 0000..001
-				}
-				
 				tdaKernel.setEventsCommandsHook(hook);
+				
+				if (sync!=null)
+					tdaKernel.sync(sync, 1); // our first remote client will have predefined bits 0000..001
+				
 			/*}
 			
 		}, login);*/

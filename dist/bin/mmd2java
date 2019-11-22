@@ -1,0 +1,27 @@
+#!/bin/sh
+
+SCRIPT_DIR=`dirname "$0"`
+
+if [ -z "$3" ]; then
+  echo Usage: $0 SomeName.mmd target/path java.package.name
+  exit
+fi
+
+MMD_FILE=$1
+MMD_NOEXT=`echo $MMD_FILE |sed -e 's/.mmd$//g'`
+MMD_NAME=`basename $MMD_NOEXT`
+
+$SCRIPT_DIR/mmd2ecore $MMD_FILE
+SED_ARG="s/name=\"root\"/name=\"$MMD_NAME\"/g"
+sed -i "$SED_ARG" $MMD_NOEXT.ecore
+SED_ARG="s/nsPrefix=\"\"/nsPrefix=\"$3\"/g"
+sed -i "$SED_ARG" $MMD_NOEXT.ecore
+rm $MMD_NOEXT.xmi
+rm $MMD_NOEXT.xmi_refs
+
+# Converting .ecore to Java classes; the package name will be taken from the nsPrefix XML attribute
+# in the .ecore file. The factory name will be based on the name XML attribute.
+
+$SCRIPT_DIR/ecore2java $MMD_NOEXT.ecore $2
+
+read -n 1 -s -r -p "Press any key to finish"

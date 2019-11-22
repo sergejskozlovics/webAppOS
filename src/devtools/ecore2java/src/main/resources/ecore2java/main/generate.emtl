@@ -1902,7 +1902,7 @@
                               </source>
                               <referredProperty xsi:type="ecore:EAttribute" href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
                             </source>
-                            <argument xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="TDAKernel::Event">
+                            <argument xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="Event">
                               <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
                             </argument>
                           </source>
@@ -1915,7 +1915,7 @@
                               </source>
                               <referredProperty xsi:type="ecore:EAttribute" href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
                             </source>
-                            <argument xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="TDAKernel::Command">
+                            <argument xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="Command">
                               <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
                             </argument>
                           </argument>
@@ -1930,7 +1930,7 @@
                             </source>
                             <referredProperty xsi:type="ecore:EAttribute" href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
                           </source>
-                          <argument xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="TDAKernel::AsyncCommand">
+                          <argument xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="AsyncCommand">
                             <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
                           </argument>
                         </argument>
@@ -3261,7 +3261,7 @@
                   </source>
                   <referredProperty xsi:type="ecore:EAttribute" href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
                 </body>
-                <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="Factory factory;&#xA;&#x9;protected long rObject = 0;&#xA;&#x9;protected boolean takeReference;&#xA;&#xA;&#x9;public RAAPI getRAAPI()&#xA;&#x9;{&#xA;&#x9;&#x9;return factory.raapi;&#xA;&#x9;}&#xA;&#x9;public long getRAAPIReference()&#xA;&#x9;{&#xA;&#x9;&#x9;return rObject;&#xA;&#x9;}&#xA;&#xA;&#x9;public boolean delete()&#xA;&#x9;{&#xA;&#x9;&#x9;if (rObject != 0) {&#xA;&#x9;&#x9;&#x9;if (!takeReference) {&#xA;&#x9;&#x9;&#x9;&#x9;System.err.println(&quot;Unable to delete the object &quot;+rObject+&quot; of type TDAKernel::Submitter since the RAAPI wrapper does not take care of this reference.&quot;);&#xA;&#x9;&#x9;&#x9;&#x9;return false;&#xA;&#x9;&#x9;&#x9;}&#xA;&#x9;&#x9;&#x9;factory.wrappers.remove(rObject);&#xA;&#x9;&#x9;&#x9;boolean retVal = factory.raapi.deleteObject(rObject);&#xA;&#x9;&#x9;&#x9;if (retVal) {&#xA;&#x9;&#x9;&#x9;&#x9;rObject = 0;&#xA;&#x9;&#x9;&#x9;}&#xA;&#x9;&#x9;&#x9;else&#xA;&#x9;&#x9;&#x9;&#x9;factory.wrappers.put(rObject, this); // putting back&#xA;&#x9;&#x9;&#x9;return retVal;&#xA;&#x9;&#x9;}&#xA;&#x9;&#x9;else&#xA;&#x9;&#x9;&#x9;return false;&#xA;&#x9;}&#xA;&#xA;&#x9;public void finalize()&#xA;&#x9;{&#xA;&#x9;&#x9;if (rObject != 0) {&#xA;&#x9;&#x9;&#x9;if (takeReference) {&#xA;&#x9;&#x9;&#x9;&#x9;factory.wrappers.remove(rObject);&#xA;&#x9;&#x9;&#x9;&#x9;factory.raapi.freeReference(rObject);&#xA;&#x9;&#x9;&#x9;}&#xA;&#x9;&#x9;&#x9;rObject = 0;&#xA;&#x9;&#x9;}&#xA;&#x9;}&#xA;&#xA;&#xA;&#x9;// package-visibility:&#xA;&#x9;Submitter("/>
+                <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="Factory factory;&#xA;&#x9;protected long rObject = 0;&#xA;&#x9;protected boolean takeReference;&#xA;&#xA;&#x9;public RAAPI getRAAPI()&#xA;&#x9;{&#xA;&#x9;&#x9;return factory.raapi;&#xA;&#x9;}&#xA;&#x9;public long getRAAPIReference()&#xA;&#x9;{&#xA;&#x9;&#x9;return rObject;&#xA;&#x9;}&#xA;&#xA;&#x9;public boolean delete()&#xA;&#x9;{&#xA;&#x9;&#x9;if (rObject != 0) {&#xA;&#x9;&#x9;&#x9;if (!takeReference) {&#xA;&#x9;&#x9;&#x9;&#x9;System.err.println(&quot;Unable to delete the object &quot;+rObject+&quot; of type Submitter since the RAAPI wrapper does not take care of this reference.&quot;);&#xA;&#x9;&#x9;&#x9;&#x9;return false;&#xA;&#x9;&#x9;&#x9;}&#xA;&#x9;&#x9;&#x9;factory.wrappers.remove(rObject);&#xA;&#x9;&#x9;&#x9;boolean retVal = factory.raapi.deleteObject(rObject);&#xA;&#x9;&#x9;&#x9;if (retVal) {&#xA;&#x9;&#x9;&#x9;&#x9;rObject = 0;&#xA;&#x9;&#x9;&#x9;}&#xA;&#x9;&#x9;&#x9;else&#xA;&#x9;&#x9;&#x9;&#x9;factory.wrappers.put(rObject, this); // putting back&#xA;&#x9;&#x9;&#x9;return retVal;&#xA;&#x9;&#x9;}&#xA;&#x9;&#x9;else&#xA;&#x9;&#x9;&#x9;return false;&#xA;&#x9;}&#xA;&#xA;&#x9;public void finalize()&#xA;&#x9;{&#xA;&#x9;&#x9;if (rObject != 0) {&#xA;&#x9;&#x9;&#x9;if (takeReference) {&#xA;&#x9;&#x9;&#x9;&#x9;factory.wrappers.remove(rObject);&#xA;&#x9;&#x9;&#x9;&#x9;factory.raapi.freeReference(rObject);&#xA;&#x9;&#x9;&#x9;}&#xA;&#x9;&#x9;&#x9;rObject = 0;&#xA;&#x9;&#x9;}&#xA;&#x9;}&#xA;&#xA;&#xA;&#x9;// package-visibility:&#xA;&#x9;Submitter("/>
                 <body xsi:type="ocl.ecore:PropertyCallExp">
                   <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
                   <source xsi:type="ocl.ecore:VariableExp" name="pkg" referredVariable="/0/generateJava/pkg">
@@ -3269,7 +3269,7 @@
                   </source>
                   <referredProperty xsi:type="ecore:EAttribute" href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
                 </body>
-                <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="Factory _factory)&#xA;&#x9;{&#xA;&#x9;&#x9;factory = _factory;&#xA;&#x9;&#x9;long SUBMITTER = factory.raapi.findClass(&quot;TDAKernel::Submitter&quot;); &#xA;&#x9;&#x9;rObject = factory.raapi.createObject(SUBMITTER);&#xA;&#x9;&#x9;factory.raapi.freeReference(SUBMITTER);&#xA;&#x9;&#x9;takeReference = true;&#xA;&#x9;&#x9;factory.wrappers.put(rObject, this);&#xA;&#x9;}&#xA;&#xA;&#x9;public Submitter("/>
+                <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="Factory _factory)&#xA;&#x9;{&#xA;&#x9;&#x9;factory = _factory;&#xA;&#x9;&#x9;long SUBMITTER = factory.raapi.findClass(&quot;Submitter&quot;); &#xA;&#x9;&#x9;rObject = factory.raapi.createObject(SUBMITTER);&#xA;&#x9;&#x9;factory.raapi.freeReference(SUBMITTER);&#xA;&#x9;&#x9;takeReference = true;&#xA;&#x9;&#x9;factory.wrappers.put(rObject, this);&#xA;&#x9;}&#xA;&#xA;&#x9;public Submitter("/>
                 <body xsi:type="ocl.ecore:PropertyCallExp">
                   <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
                   <source xsi:type="ocl.ecore:VariableExp" name="pkg" referredVariable="/0/generateJava/pkg">
@@ -3293,7 +3293,7 @@
                   </source>
                   <referredProperty xsi:type="ecore:EAttribute" href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
                 </body>
-                <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="Factory factory)&#xA;&#x9;{&#xA;&#x9;&#x9;ArrayList&lt;Submitter> retVal = new ArrayList&lt;Submitter>();&#xA;&#x9;&#x9;long SUBMITTER = factory.raapi.findClass(&quot;TDAKernel::Submitter&quot;); &#xA;&#x9;&#x9;long it = factory.raapi.getIteratorForAllClassObjects(SUBMITTER);&#xA;&#x9;&#x9;factory.raapi.freeReference(SUBMITTER);&#xA;&#x9;&#x9;if (it == 0)&#xA;&#x9;&#x9;&#x9;return retVal;&#xA;&#x9;&#x9;long r = factory.raapi.resolveIteratorFirst(it);&#xA;&#x9;&#x9;while (r != 0) {&#xA; &#x9;&#x9;&#x9;Submitter o = (Submitter)factory.findOrCreateRAAPIReferenceWrapper(r, true);&#xA;&#x9;&#x9;&#x9;if (o == null)&#xA;&#x9;&#x9;&#x9;&#x9;o = (Submitter)factory.findOrCreateRAAPIReferenceWrapper(Submitter.class, r, true);&#xA;&#x9;&#x9;&#x9;if (o != null)&#xA;&#x9;&#x9;&#x9;&#x9;retVal.add(o);&#xA;&#x9;&#x9;&#x9;r = factory.raapi.resolveIteratorNext(it);&#xA;&#x9;&#x9;}&#xA;&#x9;&#x9;factory.raapi.freeIterator(it);&#xA;&#x9;&#x9;return retVal;&#xA;&#x9;}&#xA;&#xA;&#x9;public static boolean deleteAllObjects()&#xA;&#x9;{&#xA;&#x9;&#x9;return deleteAllObjects("/>
+                <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="Factory factory)&#xA;&#x9;{&#xA;&#x9;&#x9;ArrayList&lt;Submitter> retVal = new ArrayList&lt;Submitter>();&#xA;&#x9;&#x9;long SUBMITTER = factory.raapi.findClass(&quot;Submitter&quot;); &#xA;&#x9;&#x9;long it = factory.raapi.getIteratorForAllClassObjects(SUBMITTER);&#xA;&#x9;&#x9;factory.raapi.freeReference(SUBMITTER);&#xA;&#x9;&#x9;if (it == 0)&#xA;&#x9;&#x9;&#x9;return retVal;&#xA;&#x9;&#x9;long r = factory.raapi.resolveIteratorFirst(it);&#xA;&#x9;&#x9;while (r != 0) {&#xA; &#x9;&#x9;&#x9;Submitter o = (Submitter)factory.findOrCreateRAAPIReferenceWrapper(r, true);&#xA;&#x9;&#x9;&#x9;if (o == null)&#xA;&#x9;&#x9;&#x9;&#x9;o = (Submitter)factory.findOrCreateRAAPIReferenceWrapper(Submitter.class, r, true);&#xA;&#x9;&#x9;&#x9;if (o != null)&#xA;&#x9;&#x9;&#x9;&#x9;retVal.add(o);&#xA;&#x9;&#x9;&#x9;r = factory.raapi.resolveIteratorNext(it);&#xA;&#x9;&#x9;}&#xA;&#x9;&#x9;factory.raapi.freeIterator(it);&#xA;&#x9;&#x9;return retVal;&#xA;&#x9;}&#xA;&#xA;&#x9;public static boolean deleteAllObjects()&#xA;&#x9;{&#xA;&#x9;&#x9;return deleteAllObjects("/>
                 <body xsi:type="ocl.ecore:PropertyCallExp">
                   <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
                   <source xsi:type="ocl.ecore:VariableExp" name="pkg" referredVariable="/0/generateJava/pkg">
@@ -3325,9 +3325,9 @@
                   </source>
                   <referredProperty xsi:type="ecore:EAttribute" href="http://www.eclipse.org/emf/2002/Ecore#//ENamedElement/name"/>
                 </body>
-                <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="Factory factory)&#xA;&#x9;{&#xA;&#x9;&#x9;long SUBMITTER = factory.raapi.findClass(&quot;TDAKernel::Submitter&quot;); &#xA;&#x9;&#x9;long it = factory.raapi.getIteratorForAllClassObjects(SUBMITTER);&#xA;&#x9;&#x9;factory.raapi.freeReference(SUBMITTER);&#xA;&#x9;&#x9;if (it == 0)&#xA;&#x9;&#x9;&#x9;return null;&#xA;&#x9;&#x9;long r = factory.raapi.resolveIteratorFirst(it);&#xA;&#x9;&#x9;factory.raapi.freeIterator(it);&#xA;&#x9;&#x9;if (r == 0)&#xA;&#x9;&#x9;&#x9;return null;&#xA;&#x9;&#x9;else {&#xA;&#x9;&#x9;&#x9;Submitter  retVal = (Submitter)factory.findOrCreateRAAPIReferenceWrapper(r, true);&#xA;&#x9;&#x9;&#x9;if (retVal == null)&#xA;&#x9;&#x9;&#x9;&#x9;retVal = (Submitter)factory.findOrCreateRAAPIReferenceWrapper(Submitter.class, r, true);&#xA;&#x9;&#x9;&#x9;return retVal;&#xA;&#x9;&#x9;}&#xA;&#x9;} &#xA;&#xA;"/>
+                <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="Factory factory)&#xA;&#x9;{&#xA;&#x9;&#x9;long SUBMITTER = factory.raapi.findClass(&quot;Submitter&quot;); &#xA;&#x9;&#x9;long it = factory.raapi.getIteratorForAllClassObjects(SUBMITTER);&#xA;&#x9;&#x9;factory.raapi.freeReference(SUBMITTER);&#xA;&#x9;&#x9;if (it == 0)&#xA;&#x9;&#x9;&#x9;return null;&#xA;&#x9;&#x9;long r = factory.raapi.resolveIteratorFirst(it);&#xA;&#x9;&#x9;factory.raapi.freeIterator(it);&#xA;&#x9;&#x9;if (r == 0)&#xA;&#x9;&#x9;&#x9;return null;&#xA;&#x9;&#x9;else {&#xA;&#x9;&#x9;&#x9;Submitter  retVal = (Submitter)factory.findOrCreateRAAPIReferenceWrapper(r, true);&#xA;&#x9;&#x9;&#x9;if (retVal == null)&#xA;&#x9;&#x9;&#x9;&#x9;retVal = (Submitter)factory.findOrCreateRAAPIReferenceWrapper(Submitter.class, r, true);&#xA;&#x9;&#x9;&#x9;return retVal;&#xA;&#x9;&#x9;}&#xA;&#x9;} &#xA;&#xA;"/>
                 <body xsi:type="mtl:IfBlock">
-                  <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="&#x9;public List&lt;Event> getEvent()&#xA;&#x9;{&#xA;&#x9;&#x9;long SUBMITTER = factory.raapi.findClass(&quot;TDAKernel::Submitter&quot;);&#xA;&#x9;&#x9;long SUBMITTER_EVENT = factory.raapi.findAssociationEnd(SUBMITTER, &quot;event&quot;);  &#xA;&#x9;&#x9;List&lt;Event> retVal = new "/>
+                  <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="&#x9;public List&lt;Event> getEvent()&#xA;&#x9;{&#xA;&#x9;&#x9;long SUBMITTER = factory.raapi.findClass(&quot;Submitter&quot;);&#xA;&#x9;&#x9;long SUBMITTER_EVENT = factory.raapi.findAssociationEnd(SUBMITTER, &quot;event&quot;);  &#xA;&#x9;&#x9;List&lt;Event> retVal = new "/>
                   <body xsi:type="ocl.ecore:PropertyCallExp">
                     <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
                     <source xsi:type="ocl.ecore:VariableExp" name="pkg" referredVariable="/0/generateJava/pkg">
@@ -3351,7 +3351,7 @@
                   </ifExpr>
                 </body>
                 <body xsi:type="mtl:IfBlock">
-                  <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="&#x9;public List&lt;Command> getCommand()&#xA;&#x9;{&#xA;&#x9;&#x9;long SUBMITTER = factory.raapi.findClass(&quot;TDAKernel::Submitter&quot;);&#xA;&#x9;&#x9;long SUBMITTER_COMMAND = factory.raapi.findAssociationEnd(SUBMITTER, &quot;command&quot;);  &#xA;&#x9;&#x9;List&lt;Command> retVal = new "/>
+                  <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="&#x9;public List&lt;Command> getCommand()&#xA;&#x9;{&#xA;&#x9;&#x9;long SUBMITTER = factory.raapi.findClass(&quot;Submitter&quot;);&#xA;&#x9;&#x9;long SUBMITTER_COMMAND = factory.raapi.findAssociationEnd(SUBMITTER, &quot;command&quot;);  &#xA;&#x9;&#x9;List&lt;Command> retVal = new "/>
                   <body xsi:type="ocl.ecore:PropertyCallExp">
                     <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
                     <source xsi:type="ocl.ecore:VariableExp" name="pkg" referredVariable="/0/generateJava/pkg">

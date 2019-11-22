@@ -33,10 +33,16 @@ public class MMD2Ecore {
 			return;
 		}*/
 		
-			
+
+		File f = new File(targetFileName);
 
 		IRepository r = new lv.lumii.tda.adapters.repository.ecore.RepositoryAdapter();
-		r.open(targetFileName);
+		try {
+			r.open(f.toURI().toURL().toString());
+		} catch (MalformedURLException e1) {
+			e1.printStackTrace();
+			return;
+		}
 		
 		
 		try {

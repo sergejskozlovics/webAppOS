@@ -46,8 +46,6 @@ public class IWebMemoryAreaWrapper implements IWebMemoryArea {
 		
 		cached_kernel.attachSynchronizer(new SynchronizerToIRWebMemoryArea(project_id, delegate), false, -1/*ignored*/);
 		cached_kernel.setEventsCommandsHook(BridgeEventsCommandsHook.INSTANCE);
-		cached_kernel.upgradeToTDA(false, "", true);		
-		
 		
 		System.err.println("CLIENT KERNEL OK");
 		return cached_kernel;

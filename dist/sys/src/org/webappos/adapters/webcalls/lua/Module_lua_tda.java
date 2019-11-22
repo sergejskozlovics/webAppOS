@@ -26,9 +26,6 @@ import org.webappos.webcaller.WebCaller;
 import org.webappos.webmem.IWebMemory;
 import org.webappos.webmem.WebMemoryContext;
 
-import lv.lumii.tda.kernel.TDAKernel;
-import lv.lumii.tda.raapi.RAAPI;
-
 import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.ThreeArgFunction;
@@ -43,34 +40,14 @@ public class Module_lua_tda extends TwoArgFunction {
 	private static LuaTable globals;
 	private IWebMemory webmem;
 	private String project_id;
-	private String appFullName;
 	private String login;
-	
-	private long rSubmitterCls = 0;
-	private long rSubmitterObj = 0;
-	private long rEventCls = 0;
-	private long rCommandCls = 0;
-	 
-	private long rEventSubmitterAssoc = 0;
-	private long rCommandSubmitterAssoc = 0;
 	
     public Module_lua_tda(LuaTable _globals, IWebMemory _raapi, String _project_id, String _appFullName, String _login) {
         LIB = this;
         globals = _globals;
         webmem = _raapi;
         project_id = _project_id;
-        appFullName = _appFullName;
         login = _login;
-        
-		rSubmitterCls = webmem.findClass("TDAKernel::Submitter");
-		long it = webmem.getIteratorForAllClassObjects(rSubmitterCls);
-		rSubmitterObj = webmem.resolveIteratorFirst(it);
-		webmem.freeIterator(it);
-		
-		rEventCls = webmem.findClass("TDAKernel::Event");
-		rCommandCls = webmem.findClass("TDAKernel::Command");
-		rEventSubmitterAssoc = webmem.findAssociationEnd(rEventCls, "submitter");
-		rCommandSubmitterAssoc = webmem.findAssociationEnd(rCommandCls, "submitter");        
     }
 
 	@Override
@@ -96,21 +73,6 @@ public class Module_lua_tda extends TwoArgFunction {
         return module;		
 	}
 
-	private String getEEAttribute(String attrName) {
-		long rEECls = webmem.findClass("EnvironmentEngine");
-		long rAttr = webmem.findAttribute(rEECls, attrName);
-		long it = webmem.getIteratorForDirectClassObjects(rEECls);
-		long r = webmem.resolveIteratorFirst(it);
-		webmem.freeIterator(it);
-		
-		String specificBin = webmem.getAttributeValue(r, rAttr);
-		webmem.freeReference(r);
-		webmem.freeReference(rAttr);
-		webmem.freeReference(rEECls);
-		return specificBin;
-	}
-
-	
 	class GetProjectPath extends ZeroArgFunction {		
 
 		@Override
@@ -192,7 +154,7 @@ public class Module_lua_tda extends TwoArgFunction {
 
 		@Override
 		synchronized public LuaValue call(LuaValue arg1, LuaValue arg2) {
-			// do nothing (TODO)
+			// do nothing?
 			return LuaValue.NONE;
 		}
 
@@ -222,7 +184,6 @@ public class Module_lua_tda extends TwoArgFunction {
 
 		@Override
 		synchronized public LuaValue call(LuaValue v) {
-			// TODO client jsonsbumit show please wait
 			LuaValue luaLoad = globals.get("loadstring");
 			LuaValue luaCompiledCode = luaLoad.call(LuaValue.valueOf("return "+v.tojstring()));
 			LuaValue retVal = luaCompiledCode.call();
@@ -361,7 +322,7 @@ public class Module_lua_tda extends TwoArgFunction {
 				}
 				
 				String code = moduleName+" = require(\""+className2+"\")\n"+moduleName+"."+funcName;
-				if (true || logger.isDebugEnabled())
+				if (logger.isDebugEnabled())
 					code = "print(\"EXECTRANSF BEFORE REQUIRE "+className2+"\")\n"+moduleName+" = require(\""+className2+"\")\nprint(\"EXECTransf BEFORE LUA CODE "+moduleName+"."+funcName+"\")\n\n"+moduleName+"."+funcName+"\nprint(\"AFTER LUA CODE\")";
 				try {
 					LuaValue luaLoad = globals.get("loadstring");
@@ -515,7 +476,7 @@ static int tda_BrowseForFile(lua_State *L) {
 	}
 
 	class MyFileFilters {
-		private ArrayList<ArrayList<String>> masks = new ArrayList<ArrayList<String>>();
+		//private ArrayList<ArrayList<String>> masks = new ArrayList<ArrayList<String>>();
 		private ArrayList<MyFileFilter> filters = new ArrayList<MyFileFilter>(); 
 		
 		public MyFileFilters(String _masks) {
@@ -745,7 +706,7 @@ static int tda_BrowseForFile(lua_State *L) {
 						LuaValue.valueOf(""); // cancelled (wrong path specified)
 					}
 					
-					s = API.config.HOME_DIR+File.separator+login+File.separator+s;
+					s = ConfigStatic.HOME_DIR+File.separator+login+File.separator+s;
 					logger.debug("BrowseForFolder is returning ["+s+"]"); 
 					return LuaValue.valueOf(s);
 				}

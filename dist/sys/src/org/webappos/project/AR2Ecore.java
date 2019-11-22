@@ -72,31 +72,7 @@ public class AR2Ecore {
 			}
 			return null;
 		}
-		
-		
-		long it = k1.getIteratorForAllClassObjects(k1.findClass("TDAKernel::Command"));
-		long r = k1.resolveIteratorFirst(it);
-		while (r!=0) {
-			long it2 = k1.getIteratorForDirectObjectClasses(r);
-			long rCls = k1.resolveIteratorFirst(it2);
-			k1.freeIterator(it2);
-			if (DEBUG) System.out.println("deleting object of type "+k1.getClassName(rCls)+" = "+k1.deleteObject(r));			
-			r = k1.resolveIteratorNext(it);
-		}
-		k1.freeIterator(it);
-
-
-		it = k1.getIteratorForAllClassObjects(k1.findClass("TDAKernel::Event"));
-		r = k1.resolveIteratorFirst(it);
-		while (r!=0) {
-			long it2 = k1.getIteratorForDirectObjectClasses(r);
-			long rCls = k1.resolveIteratorFirst(it2);
-			k1.freeIterator(it2);
-			if (DEBUG) System.out.println("deleting object of type "+k1.getClassName(rCls)+" = "+k1.deleteObject(r));			
-			r = k1.resolveIteratorNext(it);
-		}
-		k1.freeIterator(it);
-		
+				
 
 		TDAKernel k2 = new TDAKernel();
 		String targetLocation = "ecore:"+folder.getAbsolutePath()+"/data.xmi";
