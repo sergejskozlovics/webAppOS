@@ -1,0 +1,76 @@
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="/webappos/djtheme/document.css">
+  <link rel="stylesheet" type="text/css" href="/webappos/djtheme/webappos.css">
+  <script src="jquery.js"></script>
+  <script src="webappos.js"></script>
+</head>
+<body id="body" class="webappos">
+
+<h1>Accessing webAppOS projects from the outside...</h1>
+<h2>(webAppOS Debugger)</h2>
+To be able to access projects, set <b>max_users_per_project</b> value in <i>webappos.properties</i>
+to <b>at least 3</b> (for the server, the browser, and the debugger).
+<br/>
+<br/>
+<br/>
+<div id="after_connect" style="display:none;">
+Yeah... We have connected to the project <b><span id="project_id"></span></b>.<br>
+Use your JavaScript console to watch web memory (JS window.webmem object):
+<ul>
+<li>Use webmem.classes to find out which classes are there in web memory.</li>
+<li>Use webmem[1234] to get an object or class by the given reference (e.g., 1234).</li>
+</ul>
+<br/>
+<input type="button" value="Show info about classes!" onclick="showInfo()"/>
+</div>
+
+<div id="info">
+</div>
+
+<script>
+
+function showInfo() {
+  var s = "";
+  try {
+    for (var key in webmem.classes) {
+        var cls = webmem.classes[key];
+        s += "<b>"+key+"</b>";
+        if ((typeof cls.superClasses != "undefined") && (!jQuery.isEmptyObject(cls.superClasses))) {
+          s+=" &#8702;";
+          for (var key2 in cls.superClasses) {
+            s+=" <b>"+cls.superClasses[key2].className+"</b>";
+          }
+        }
+        var inst = 0;
+        if (typeof cls.directObjects != "undefined")
+          inst = Object.keys(cls.directObjects).length;
+        s += ", direct instances: <b>"+inst+"</b>";
+        s+="<br/>";
+    }
+  }
+  catch(t) {    
+    s += "Error in getting info.<br>"+t;
+    console.log(t);
+  }
+  info.innerHTML = s;
+}
+
+
+webappos.interrupt = function(data) {
+  console.log("INTERRUPT "+JSON.stringify(data));
+  if ((data.type=="webcall") && (data.actionName=="webappos.initializeProject")) {
+    after_connect.style.display = "block";
+  }
+  return true;
+};
+
+webappos.app_url_name = "*";
+webappos.request_scopes("webappos_scopes", "project_id").then(function () {
+  console.log("connected to project "+webappos.project_id);
+  project_id.innerHTML = webappos.project_id;
+});
+
+</script>
+</body>
+</html>

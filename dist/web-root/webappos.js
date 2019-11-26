@@ -1755,18 +1755,7 @@ script_label: {
     if (!window.tda) {
 
       window.tda_defined_here = true;
-      /**
-       * Variable: webmem (tda)
-       * 
-       * Provides access to "web memory". This object becomes available only when web memory has been initialized by
-       * calling <webappos.init_web_memory>. The object will be the same for the iframe that initialized web memory and all descendant iframes that will include webappos.js.
-       * 
-       * See "JavaScript Model Format" doc for more detail: http://webappos.org/dev/doc/index.html#File4:webappos.js_internals.txt:JavaScript_Model_Format
-       * 
-       */
       window.tda = {};
-
-      window.webmem = window.tda;
 
       tda.synced = false;
 
@@ -1873,15 +1862,6 @@ script_label: {
         },
       }; // tda.prototypes
 
-      /**
-       * Variable: tda.model
-       * 
-       * Contains repository objects and classes, which are synchronized automatically with the server.
-       * Given a reference, the corresponding element (object, class, attribute, association) can be accessed as tda.model[reference].
-       * 
-       * Classes can also be accessed as tda.model.<ClassName>. Class instances (objects) can be created via the "new" operator. New objects will be automatically
-       * accessible as tda.model[reference]. They will also be automatically synchronized with the server.
-       */
       tda.model = {
         SAVE_BALL_IDLE_TIME: 5000, // in ms
         saveBallLaunched: false,
@@ -2072,6 +2052,7 @@ script_label: {
           cls.getAllAssociations = tda.prototypes.f_getAllAssociations;
           cls.getSubObjects = tda.prototypes.f_getSubObjects;
 
+          webmem.classes[className] = cls;
           tda.model[className] = cls;
           tda.model[r] = cls;
           tda.model.registerChange();
@@ -2414,6 +2395,7 @@ script_label: {
             tda.model.deleteGeneralization(rSub, r);
           }
 
+          delete webmem.classes[cls.className];
           delete tda.model[cls.className];
           delete tda.model[r];
           tda.model.registerChange();
@@ -2715,6 +2697,23 @@ script_label: {
         },
       }; // tda.model
 
+      /**
+       * Variable: webmem
+       * 
+       * Provides access to "web memory". This object becomes available only when web memory has been initialized by
+       * calling <webappos.init_web_memory>. The object will be the same for the iframe that initialized web memory and all descendant iframes that will include webappos.js.
+       * 
+       * Contains repository objects and classes, which are synchronized automatically with the server.
+       * Given a reference, the corresponding element (object, class, attribute, association) can be accessed as webmem[reference].
+       * 
+       * Classes can also be accessed as webmem.<ClassName>. Class instances (objects) can be created via the "new" operator. New objects will be automatically
+       * accessible as webmem[reference]. They will also be automatically synchronized with the server.
+       *
+       * See "JavaScript Model Format" doc for more detail: http://webappos.org/dev/doc/index.html#File4:webappos.js_internals.txt:JavaScript_Model_Format
+       * 
+       */
+      window.webmem = window.tda.model;
+      window.webmem.classes = {};
 
       tda.model.init = async function () {
         if (tda.websocket)
