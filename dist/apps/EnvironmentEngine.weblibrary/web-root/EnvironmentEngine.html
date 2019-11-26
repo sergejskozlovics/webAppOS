@@ -77,6 +77,14 @@
   </style>
 
   <script type="text/javascript">
+    function EEonLoad() {
+      let arr=Object.keys(webmem.Frame.getAllObjects());
+      for (let i=0;i<arr.length;i++) {
+        console.log("deleting frame "+arr[i]);
+        webmem[arr[i]].delete();
+      }
+    }         
+
     function uploadBrowseForFile(input, cmd) {
       if (input.files.length == 0) {
         alert("No file selected");

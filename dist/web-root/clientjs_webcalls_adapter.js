@@ -2,9 +2,7 @@ define(function(){
   
     return {
         webmemcall: async function(action, obj) {
-          if (!obj)
-            return;
-          if (tda.ee) {
+          if (tda.ee && obj && (obj.reference!=0)) {
             if (obj.isKindOf("Event")) {
               tda.ee.searchForFrameAndHandleEvent(obj, action);
             }

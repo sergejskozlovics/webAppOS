@@ -11,3 +11,4 @@ jsoncall\ browseForFolderAsList(json)=clientjs:browseForFolderAsList
 # json = {message, percentage}
 jsoncall\ showPleaseWait(json)=clientjs:showPleaseWait
 jsoncall\ hidePleaseWait=clientjs:hidePleaseWait
+webmemcall\ EE.onLoad=clientjs:EEonLoad

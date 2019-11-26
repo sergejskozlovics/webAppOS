@@ -247,7 +247,7 @@ public class AppsActions_webcalls {
 			if ((wlprops != null) && (wlprops.on_load!=null) && (!wlprops.on_load.isEmpty())) {
 				IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
 				seed.callingConventions = IWebCaller.CallingConventions.WEBMEMCALL;
-				seed.actionName = props.main;
+				seed.actionName = wlprops.on_load;
 				seed.webmemArgument = 0;
 				seed.login = login;
 				seed.project_id = project_id;

@@ -97,8 +97,14 @@ define(function(){
       }
 
       if (webappos.project_id) {
-        webappos.init_web_memory();
-        if (webappos.project_id=="standalone") {
+
+        let promise = new Promise(async function(resolve,reject) {
+
+          webappos.init_web_memory().then( function(ok) {
+            if (!ok)
+              return reject();
+
+            if (webappos.project_id=="standalone") {
               tda.ee = {
                 // simulating tda.ee functions via alert...
                 searchForFrameAndExecuteCommand: function(obj) {
@@ -121,9 +127,14 @@ define(function(){
                 },
               };            
               console.log = tda.ee.log;
-        }
+            }
 
-        return true;
+            return resolve(ok);
+
+          });
+        });
+
+        return promise;
       }
 
       let promise = new Promise(async function(resolve,reject) {
