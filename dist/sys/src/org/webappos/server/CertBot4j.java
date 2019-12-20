@@ -87,7 +87,6 @@ public class CertBot4j {
     	try {
 			f = File.createTempFile("webAppOS-CertBot4j-", ".txt", new File(webrootFolder));
 		} catch (IOException e) {
-			e.printStackTrace();
 			return false;
 		}
     	
@@ -95,7 +94,6 @@ public class CertBot4j {
 		try {
 			website = new URL("http://"+domain+"/"+f.getName());
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
 			f.delete();
 			return false;
 		}
@@ -261,6 +259,11 @@ public class CertBot4j {
 	}
 		
    	public static void ensureCertificates(String acme_uri, String domain, String certsFolder, String webrootFolder, int renewAfterDays, Runnable onRenew) {   		
+   		if (API.config.hasOnlyIP) {
+   			logger.info("Skipping ensuring certificates, since only IP is specified.");
+   			return;
+   		}
+   		
    		final Runnable r = new Runnable() {
 
 			@Override
@@ -308,14 +311,19 @@ public class CertBot4j {
    			// do nothing...
    		}
 
-		System.err.println("Running now, and scheduling every "+renewAfterDays+" days...");
+		logger.info("Running now, and scheduling every "+renewAfterDays+" days...");
 		// launching now and set up scheduler
 		r.run();
 		scheduler.scheduleAtFixedRate(r, renewAfterDays, renewAfterDays, TimeUnit.DAYS);
    	}
    	
    	private static void ensureCertificatesOnce(String acme_uri, String domain, String certsFolder, String webrootFolder, int renewAfterDays, Runnable onRenew) throws IOException, AcmeException {
-   		System.out.println("Ensuring certificates...");
+   		if (API.config.hasOnlyIP) {
+   			logger.info("Skipping ensuring certificates, since only IP is specified.");
+   			return;
+   		}
+   		else   			
+   			logger.info("Ensuring certificates...");
    		try {
    			// try to delete previous acme challenges...
    			FileUtils.deleteDirectory(new File(webrootFolder+File.separator+".well-known"+File.separator+"acme-challenge"));
@@ -508,7 +516,7 @@ public class CertBot4j {
         Challenge challenge = httpChallenge(auth, domain, webrootFolder);
 
         if (challenge == null) {
-            throw new AcmeException("No challenge found");
+            throw new AcmeException("No challenge found.");
         }
 
         // If the challenge is already verified, there's no need to execute it again.
@@ -525,7 +533,7 @@ public class CertBot4j {
             while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
                 // Did the authorization fail?
                 if (challenge.getStatus() == Status.INVALID) {
-                    throw new AcmeException("Challenge failed... Giving up.");
+                    throw new AcmeException("Challenge failed. Giving up. Restart webAppOS to re-attempt.");
                 }
 
                 // Wait for a few seconds
@@ -540,7 +548,7 @@ public class CertBot4j {
 
         // All reattempts are used up and there is still no valid authorization?
         if (challenge.getStatus() != Status.VALID) {
-            throw new AcmeException("Failed to pass the challenge for domain " + domain + ", ... Giving up.");
+            throw new AcmeException("Failed to pass the challenge for domain " + domain + ". Giving up. Restart webAppOS to re-attempt.");
         }
     }
 
@@ -611,13 +619,12 @@ public class CertBot4j {
 
 				@Override
 				public void run() {
-					System.err.println("Just renewed...");
+					logger.info("Just renewed certificates...");
 				}
             	
             });
         } catch (Exception ex) {
-            System.err.println("Failed to get a certificate for domains " + domains +" "+ex);
-            ex.printStackTrace();
+            logger.error("Failed to get a certificate for domains " + domains +". Exception: "+ex);
         }
 
 	}

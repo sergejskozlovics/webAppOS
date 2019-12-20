@@ -33,7 +33,7 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, IWebMemWebCallsAda
 		if (c == null)
 			return;
 		
-		Method m = null, m1 = null;;
+		Method m = null, m1 = null, m2 = null;
 		try {
 			m = c.getMethod(location.substring(i+1), IWebMemory.class, Long.TYPE);
 		} catch (NoSuchMethodException | SecurityException e) {
@@ -53,6 +53,16 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, IWebMemWebCallsAda
 		} catch (NoSuchMethodException | SecurityException e) {
 		}
 		
+		try {
+			m2 = c.getMethod(location.substring(i+1), IWebMemory.class, Long.TYPE, String.class);
+		} catch (NoSuchMethodException | SecurityException e) {
+		}
+		try {
+			if (m2==null)
+				m2 = c.getMethod(location.substring(i+1), RAAPI.class, Long.TYPE, String.class);
+		} catch (NoSuchMethodException | SecurityException e) {
+		}
+		
 		if ((m!=null) && ((m.getReturnType() == Boolean.TYPE) || (m.getReturnType() == Boolean.class) || (m.getReturnType() == Void.TYPE) || (m.getReturnType() == Void.class))) {
 			try {
 				m.invoke(null, raapi, rObject);
@@ -66,7 +76,15 @@ public class WebCallsAdapter implements IJsonWebCallsAdapter, IWebMemWebCallsAda
 			try {
 				m1.invoke(null, raapi, project_id, rObject);
 			} catch (Throwable t) {
-				logger.error("webmemcall webcall "+location+" invocation exception (3 args)");
+				logger.error("webmemcall webcall "+location+" invocation exception (3 args, with project_id)");
+			}			
+		}
+		else 
+		if ((m2!=null) && ((m2.getReturnType() == Boolean.TYPE) || (m2.getReturnType() == Boolean.class) || (m2.getReturnType() == Void.TYPE) || (m1.getReturnType() == Void.class))) {
+			try {
+				m2.invoke(null, raapi, rObject, login);
+			} catch (Throwable t) {
+				logger.error("webmemcall webcall "+location+" invocation exception (3 args, with login)");
 			}			
 		}
 		else {

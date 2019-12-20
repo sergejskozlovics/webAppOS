@@ -32,7 +32,7 @@ script_label: {
 
   ///// adding webAppOS fonts /////
   if (!document.getElementById("the_webappos_css"))
-    document.write("<link id=\"the_webappos_css\" href=\"webappos/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
+    document.write("<link id=\"the_webappos_css\" href=\"/webappos/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
 
 
   // Trying to get window.webappos from the parent window
@@ -43,6 +43,7 @@ script_label: {
         window.webappos.js_util = Object.create(window.parent["webappos"].js_util);
         window.webappos.parent_desktop = window.parent.webappos.parent_desktop || window.parent.webappos.in_desktop;
         window.webappos.in_desktop = false;
+        window.webappos.defined_here = false; // overriding
       }
     } catch (t) {
       // assume the parent is on another domain;
@@ -54,13 +55,15 @@ script_label: {
           method: "are_you_desktop?",
           caller_id: webappos.caller_id
         }, "*");
-      }, 0); // sending after webappos object is defined fully
+      }, 0); // sending via setTimeout (after webappos object is defined fully)
     }
+  }
+  else {
+    window.webappos.defined_here = false;
   }
 
   // If could not get from the parent, define window.webappos here...
   if (!window.webappos) {
-    window.webappos_defined_here = true;
 
     /**
      * Property: window.webappos
@@ -70,6 +73,7 @@ script_label: {
      **/
 
     window.webappos = {};
+    window.webappos.defined_here = true;
 
     webappos.webcalls = {};
     // TODO: get static webcalls
@@ -119,83 +123,117 @@ script_label: {
 
   /** Group: web calls-related functions (iframe-specific) */
 
-  window.webappos.client_webcall_jsoncall = async function (actionName, arg) {
-    var action = webappos.webcalls[actionName];
-    if (!action)
-      return;
+  window.webappos.to_jsoncall_string = function(arg) {
+    if (webappos.js_util.is_object(arg)) {            
+      try {
+        arg = JSON.stringify(arg);
+      } catch (t) {
+        return null;
+      }
+    }
 
-    var intr_obj = {
-      type: "webcall",
-      isClient: true,
-      actionName: actionName,
-      argument: arg,
-      callingConventions: action.callingConventions
-    };
-  
-    if ((webappos.interrupt)&& (webappos.interrupt(intr_obj))) {
-      return "ERROR: web call interrupted";
-    };
+    if (typeof arg=="undefined")
+      arg = "";
 
-
-    var p = new Promise(async function (resolve, reject) {
-      require([action.resolvedInstructionSet + "_webcalls_adapter.js"], function (adapter) {
-        if (adapter.jsoncall) {
-          resolve(adapter.jsoncall(action.resolvedLocation, arg));
-        } else {
-          console.log("ERROR: Webcalls adapter '" + action.resolvedInstructionSet + "' does not support jsoncall calling conventions.");
-          reject("ERROR: Webcalls adapter '" + action.resolvedInstructionSet + "' does not support jsoncall calling conventions.");
-        }
-      });
-
-    });
-
-    return p;
+    return arg?arg+"":null;
   };
 
-  window.webappos.client_webcall_webmemcall = function (actionName, obj) {
-    var action = webappos.webcalls[actionName];
-    if (!action)
-      return;
+  window.webappos.to_webmemcall_object = function(arg) {    
+    if (webappos.js_util.is_object(arg)) {           
+      arg = arg.reference;
+    }
+    if (typeof arg=="number") {
+      arg = webmem[arg];
+      return arg?arg:null;
+    }
+    else
+      return null;
+  };
+
+  window.webappos.to_webmemcall_reference = function(arg) {    
+    if (webappos.js_util.is_object(arg)) {           
+      arg = arg.reference;
+    }
+
+    if ((typeof arg=="number") && webmem[arg])
+      return arg;
+    else
+      return 0;
+  };
+
+  window.webappos.client_webcall_jsoncall = async function (actionName, arg) {
+    return new Promise(async function (resolve, reject) {
+      var action = webappos.webcalls[actionName];
+      if (!action)
+        return reject({error:"webappos js client webcall error: Action "+actionName+" not found."});
 
       var intr_obj = {
         type: "webcall",
         isClient: true,
-        actionName: actionName,        
-        argument: obj&&obj.reference?obj.reference:0,
+        actionName: actionName,
+        argument: arg,
         callingConventions: action.callingConventions
       };
     
       if ((webappos.interrupt)&& (webappos.interrupt(intr_obj))) {
-        return;
+        return resolve({error: "webappos js client webcall error: action "+actionName+" interrupted"});
       };
 
       require([action.resolvedInstructionSet + "_webcalls_adapter.js"], function (adapter) {
-      if (adapter.webmemcall) {
-        adapter.webmemcall(action.resolvedLocation, obj);
-      } else
-        console.log("ERROR: Webcalls adapter '" + action.resolvedInstructionSet + "' does not support webmemcall calling conventions.");
+        if (adapter.jsoncall) {
+            resolve(adapter.jsoncall(action.resolvedLocation, arg));
+        } else {
+          console.log("webappos.js client webcall error: Webcalls adapter '" + action.resolvedInstructionSet + "' does not support jsoncall calling conventions.");
+          reject({error: "Webcalls adapter '" + action.resolvedInstructionSet + "' does not support jsoncall calling conventions."});
+        }
+      });
+
+    });
+  };
+
+  window.webappos.client_webcall_webmemcall = async function (actionName, obj) {
+    return new Promise(async function (resolve, reject) {
+      var action = webappos.webcalls[actionName];
+      if (!action)
+        return reject({error:"webappos js client webcall error: Action "+actionName+" not found."});
+
+      var intr_obj = {
+          type: "webcall",
+          isClient: true,
+          actionName: actionName,        
+          argument: obj&&obj.reference?obj.reference:0,
+          callingConventions: action.callingConventions
+      };
+      
+      if ((webappos.interrupt)&& (webappos.interrupt(intr_obj))) {
+          return resolve({error: "webappos js client webcall error: action "+actionName+" interrupted"});
+      };
+
+      require([action.resolvedInstructionSet + "_webcalls_adapter.js"], function (adapter) {
+        if (adapter.webmemcall) {
+          adapter.webmemcall(action.resolvedLocation, obj);
+          resolve({});
+        } else {
+          console.log("webappos.js client webcall error: Webcalls adapter '" + action.resolvedInstructionSet + "' does not support webmemcall calling conventions.");
+          reject({error:"Webcalls adapter '" + action.resolvedInstructionSet + "' does not support webmemcall calling conventions."});
+        }
+      });
     });
   };
 
   /**
    * Function: webappos.webcall_and_wait (may become deprecated)
    *   Executes the given web call synchronously via the webAppOS webcalls service.
+   *
    * Parameters:
    *   action - the name of the action to call (defined at the server side in *.webcalls files)
    *   arg - action argument; usually, a JSON object; sometimes - a string object; for webmemcall conventions: an integer representing the object reference
+   *
    * Returns:
    *   a parsed JSON object as JavaScript object; the returned object can contain the "error" attribute (containing an error message) to specify that an error occurred
    */
   window.webappos.webcall_and_wait = function (action, arg) {
-    if (webappos.js_util.is_object(arg)) {
-      try {
-        arg = JSON.stringify(arg);
-      } catch (t) {
-        return null;
-      }
-    } else
-    if (typeof arg == 'number')
-      arg = arg + "";
+    console.log("webappos.js warning: webappos.webcall_and_wait is not recommended and may become deprecated; use asynchronous webappos.webcall instead");
 
     var a = webappos.webcalls[action];
     if (a && a.isClient) {
@@ -230,7 +268,7 @@ script_label: {
     }
     xhr.open("POST", "/services/webcalls/" + action + q, false /*not async*/ );
 
-    var retVal = null;
+    var retVal = {};
     xhr.onreadystatechange = function () {
       if (this.readyState == this.DONE) {
         var x = xhr.responseText.trim();
@@ -238,67 +276,73 @@ script_label: {
           var json = JSON.parse(x);
           if (json.error) {
             console.log(json.error);
-            retVal = json;
-          } else
-            retVal = (json == "null") ? null : json;
+          }
+          retVal = json;
         } catch (t) {
-          retVal = (x == "null") ? null : {
-            error: x.toString()
+          retVal = (!x || (x=="") || (x == "null")) ? {} : {
+            error: "could not parse the resulting JSON"
           };
         }
       }
     };
 
-    if (typeof arg == "undefined") {
-      if (a.callingConventions == "webmemcall")
-        arg = 0;
-      else
-        arg = "";
-    }
-
     xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(arg);
+    let arg1=arg;
+    if (!a) { // server-side hidden action
+      arg1 = webappos.to_webmemcall_reference(arg);
+      if (!arg1)
+        arg1 = webappos.to_jsoncall_string(arg);
+    }
+    else
+      if (a.callingConventions == "webmemcall")
+        arg1 = webappos.to_webmemcall_reference(arg);
+      else {
+        arg1 = webappos.to_jsoncall_string(arg);
+      }
+
+    xhr.send(arg1);
     return retVal;
   };
 
   /**
    * Function: webappos.webcall (async)
    *   Executes the given web call asynchronously via the webAppOS webcalls service.
+   *   Client-side webcalls are executed right away.
+   *
    * Parameters:
-   *   action - the name of the action to call (defined at the server side in *.webcalls files)
-   *   arg - action argument; usually, a JSON object; sometimes - a string object; for webmemcall conventions: an integer representing the object reference
+   *   actionName - the name of the action to call (defined at the server side in *.webcalls files)
+       *   arg - the action argument; for jsoncall conventions: a JavaScript(JSON) object or a string;
+       *         for webmemcall conventions: an integer reference of a web memory argument or a webmem object itself;
+   *
    * Returns:
-   *   a Promise which resolves in a parsed resulting JSON of the web call (with jsoncall calling conventions) as a JavaScript object;
+   *   a Promise, which resolves in a parsed resulting JSON of the web call (with jsoncall calling conventions) as a JavaScript object;
    *   the promise is rejected if the returned object contains the "error" attribute, or if some other error occurs
    */
-  window.webappos.webcall = async function (action, arg) {
+  window.webappos.webcall = async function (actionName, arg) {
 
     let promise = new Promise((resolve, reject) => {
-      if (webappos.js_util.is_object(arg)) {
-        try {
-          arg = JSON.stringify(arg);
-        } catch (t) {
-          return reject(new Error("Invalid argument"));
-        }
-      }
 
-      var a = webappos.webcalls[action];
+      var a = webappos.webcalls[actionName];
       if (a && a.isClient) {
         // do it right away...
         if (a.callingConventions == "jsoncall") {
-          webappos.client_webcall_jsoncall(action, arg).then(function (result) {
+          webappos.client_webcall_jsoncall(actionName, arg).then(function (result) {
+            if (!result)
+              return resolve({});
+            if (result.error)
+              return reject(result);
             resolve(result);
           }).catch(function (t) {
-            resolve({
+            reject({
               error: t + ""
             });
           });
         } else
         if (a.callingConventions == "webmemcall") {
           if (typeof arg == 'number')
-            webappos.client_webcall_webmemcall(action, tda.model[arg]);
+            webappos.client_webcall_webmemcall(actionName, tda.model[arg]);
           else
-            webappos.client_webcall_webmemcall(action, arg);
+            webappos.client_webcall_webmemcall(actionName, arg);
           resolve({});
         }
         return; // return from promise body
@@ -308,7 +352,7 @@ script_label: {
       var intr_obj = {
         type: "webcall",
         isClient: false,
-        actionName: action,
+        actionName: actionName,
         argument: arg
       };
       if (a)
@@ -337,45 +381,65 @@ script_label: {
         else
           q += "&app_url_name="+webappos.app_url_name;
       }
-      xhr.open("POST", "/services/webcalls/" + action + q, true /*async*/ );
+      xhr.open("POST", "/services/webcalls/" + actionName + q, true /*async*/ );
 
-      var retVal = null;
       xhr.onreadystatechange = function () {
         if (this.readyState == this.DONE) {
-          var json = null;
-          try {
-            var x = xhr.responseText.trim();
+          var json = {};
+          var x = xhr.responseText.trim();
+          try {            
             json = JSON.parse(x);
           } catch (t) {
-            console.log(t);
-            console.log("action was "+action);
-            json = (x == "null") ? null : x.toString();
+            json = (!x || (x=="") || (x == "null")) ? {} : {
+              error: "could not parse the resulting JSON"
+            };
           }
-          if (json && (webappos.js_util.is_object(json)) && json.error) {
-            console.log(json.error);
-            return reject(new Error(json.error));
-          } else {
+          if (json.error)
+            return reject(json);
+          else
             return resolve(json);
-          }
         }
       };
 
       xhr.setRequestHeader('Content-Type', 'application/json');
-
-      if (typeof arg == "undefined") {
-        if (a && a.callingConventions == "webmemcall")
-          arg = 0;
-        else
-          arg = "";
+      let arg1=arg;
+      if (!a) { // server-side hidden action
+        arg1 = webappos.to_webmemcall_reference(arg);
+        if (!arg1)
+          arg1 = webappos.to_jsoncall_string(arg);
       }
+      else
+        if (a.callingConventions == "webmemcall")
+          arg1 = webappos.to_webmemcall_reference(arg);
+        else {
+          arg1 = webappos.to_jsoncall_string(arg);
+        }
 
-      xhr.send(arg);
+      xhr.send(arg1);
     });
 
     return promise;
   };
 
-  if (window.webappos_defined_here) {
+
+  if (window.webappos.defined_here) {
+    /**
+     * Function: webappos.get_client_webcall_window (async)
+     *   Returns the window, where the given clinet-side webcall should be executed.
+     *   This function can be redefined (e.g., by EnvironmentEngine) to support internal iframes.
+     *   The function is asynchronous since we may need to wait until the iframe/window is loaded.
+     * 
+     * Parameters:
+     *   actionName - the name of the action to call (as defined at the server side in *.webcalls files)
+     *   arg - a jsoncall or webmemcall argument (can be a JS object, webmem object, or a string)
+     * 
+     * Returns:
+     *   a Promise, which resolves in a DOM window object; the promise rejected if the window was not found
+     */
+    window.webappos.get_client_webcall_window = async function(actionName, arg) {
+      return window;
+    };
+
     /** Group: Desktop API */
 
     /**
@@ -388,6 +452,33 @@ script_label: {
      * functions from Desktop API marked as [DESKTOP-SPECIFIC].
      */
     window.webappos.desktop = {};
+
+    /**
+     * Variable: webappos.desktop
+     * 
+     * Provides access to Desktop API. Either passes Desktop API calls
+     * to the parent window (if the parent provides Desktop API), or implements by its own.
+     * In the latter case, the default implementation is tailored for single-page
+     * webAppOS applications that do not use the desktop. However, webAppOS desktop applications (like the shipped default Desktop app) should redefine
+     * functions from Desktop API marked as [DESKTOP-SPECIFIC].
+     */
+    webappos.desktop.get_width = function () {
+      try {
+        return window.top.document.body.clientWidth;
+      }
+      catch(t) {
+        return document.body.clientWidth;
+      }
+    };
+
+    webappos.desktop.get_height = function () {
+      try {
+        return window.top.document.body.clientHeight;
+      }
+      catch(t) {
+        return document.body.clientHeight;
+      }
+    };
 
     /**
      * Function: webappos.desktop.launch_in_desktop [DESKTOP-SPECIFIC]
@@ -689,6 +780,7 @@ script_label: {
      *     each description is some text followed by file masks in parentheses;
      *     filters are delimited by \n, extensions are delimited by ",";
      *     Example:  Word document (*.doc,*.rtf), C++ file (*.cpp,*.h,*.hpp)
+     *
      * Returns:
      *   a Promise which resolves in a string containing the chosen file name relative to the current login's home folder or null, if no file was chosen;
      */
@@ -755,6 +847,7 @@ script_label: {
      * 
      * Parameters:
      *   around_id  - the ID of the HTML DOM element, around which the launcher menu has to be shown
+     *
      * Returns:
      *   nothing (possible async execution)
      */
@@ -834,6 +927,7 @@ script_label: {
      * 
      * Parameters:
      *   around_id  - the ID of the HTML DOM element, around which the user menu has to be shown
+     *
      * Returns:
      *   nothing (possible async execution)
      */
@@ -906,23 +1000,23 @@ script_label: {
         window.location.href = "/apps/filebrowser";
     };
 
-  }; // if (window.webappos_defined_here)...
+  }; // if (window.webappos.defined_here)...
 
   /**
    * Function: webappos.set_project_id (iframe-specific)
    * 
-   *   Updates/changes the current project_id. If TDA Environment Engine is used, changes the displayed project name.
+   *   Updates/changes the current project_id.
+   *   This function can be redefined (e.g., by EnvironmentEngine)
+   *   to changes the displayed project name as well.
    * 
    * Returns:
-   *   nothing; redirects to another page
+   *   nothing
    */
   window.webappos.set_project_id = function (new_project_id) {
     if (webappos.project_id == new_project_id)
       return;
 
     webappos.project_id = new_project_id;
-    if (window.tda && tda.ee && tda.ee.updateProjectId)
-      tda.ee.updateProjectId(webappos.project_id);
     webappos.js_util.update_query_value("project_id", new_project_id);
   };
 
@@ -1034,7 +1128,7 @@ script_label: {
     return true;
   };
 
-  if (window.webappos_defined_here) {
+  if (window.webappos.defined_here) {
 
     ///// parent desktop <-> this child communication via HTML5 messages /////
     function receiveMessage(event) {
@@ -1055,7 +1149,7 @@ script_label: {
           }
         }
       } else {
-        // answer as if we are desktop, if our parent is desktop...
+        // answer as if we are a desktop, if our parent is a desktop...
         if (event.data.protocol == "webappos_desktop") {
           if (event.data.method == "are_you_desktop?") {
             if (window.webappos.parent_desktop)
@@ -1168,6 +1262,7 @@ script_label: {
    
      Parameters:
        message - an error message to display
+
      Returns:
         nothing (possible async execution)
      */
@@ -1194,6 +1289,7 @@ script_label: {
     Parameters:
       className - the CSS class name of the HTML element to find
       htmlSubStr - (optional) substring within innerHTML
+
     Returns:
        the DOM element, or null, if not found
     */
@@ -1215,12 +1311,13 @@ script_label: {
     };
 
     /**
-    Function: webappos.js_util.await_condition
+    Function: webappos.js_util.await_condition (async)
   
     Timeouts until the given condition function returns true.
   
     Parameters:
       fCondition - a function for checking the condition
+
     Returns:
       Promise, which resolves when fCondition() returns true
     */
@@ -1250,6 +1347,7 @@ script_label: {
     Parameters:
       element - the DOM element, for which to fire an event
       event_type - a string denoting the event type (e.g., "click")
+
     Returns:
        true, if all was OK, or false if the event was cancelled (by calling preventDefault)
     */
@@ -1290,6 +1388,7 @@ script_label: {
   
     Parameters:
       obj - object to clone
+
     Returns:
       a cloned object of the same type
     */
@@ -1309,6 +1408,7 @@ script_label: {
   
     Parameters:
       obj - object, from which to get the properties
+
     Returns:
       an object with the same properties and values
     */
@@ -1330,6 +1430,7 @@ script_label: {
       arr - array, from which to extract a sub-array
       i - (optional) the first index; default=0; if negative, assume index arr.length+i
       j - (optional) the next-to-last index; default=arr.length; if negative, assume index arr.length+j
+
     Returns:
       an object with the same properties and values
     */
@@ -1367,6 +1468,7 @@ script_label: {
   
     Parameters:
       proto - the super-class object (prototype)
+
     Returns:
       a new object, which acts a a subclass of the given proto
     */
@@ -1384,6 +1486,7 @@ script_label: {
   
     Parameters:
       item - the JS variable to check
+
     Returns:
       whether item is of type "object" AND not null AND not array
     */
@@ -1398,6 +1501,7 @@ script_label: {
   
     Parameters:
       item - the JS variable to check
+
     Returns:
       whether item is of type "object" or "object smth."
     */
@@ -1413,6 +1517,7 @@ script_label: {
     
       Parameters:
         obj - the JS variable to check
+
       Returns:
         whether obj is an array
       */
@@ -1427,6 +1532,7 @@ script_label: {
   
     Parameters:
       functionToCheck - the JS variable to check
+
     Returns:
       whether functionToCheck is a JS function
     */
@@ -1441,6 +1547,7 @@ script_label: {
   
     Parameters:
       string - the string to process
+
     Returns:
       the same string with the first letter capitalized.
     */
@@ -1456,6 +1563,7 @@ script_label: {
     Parameters:
       s - the string
       prefix - the prefix to check
+
     Returns:
       whether the given string s starts with the given prefix
     */
@@ -1489,6 +1597,7 @@ script_label: {
     Parameters:
       tagName - HTML tag name
       htmlSubStr - (optional) substring within innerHTML
+
     Returns:
       the DOM element, or null, if not found
     */
@@ -1509,6 +1618,196 @@ script_label: {
         return els[i];
     };
 
+    webappos.js_util.internal_fileNameForUpload = function(fileName, pathPrefix) {
+      var name = fileName;
+
+      for (;;) {
+        
+        if (pathPrefix==webappos.project_id || webappos.js_util.starts_with(pathPrefix,webappos.project_id+"/")) {
+          if (!webappos.webcall_and_wait("webappos.fileExistsInCurrentProject", fileName).result)
+            return name;
+
+        }
+        else {
+          if (!webappos.webcall_and_wait("webappos.fileExists", pathPrefix+"/"+fileName).result)
+            return name;
+        }
+
+        if (confirm("File "+name+" already exists.<br>Is it OK to overwrite?"))
+          return name;
+
+        name = prompt("Enter a different file name for "+fileName);
+        if (!name)
+          return null;
+      }
+
+    };
+
+    webappos.js_util.internal_fileUpload = function(inputElementOrFile, pathPrefix, async) {
+    // inputElementOrFile - a DOM element, a JS File object, or a DOM element ID (string)
+    // returns uploaded file names delimited by ";"
+    // (a name of a file could be changed, if the file already existed)
+
+      if (typeof async == 'undefined')
+        async = false;
+
+      if (!inputElementOrFile)
+        return "";
+
+      if (typeof inputElementOrFile=="string") {
+        return webappos.js_util.internal_fileUpload(document.getElementById(inputElementOrFile),pathPrefix,async);
+      }
+
+      var isFile = inputElementOrFile.constructor.toString().indexOf("File")>0;
+      var fieldName = "someFile"+Math.random();
+
+      if (isFile) {
+        var fdata = new FormData();
+
+        var uploadedFiles = "";
+
+        // if file exists, ask for new name...
+        var customFileName = webappos.js_util.internal_fileNameForUpload(inputElementOrFile.name, pathPrefix);
+        if (!customFileName) 
+          fdata.append("custom_file_name", ""); // skip
+        else {
+          fdata.append("custom_file_name", customFileName);
+        }
+
+        fdata.append(fieldName, inputElementOrFile);
+
+        $.ajax({
+          async: async,
+          url: "/services/fileupload/"+pathPrefix+"?login="+webappos.login+"&ws_token="+webappos.ws_token+"&project_id="+webappos.project_id,
+          type: "post",
+          enctype: 'multipart/form-data',
+          data: fdata,
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function(){
+            uploadedFiles = customFileName;
+          }
+        });
+
+        return uploadedFiles;
+
+      }
+      else {
+        // handling as HTML input element...
+        if (inputElementOrFile.files.length == 0)
+          return;
+
+        if (inputElementOrFile.name)
+          fieldName = inputElementOrFile.name;
+        else
+          if (inputElementOrFile.id)
+            fieldName = inputElementOrFile.id;
+
+
+        var uploadedFiles = "";
+        for (var i=0; i<inputElementOrFile.files.length; i++) {
+          var s = webappos.js_util.internal_fileUpload(inputElementOrFile.files[i], pathPrefix, async);
+          if (s && (s.length>0))
+            if (uploadedFiles=="")
+              uploadedFiles = s;
+            else
+              uploadedFiles += ";"+s;
+        }  
+
+        if (uploadedFiles=="")
+          alert("No files uploaded.");
+        else
+          console.log("uploaded: "+uploadedFiles);
+        return uploadedFiles;
+      }
+
+
+    };
+
+    /**
+    Function: webappos.js_util.initialize_file_input
+  
+    Initializes the given <input type="file"> element for uploading files.   
+    Use webappos.js_util.upload_file_input to upload the files. 
+  
+    Parameters:
+      inputElement - the DOM <input> element (as JS object)
+      previouslyChosenFiles - (optional) file names encoded as string (using ";" as a delimiter) that have been uploaded earlier using the same input element (to inform the user
+                              that they have already used this input and now they are going to replace those previously uploaded files)
+
+    Returns:
+      nothing
+    */
+   webappos.js_util.initialize_file_input = function(inputElement, previouslyChosenFiles)
+    {
+      var previouslyChosenDiv = $( "<div></div>" );
+      previouslyChosenDiv.insertAfter( inputElement );
+      if (previouslyChosenFiles) {
+        previouslyChosenDiv.html(previouslyChosenFiles+" uploaded earlier");
+        inputElement.previouslyChosenFiles = previouslyChosenFiles;
+      }
+
+
+      var justChosenDiv = $( "<div></div>" );
+      justChosenDiv.insertAfter( inputElement );
+
+      inputElement.onchange=function(){
+        var s = "";
+        for (var i=0; i<inputElement.files.length; i++) {
+          if (i==0)
+            s = inputElement.files[0].name;
+          else
+            s += ";"+inputElement.files[i].name;
+        }
+        if (s.length > 0)
+          justChosenDiv.html("<br>"+s+" chosen for upload<br>");
+        else
+          justChosenDiv.html("");
+      };
+    };
+
+    /**
+    Function: webappos.js_util.upload_file_input
+  
+    Uploads the files selected by the user in the <input type="file"> element.
+    Can be called even when the input has not been initialized using webappos.js_util.initialize_file_input.
+  
+    Parameters:
+      inputElement - the DOM <input> element (as JS object)
+      pathPrefix - the path prefix for each file to be uploaded; relative to the global webAppOS home directory, without unnecessary slashes;
+                   default is webappos.login;
+                   if you wish to upload files into the current project, pass webappos.project_id
+
+    Returns:
+      file names encoded as string (using ";" as a delimiter); file names could be changed, if such files already existed
+    */
+    webappos.js_util.upload_file_input = function(inputElement, pathPrefix)
+    {
+        if (inputElement.files.length == 0)
+          return inputElement.previouslyChosenFiles; 
+
+        if (!pathPrefix)
+          pathPrefix = webappos.login;
+
+        if (!pathPrefix)
+          return "";
+
+        // keeping previous files (TODO: ask whether to clear/delete previous or keep previous and use a new name)
+
+        // delete previous files...
+        if (inputElement.previouslyChosenFiles) {
+          var filenames = inputElement.previouslyChosenFiles.split(";");
+          for (var i=0; i<filenames.length; i++) {
+            if (pathPrefix==webappos.project_id || webappos.js_util.starts_with(pathPrefix,webappos.project_id+"/"))
+              webappos.webcall_and_wait("webappos.deleteFileFromCurrentProject", filenames[i]);
+            else
+              webappos.webcall_and_wait("webappos.deleteFile", pathPrefix+"/"+filenames[i]);
+          }
+        }
+
+        return webappos.js_util.internal_fileUpload(inputElement, pathPrefix);
+    };
 
     /**
     Function: webappos.js_util.show_please_wait
@@ -1517,6 +1816,7 @@ script_label: {
   
     Parameters:
       msg - the message to display
+
     Returns:
       nothing; the window wrap becomes visible
     */
@@ -1543,14 +1843,16 @@ script_label: {
     Returns:
       nothing; the window wrap becomes invisible
     */
-   webappos.js_util.hide_please_wait = function () {
+    webappos.js_util.hide_please_wait = function () {
       thePleaseWaitDivWrap.style.display = "none";
       thePleaseWaitDiv.style.display = "none";
     };
 
 
 
-  }; // if (window.webappos_defined_here)
+
+
+  }; // if (window.webappos.defined_here)
 
   (function () {
     require(["dojo/domReady!"], function () {
@@ -1628,6 +1930,7 @@ script_label: {
   
   Parameters:
     key - the key name, for which to get the value
+
   Returns:
       the value for the given key, or null, if the value was not found
   */
@@ -1643,6 +1946,7 @@ script_label: {
   Parameters:
     key - the key name, for which to update/set the value
     value - the value to set
+
   Returns:
     nothing
   */
@@ -1677,6 +1981,7 @@ script_label: {
 
   Parameters:
     key - the key name, for which to remove the corresponding query fragment
+
   Returns:
     the previous value for the given key, or null, if the value was not found
   */
@@ -1703,15 +2008,13 @@ script_label: {
   
   Parameters:
     key - the key name, for which to get the value
+
   Returns:
     the value for the given key, or null, if the value was not found
   */
   webappos.js_util.get_top_level_query_value = function (key) {
     return decodeURIComponent((new RegExp('[?|&]' + key + '=' + '([^&;]+?)(&|#|;|$)').exec(webappos.top_location.search) || [, ""])[1].replace(/\+/g, '%20')) || null
   }; // [source: http://stackoverflow.com/questions/11582512/how-to-get-url-parameters-with-javascript]
-
-
-
 
 
   /** Group: "Web memory"-related stuff */
@@ -1724,12 +2027,20 @@ script_label: {
     } catch (t) {}
   }
 
+  if (!window.webmem) {
+    try {
+      if (window.parent) {
+        window.webmem = Object.create(window.parent["webmem"]);
+      }
+    } catch (t) {}
+  }
+
   /**
    * Function: webappos.init_web_memory (iframe-specific)
    * 
    * Performs the initial synchronization of web memory and keeps on synchronizing.
    * 
-   * The function is called from the webappose_scopes web service. It uses login, ws_token, and project_id, and calls tda.model.init internally.
+   * The function is called from the webappose_scopes web service. It uses login, ws_token, and project_id, and calls webmem.init() internally.
    * 
    * If the server closes the web socket connection (or if the connection is lost for some other reason), the corresponding error message will be displayed with the option to refresh the page.
    * 
@@ -1747,6 +2058,14 @@ script_label: {
       try {
         if (window.parent) {
           window.tda = Object.create(window.parent["tda"]);
+        }
+      } catch (t) {}
+    }
+
+    if (!window.webmem) {
+      try {
+        if (window.parent) {
+          window.webmem = Object.create(window.parent["webmem"]);
         }
       } catch (t) {}
     }
@@ -1894,95 +2213,6 @@ script_label: {
         maxReference: 0,
         predefinedBitsCount: 1,
         predefinedBitsValues: 1,
-
-
-        webcallAsync: function (actionName, arg, callback) {
-          if (webappos.js_util.is_object(arg)) {
-            try {
-              arg = JSON.stringify(arg);
-            } catch (t) {
-              return null;
-            }
-          }
-
-          var action = webappos.webcalls[actionName];
-          if (action && action.isClient) {
-
-            if (action.callingConventions == "jsoncall") {
-              webappos.client_webcall_jsoncall(actionName, arg).then(function (result) {
-                if (callback)
-                  callback(result);
-              }).catch(function (t) {
-                if (callback)
-                  callback({
-                    error: t + ""
-                  });
-              });
-            } else
-            if (action.callingConventions == "webmemcall") {
-              webappos.client_webcall_webmemcall(actionName, tda.model[arg]);
-              if (callback)
-                callback({});
-            }
-            return;
-          }
-
-          var intr_obj = {
-            type: "webcall",
-            isClient: false,
-            actionName: actionName,
-            argument: arg
-          };
-          if (action)
-            intr_obj.callingConventions = action.callingConventions;
-    
-          if ((webappos.interrupt)&& (webappos.interrupt(intr_obj))) {
-            if (callback)
-                callback({
-                  error: "web call interrupted"
-                });
-
-            return;
-          }
-
-
-          if ((action && action.callingConventions == "webmemcall") || (!action && (typeof arg == 'number'))) {
-            if (typeof arg == "undefined")
-              arg = 0;
-            if (!(typeof arg == 'number')) {
-              if (callback)
-                callback({
-                  error: "webmemcall argument must be a number"
-                });
-              return;
-            }
-            // webmemcall
-            var arr = new Float64Array(2);
-            arr[0] = 0xC0;
-            arr[1] = arg;
-            tda.websocket.send(arr.buffer);
-            tda.websocket.send(tda.model.sharpenString(actionName));
-          } else {
-            // jsoncall
-            if (!tda.websocket.jsonsubmitID) {
-              tda.websocket.jsonsubmitID = 1;
-              tda.websocket.jsonsubmitCallbacks = {};
-            } else
-              tda.websocket.jsonsubmitID++;
-
-            if (callback) {
-              tda.websocket.jsonsubmitCallbacks[tda.websocket.jsonsubmitID] = callback;
-            }
-
-            if (typeof arg == "undefined")
-              arg = "";
-            var arr = new Float64Array(2);
-            arr[0] = 0xC0;
-            arr[1] = tda.websocket.jsonsubmitID;
-            tda.websocket.send(arr.buffer);
-            tda.websocket.send(tda.model.sharpenString(actionName) + "/" + tda.model.sharpenString(arg));
-          }
-        },
 
         checkReference: function (r) {
           if (!r) {
@@ -2410,7 +2640,7 @@ script_label: {
           var mmsuperCls = tda.prototypes[rSuper];
 
           if (mmsubCls.prototype == tda.model.classPrototype) {
-            // only one super-class using prototyping...
+            // currently, only one super-class using prototyping... || TODO: via additional intermediate prototypes
             Object.setPrototypeOf(mmsubCls, mmsuperCls); // this op may be slow!
           }
 
@@ -2844,12 +3074,12 @@ script_label: {
                         if (event.data)
                           json = JSON.parse(tda.model.unsharpenString(event.data));
                       } catch (t) {
-                        console.log("Error during tda.model.webcallAsync result parse: " + t);
+                        console.log("Error during jsoncall webcall result parse: " + t);
                       }
                       try {
                         callback(json);
                       } catch (t) {
-                        console.log("Error during tda.model.webcallAsync callback: " + t);
+                        console.log("Error during jsoncall webcall callback: " + t);
                       }
                       delete tda.websocket.jsonsubmitCallbacks[arr[1]];
                     }
@@ -2862,6 +3092,10 @@ script_label: {
                       var id = arr[1];
                       webappos.client_webcall_jsoncall(tda.model.unsharpenString(aa[0]), tda.model.unsharpenString(aa[1])).then(function (result) {
                         if (id>0) {
+                          if (!result)
+                            result = "{}";
+                          if (typeof result != "string")
+                            result = result+"";
                           var arr2 = new Float64Array(2);
                           arr2[0] = 0xC1;
                           arr2[1] = id;
@@ -3089,7 +3323,6 @@ script_label: {
                   if (tda.standalone) {
                     console.log("standalone sync done!");
                     tda.synced = true;
-                    console.log("tda.ee=" + tda.ee);
                   } else {
                     console.log("web sync done!");
                     // issuing a command...
@@ -3146,12 +3379,12 @@ script_label: {
       }
 
       /**
-       * Function: tda.model.submit
+       * Function: webmem.submit
        * 
        * Attaches the given command or event object to the submitter object to execute the given command or handle the given event.
        * 
        * Parameters:
-       *   obj - a TDA command or event object within the tda.model scope
+       *   obj - an instance of the Event or Command class in web memory
        * 
        * Returns:
        *   nothing (possible async execution)
@@ -3185,34 +3418,113 @@ script_label: {
       };
 
       /**
-       * Function: tda.model.webcall (async)
+       * Function: webmem.webcall (async)
        * 
        *   Executes the given web call asynchronously via the current webAppOS web socket.
+       *   Client-side webcalls are executed right away.
        * 
        * Parameters:
        *   action - the name of the action to call (defined at the server side in *.webcalls files)
-       *   arg - action argument; usually, a JSON object; sometimes - a string object; can be also an integer specifying a TDA argument
+       *   arg - the action argument; for jsoncall conventions: a JavaScript(JSON) object or a string;
+       *         for webmemcall conventions: an integer reference of a web memory argument or a webmem object itself;
        * 
        * Returns:
        *   a Promise which resolves in a parsed resulting JSON of the web call as a JavaScript object;
        *   the promise is rejected if the returned object contains the "error" attribute, or if some other error occurs
        */
-      tda.model.webcall = async function (action, arg) {
-        let promise = new Promise((resolve, reject) => {
+      tda.model.webcall = async function (actionName, arg) {
+        return promise = new Promise((resolve, reject) => {
+          var action = webappos.webcalls[actionName];
+          if (action && action.isClient) {
 
-          tda.model.webcallAsync(action, arg, function (retVal) {
-            return resolve(retVal);
-          });
+            if (action.callingConventions == "jsoncall") {
+              return webappos.client_webcall_jsoncall(actionName, webappos.to_jsoncall_string(arg));
+            } else
+            if (action.callingConventions == "webmemcall") {
+              return webappos.client_webcall_webmemcall(actionName, webappos.to_webmemcall_object(arg));
+            }
+            return reject({error:"unknown calling conventions for "+actionName});
+          }
+
+          var intr_obj = {
+            type: "webcall",
+            isClient: false,
+            actionName: actionName,
+            argument: arg
+          };
+          if (action)
+            intr_obj.callingConventions = action.callingConventions;
+    
+          if ((webappos.interrupt)&& (webappos.interrupt(intr_obj))) {
+            return resolve({
+                  error: "web call interrupted"
+                });
+
+          }
+
+          if (!action) {
+            // server-side hidden action
+            action = {};
+            let arg1 = webappos.to_webmemcall_reference(arg);
+            if (arg1)
+              action.callingConventions = "webmemcall";
+            else {
+              arg1 = webappos.to_jsoncall_string(arg);
+              if (arg1) {
+                action = {};
+                action.callingConventions = "jsoncall";
+              }
+            }
+          }
+
+          if (action.callingConventions == "webmemcall") {
+            // webmemcall
+            var arr = new Float64Array(2);
+            arr[0] = 0xC0;
+            arr[1] = webappos.to_webmemcall_reference(arg);
+            tda.websocket.send(arr.buffer);
+            tda.websocket.send(tda.model.sharpenString(actionName));
+            resolve(null);
+          } else {
+            // jsoncall
+            if (!tda.websocket.jsonsubmitID) {
+              tda.websocket.jsonsubmitID = 1;
+              tda.websocket.jsonsubmitCallbacks = {};
+            } else
+              tda.websocket.jsonsubmitID++;
+
+            tda.websocket.jsonsubmitCallbacks[tda.websocket.jsonsubmitID] = function(json) {
+              if (!json)
+                return reject({error: "jsoncall webcall "+actionName+" returned no value from the server"});
+              if (json=="null") {
+                return resolve({});
+              }
+              else
+              if (webappos.js_util.is_object(json)) {
+                if (json.error)
+                  return reject(json);
+                else
+                  return resolve(json);
+              }
+              else
+                return reject({error:"jsoncall webcall "+actionName+" returned not-a-JSON"});
+            };
+
+            var arr = new Float64Array(2);
+            arr[0] = 0xC0;
+            arr[1] = tda.websocket.jsonsubmitID;
+            tda.websocket.send(arr.buffer);
+            tda.websocket.send(tda.model.sharpenString(actionName) + "/" + tda.model.sharpenString(webappos.to_jsoncall_string(arg)));
+          }
 
         });
 
-        return promise;
       };
 
     }; // if (!window.tda)
 
     // launching...
-    return await tda.model.init();
+    return await webmem.init();
 
   }; // init_web_memory
 

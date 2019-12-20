@@ -1723,7 +1723,10 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 	synchronized public boolean createGeneralization(long rSubClass, long rSuperClass) {		
 		if (mem==null)
 			return false;
-		 mem.lock();
+		if (rSubClass==0 || rSuperClass==0)
+			return false;
+		
+		mem.lock();
 		try {
 			int i = findActionWhere(0x11, rSubClass, rSuperClass);
 			if (i>=0)
@@ -1741,10 +1744,11 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 	synchronized public boolean isDirectSubClass(long rSubClass, long rSuperClass) {
 		if (mem==null)
 			return false;
-		 mem.lock();
+		if ((rSubClass == 0) || (rSuperClass == 0))
+			return false;
+		
+		mem.lock();
 		try {
-			if ((rSubClass == 0) || (rSuperClass == 0))
-				return false;
 			
 			int i = findActionWhere(0x11, rSubClass, rSuperClass);
 			return i>=0;
@@ -1795,7 +1799,8 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 		
 		if (mem==null)
 			return false;
-		 mem.lock();
+		
+		mem.lock();
 		try {
 			int i = findActionWhere(0x11, rSubClass, rSuperClass);
 			if (i<0)

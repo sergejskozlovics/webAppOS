@@ -49,7 +49,10 @@ public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAP
 		if (s==null)
 			return false;
 		
-		return s.endsWith("Event") || s.endsWith("Evt");
+		if (s.endsWith("Event") || s.endsWith("Evt"))
+			return true;
+		
+		return this.isKindOf(r, this.findClass("Event"));
 	}
 	
 	public boolean isCommand(long r) {
@@ -60,7 +63,10 @@ public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAP
 		String s = this.getClassName(rCls);
 		if (s==null)
 			return false;
-		return s.endsWith("Command") || s.endsWith("Cmd");
+		if (s.endsWith("Command") || s.endsWith("Cmd"))
+			return true;
+		
+		return this.isKindOf(r, this.findClass("Command"));
 	}
 	
 	@Override

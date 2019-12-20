@@ -10,48 +10,6 @@ public class DialogEngine_webcalls {
 
 	private static Logger logger =  LoggerFactory.getLogger(DialogEngine_webcalls.class);
 
-/*	public static boolean onFrameActivatedEvent(RAAPI raapi, long r)
-	{
-		if (DEBUG) System.err.println("frame activated from GDE_jsonsubmit");
-		lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory eeFactory = new lv.lumii.tda.ee.mm.EnvironmentEngineMetamodelFactory();
-		try {
-			eeFactory.setRAAPI(raapi, "", true);
-		} catch (Throwable e) {
-			return false;
-		}
-		org.webappos.weblib.de.mm.GraphDiagramEngineMetamodelFactory gdeFactory = new org.webappos.weblib.de.mm.GraphDiagramEngineMetamodelFactory();
-		try {
-			gdeFactory.setRAAPI(raapi, "", true);
-		} catch (Throwable e) {
-			eeFactory.unsetRAAPI();
-			return false;
-		}
-		
-		lv.lumii.tda.ee.mm.FrameActivatedEvent ev = (lv.lumii.tda.ee.mm.FrameActivatedEvent)eeFactory.findOrCreateRAAPIReferenceWrapper(r, false); 
-		lv.lumii.tda.ee.mm.Frame frame = ev.getFrame();
-		org.webappos.weblib.de.mm.Frame frame2 = (org.webappos.weblib.de.mm.Frame)gdeFactory.findOrCreateRAAPIReferenceWrapper(frame.getRAAPIReference(), false);
-		
-
-		org.webappos.weblib.de.mm.CurrentDgrPointer ptr = org.webappos.weblib.de.mm.CurrentDgrPointer.firstObject(gdeFactory);
-		if (ptr == null)
-			ptr = gdeFactory.createCurrentDgrPointer();
-		
-		ptr.getGraphDiagram().clear();
-		
-		
-		// linking to the current graph diagram...
-		if (frame2.getGraphDiagram().size()>0) {
-			if (DEBUG) System.err.println(" GRAPH DIAGRAM "+frame2.getGraphDiagram().get(0).getRAAPIReference());
-			ptr.getGraphDiagram().add(frame2.getGraphDiagram().get(0));			
-		}				
-		
-		
-		eeFactory.unsetRAAPI();
-		gdeFactory.unsetRAAPI();
-		
-		return true;
-	}*/
-
 	
 	public static boolean onCloseFrameRequestedEvent(IWebMemory webmem, long r)
 	{		

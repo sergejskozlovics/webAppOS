@@ -282,7 +282,7 @@ public class WebCallsServlet extends HttpServlet
 					if (props != null)
 						app_url_name = props.app_url_name;
 				}
-				retVal = "{\"error\":\"Webcall action not found.\"}";
+				retVal = "{\"error\":\"Webcall action not found ("+action+").\"}";
 			}
 			else {
 				fullAppName = API.dataMemory.getProjectFullAppName(project_id);
@@ -358,6 +358,12 @@ public class WebCallsServlet extends HttpServlet
 				}
 			}
 			
+			if (project_id!=null) {
+				IWebMemory wm = API.dataMemory.getWebMemory(project_id);
+				if (wm!=null) {
+					wm.flush();
+				}
+			}
 			// parse retVal...
 			JsonObject result;
 			try {
@@ -372,7 +378,7 @@ public class WebCallsServlet extends HttpServlet
 					result = jelement.getAsJsonObject();				
 			}
 			catch(Throwable t) {
-				System.err.println(retVal);
+				//System.err.println(retVal);
 				throw new RuntimeException("Could not parse the returned JSON.");
 			}
 			
@@ -399,7 +405,7 @@ public class WebCallsServlet extends HttpServlet
 		}
 		catch(Throwable t) {
 			logger.error(t.getMessage());
-			t.printStackTrace();
+			//t.printStackTrace();
 			if (logger.isTraceEnabled()) {
 				StringWriter errors = new StringWriter();
 				t.printStackTrace(new PrintWriter(errors));

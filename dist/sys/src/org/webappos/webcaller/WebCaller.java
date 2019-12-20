@@ -132,7 +132,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		final WebCallSeed seed1 = _seed;
 		
 		//System.out.println("WebCaller enqueue "+seed1.actionName+" ("+seed1.hashCode()+")");
-		logger.trace("WebCaller enqueue "+seed1.actionName+" ("+seed1.hashCode()+")");
+		logger.debug("WebCaller enqueue "+seed1.actionName+" ("+seed1.hashCode()+")");
 		String id = seed1.project_id!=null?seed1.project_id:"";
 		Queue<WebCallSeed> q = p2q.get(id);
 		if (q != null) {
@@ -164,7 +164,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					boolean tryAgain = false;
 					
 					try {						
-						logger.trace("WebCaller dequeue "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",kernel="+API.dataMemory.getWebMemory(seed2.project_id)+",arg="+seed2.webmemArgument);
+						logger.debug("WebCaller dequeue "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",kernel="+API.dataMemory.getWebMemory(seed2.project_id)+",arg="+seed2.webmemArgument);
 						WebCallDeclaration action = map.get(seed2.actionName);
 						if (action == null && seed2.fullAppName!=null) {
 							// Lua patch...
@@ -575,14 +575,14 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 				// isSingle implies isClient
 				if (action.isSingle)
 					if (!action.isClient) {
-						logger.debug("web call "+value+" not added: it is single, but not client");
+						logger.warn("web call "+value+" not added: it is single, but not client");
 						continue;
 					}
 				
 				// webmemcall implies !isPublic && !isStatic
 				if (action.callingConventions == CallingConventions.WEBMEMCALL)
 					if (action.isPublic || action.isStatic) {
-						logger.debug("web call "+value+" not added: webmemcall must be neither public, nor static");
+						logger.warn("web call "+value+" not added: webmemcall must be neither public, nor static");
 						continue;
 					}
 				
@@ -592,7 +592,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 				if (loaded != null)
 					loaded.add(key);
 				
-				logger.debug("web call: "+(action.isPublic?"public":"[private]")+" "+(action.isStatic?"static":"[project]")+" "+(action.isInline?"inline":"[inproc]")+" "+(action.isSingle?"single":"[multi]")+" "+(action.callingConventions==CallingConventions.JSONCALL?"jsoncall":"webmemcall")+" "+(action.isClient?"[[client-side]]":"[[server-side]]")+" function `"+key+"' added, resolving to `"+value+"'");
+				logger.trace("web call: "+(action.isPublic?"public":"[private]")+" "+(action.isStatic?"static":"[project]")+" "+(action.isInline?"inline":"[inproc]")+" "+(action.isSingle?"single":"[multi]")+" "+(action.callingConventions==CallingConventions.JSONCALL?"jsoncall":"webmemcall")+" "+(action.isClient?"[[client-side]]":"[[server-side]]")+" function `"+key+"' added, resolving to `"+value+"'");
 			}
 			logger.info("Web calls loaded from "+fileName+".");
 

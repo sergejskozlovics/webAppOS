@@ -166,6 +166,10 @@ public class ProjectCache {
 		}
 
 		File fcache = new File(ConfigStatic.PROJECTS_CACHE_DIR+File.separator+uuid);
+		if (create && fcache.exists()) {
+			deleteProjectCache(project_id, uuid);
+		}
+		
 		if (!fcache.exists()) {
 			fcache.mkdirs();
 			

@@ -104,31 +104,6 @@ define(function(){
             if (!ok)
               return reject();
 
-            if (webappos.project_id=="standalone") {
-              tda.ee = {
-                // simulating tda.ee functions via alert...
-                searchForFrameAndExecuteCommand: function(obj) {
-                  alert("#COMMAND#"+obj.reference);
-                },
-                searchForFrameAndHandleEvent: function(obj) {
-                  alert("#EVENT#"+obj.reference);
-                },
-                log: function(s) {
-                  alert("#LOG#"+s);//arguments.join(", "));
-                },
-                resizeFrame: function(frameRef, w, h) {
-                  alert("#RESIZE#"+frameRef+","+w+","+h);
-                },
-                getScreenWidth: function() {
-                  return prompt("#SCREEN_WIDTH#", 800);
-                },
-                getScreenHeight: function() {
-                  return prompt("#SCREEN_HEIGHT#", 600);
-                },
-              };            
-              console.log = tda.ee.log;
-            }
-
             return resolve(ok);
 
           });
@@ -171,9 +146,13 @@ define(function(){
               var j = (arr[i]+"").indexOf(".");
               if (j>=0)
                 arr[i] = (arr[i]+"").substring(0, j);
+
+              var imgName = "template.png";
+              if (arr[i]=="new")
+                imgName = "new.png";
   
               contentURI+="<div onclick=\"javascript:webappos.project_id='apptemplate:"+arr[i]+"."+webappos.project_extension+"';"+INIT_CODE+"\" style='display:inline-block; align:center; width:100px; min-height:100px; cursor:pointer; margin:10px; vertical-align:top;'>"+
-                      "<div style='display:inline-block;width:100px;height:80px;'><img src='icons/template/"+arr[i]+".png' width='100px' height='auto'></img></div>"+
+                      "<div style='display:inline-block;width:100px;height:80px;'><img src='icons/template/"+imgName+"' width='100px' height='auto'></img></div>"+
                       "<p style='word-wrap: break-word; padding:0; margin:0;' align='center'>"+arr[i]+"</p>"+
                       "</div>";
   

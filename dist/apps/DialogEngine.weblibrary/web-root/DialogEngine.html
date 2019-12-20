@@ -447,10 +447,11 @@
 
 			var settings = {
 				iframe: iframe,
-				screenWidth: tda.ee.getScreenWidth(),
-				screenHeight: tda.ee.getScreenHeight(),
+				screenWidth: webappos.desktop.get_width(),
+				screenHeight: webappos.desktop.get_height(),
 				divID: "mainLayout",
 				eventHandler: callEventHandler,
+				resizeFrame: resizeFrame // defined in EnvironmentEngine
 			};
 
 			try {

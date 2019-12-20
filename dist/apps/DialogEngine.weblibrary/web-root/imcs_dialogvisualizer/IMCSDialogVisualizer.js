@@ -425,7 +425,8 @@ var IMCSDialogVisualizer = function (treeRoot, settings) { // class
 
       info.w.layout(x, y, w, h);
       if (info.type == "form") {
-        tda.ee.resizeFrame(frameRef, w, h); // TODO
+        if (myThis.settings.resizeFrame)
+          myThis.settings.resizeFrame(frameRef, w, h);
       }
 
     },

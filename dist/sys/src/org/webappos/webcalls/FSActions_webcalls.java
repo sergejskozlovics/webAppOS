@@ -36,6 +36,22 @@ public class FSActions_webcalls {
 		return  "{\"result\":"+HomeFS.ROOT_INSTANCE.pathExists(fileName)+"}";
 	}
 	
+	public static String fileExistsInCurrentProject(String project_id, String fileName, String login, String appFullName) { //  project_id, arg, login, appFullName
+		// login will be non-null
+		try {
+			ValidityChecker.checkRelativePath(fileName, false);
+		}
+		catch(Throwable t) {
+			return "{\"error\":\""+t.getMessage()+"\"}";
+		}
+
+		String projectDir = API.dataMemory.getProjectFolder(project_id);
+		if (projectDir==null)
+			return "{\"error\":\"Unknown project cache directory\"}";
+
+		File f = new File(projectDir + File.separator+fileName.replace('\\', File.separatorChar).replace('/', File.separatorChar));		
+		return  "{\"result\":"+f.exists()+"}";
+	}
 
 	public static String isDirectory(String fileName, String login) {
 		// login will be non-null
@@ -52,7 +68,24 @@ public class FSActions_webcalls {
 		PathInfo info = HomeFS.ROOT_INSTANCE.getPathInfo(fileName);
 		return  "{\"result\":"+((info!=null)&&info.isDirectory)+"}";
 	}
-	
+
+	public static String isDirectoryInCurrentProject(String project_id, String fileName, String login, String appFullName) { //  project_id, arg, login, appFullName
+		// login will be non-null
+		try {
+			ValidityChecker.checkRelativePath(fileName, false);
+		}
+		catch(Throwable t) {
+			return "{\"error\":\""+t.getMessage()+"\"}";
+		}
+		
+		String projectDir = API.dataMemory.getProjectFolder(project_id);
+		if (projectDir==null)
+			return "{\"error\":\"Unknown project cache directory\"}";
+
+		File f = new File(projectDir + File.separator+fileName.replace('\\', File.separatorChar).replace('/', File.separatorChar));		
+		return  "{\"result\":"+f.isDirectory()+"}";
+	}
+
 	public static String getFileContentAsUTF8String(String fileName, String login) {
 		// login will be non-null
 		
@@ -127,12 +160,10 @@ public class FSActions_webcalls {
 		
 	}
 
-	public static String deleteFileFromCurrentProject(RAAPI raapi, String fileName, String login) {
+	public static String deleteFileFromCurrentProject(String project_id, String fileName, String login, String appFullName) { //  project_id, arg, login, appFullName
 		// raapi and login will be non-null
-		RAAPIWrapper raapiw = new RAAPIWrapper(raapi);
 		
-		long eeObj = raapiw.getFirstObjectByClassName("EnvironmentEngine");
-		String projectDir = raapiw.getAttributeValueByName(eeObj, "projectDirectory");
+		String projectDir = API.dataMemory.getProjectFolder(project_id);
 		
 		if (projectDir==null)
 			return "{\"error\":\"Unknown project cache directory\"}";

@@ -1655,7 +1655,17 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 		    return retVal.toString(); // dead code, which the compiler does not understand
 
 	     } catch (Exception e) {
-	    	 return retVal.toString();
+	    	 if (retVal.length()>0)
+	    		 return retVal.toString();
+	    	 
+	    	 if (xmiURI != null) {
+	    		 if (xmiURI.endsWith(".xmi"))
+	    			 return "http:///lv.lumii.tda.data.some.namespace "+new File(xmiURI.substring(0,  xmiURI.length()-4)+".ecore").getName();
+	    		 else
+	    			 return "http:///lv.lumii.tda.data.some.namespace "+new File(xmiURI+".ecore").getName();
+	    	 }
+	    	 else
+	    		 	return null;
 	     }		
 	}
 	
@@ -1881,8 +1891,9 @@ public class RepositoryAdapter extends RepositoryAdapterBase implements IReposit
 							    newPackage);
 						
 						String nsPrefix = newPackage.getNsPrefix(); 			
-						// nsPrefix == "data", "root", "rootPackage", or "" -> root
-						if ((nsPrefix==null) || nsPrefix.equals("data") || nsPrefix.equals("root") || nsPrefix.equalsIgnoreCase("rootPackage") || nsPrefix.isEmpty()) {
+						// nsPrefix == "data", "root", "rootPackage", "", or the only package -> root
+						if ((nsPrefix==null) || nsPrefix.equals("data") || nsPrefix.equals("root") || nsPrefix.equalsIgnoreCase("rootPackage") || nsPrefix.isEmpty()
+								|| (arr.length==2 && n==1)) {
 							//System.out.println("loading rootPackage "+valueURI);
 							rootPackage = newPackage;
 							nameToPackageMap.put("", rootPackage);

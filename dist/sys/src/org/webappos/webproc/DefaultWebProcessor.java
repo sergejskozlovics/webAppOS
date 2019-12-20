@@ -140,6 +140,9 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 						logger.error("Could not peform server-side web call "+seed.actionName+" within web processor `"+id+"'since calling conventions do not match. ");
 					}
 					
+					//if (webmem!=null)
+						//webmem.flush();
+					
 					API.wpbService.webCallFinished(id, jsonResult);
 				} catch (Throwable t) {
 					logger.trace("Webcall "+seed.actionName+" ("+seed.hashCode()+") finished with an exception ("+t.getMessage()+") @ "+id);

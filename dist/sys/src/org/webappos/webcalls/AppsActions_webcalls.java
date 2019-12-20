@@ -215,7 +215,7 @@ public class AppsActions_webcalls {
 			}
 		}
 		
-		return ok;
+ 		return ok;
 	}
 	
 	public static String initializeProject(String project_id, String arg, String login, String fullAppName) {
@@ -238,7 +238,7 @@ public class AppsActions_webcalls {
 		catch(Throwable t) {			
 		}
 						
-		// loading required web libraries...
+		// loading required web libraries (inserting their MMs and calling on_load)...
 		for (String fullLibraryName : props.requires_web_libraries) {
 			if (bootstrapped)
 				insertSomeMetamodels(fullLibraryName, webmem);
@@ -257,6 +257,7 @@ public class AppsActions_webcalls {
 			}
 		}
 		
+		// inserting main app MMs and calling the main web call... 
 		if (bootstrapped)
 			insertSomeMetamodels(fullAppName, webmem);
 		

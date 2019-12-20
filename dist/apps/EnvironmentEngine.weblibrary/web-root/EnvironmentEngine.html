@@ -4,7 +4,7 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-  <title>TDA 2 Web Environment Engine</title>
+  <title>webAppOS</title>
 
   <!-- DOJO LAYOUT PREREQUISITES -->
   <!--  <script src="dojo/dojo.js" data-dojo-config="async:1, packages: [{ name: 'jquery', location: '', main: 'jquery' }]"></script>-->
@@ -77,13 +77,6 @@
   </style>
 
   <script type="text/javascript">
-    function EEonLoad() {
-      let arr=Object.keys(webmem.Frame.getAllObjects());
-      for (let i=0;i<arr.length;i++) {
-        console.log("deleting frame "+arr[i]);
-        webmem[arr[i]].delete();
-      }
-    }         
 
     function uploadBrowseForFile(input, cmd) {
       if (input.files.length == 0) {
@@ -348,6 +341,7 @@
       });
       return {};
     }
+
 
     var lastPleaseWait = {};
     function showPleaseWait(json) {
@@ -763,6 +757,7 @@
               container = bottomContainer;
 
 
+            console.log("Registering FRAME frame"+reference);
             var frame = new ContentPane({
               //        href: contentURI,  // -- this would be needed when not using iframes
               title: caption,
@@ -774,8 +769,7 @@
               frame.set("closable", true);
               on(frame, "close", function (e) {
                 var event = new tda.model.CloseFrameRequestedEvent();
-                //              event.setPermanently(true);
-                event.setForce(false);
+                event.setForce(true);
                 event.setFrame(tda.model[reference]);
                 tda.model.submit(event);
                 return false; // we do not close the frame; it must be closed by the server-side
@@ -793,9 +787,12 @@
 
               if (oval) {
                 // deactivating event...
-                var event = new tda.model.FrameDeactivatingEvent();
-                event.setFrame(tda.model[parseInt(oval.id.substring(5))]); // remove "frame" from the beginning
-                tda.model.submit(event);
+                var frame = tda.model[parseInt(oval.id.substring(5))];  // remove the "frame" prefix
+                if (frame) {
+                  var event = new tda.model.FrameDeactivatingEvent();
+                  event.setFrame(frame);
+                  tda.model.submit(event);
+                }
 
               }
 
@@ -861,7 +858,6 @@
     }
 
     function whenFrameLoaded(reference, callback) {
-
       var ee = tda.model[reference].getEnvironmentEngine();
       if (!ee || (ee.length == 0)) {
         var frame = tda.model[reference];
@@ -1126,7 +1122,9 @@
     }
 
     function executeDetachFrameCommand(cmd) {
+      console.log("DETACH ",cmd);
       var f = cmd.frame[0];
+      console.log(f);
 
       // deleting frame-specific options...
       var arr = f.getOption();
@@ -1191,7 +1189,9 @@
         if (cmd.messageURI.indexOf("javascript:") != 0)
           return;
 
-        cmd.messageURI = cmd.messageURI.substring(11);
+        let messageURI = cmd.messageURI.substring(11);
+        console.log("EE PostMessage",messageURI.length, messageURI);
+        cmd.delete();
 
         if (frame.getParent())
           frame.getParent().selectChild(frame);
@@ -1201,10 +1201,10 @@
           var iframe = document.getElementById('iframe' + cmdFrame.reference);
           if (iframe) {
             if (iframe.contentWindow)
-              iframe.contentWindow["eval"](cmd.messageURI);
+              iframe.contentWindow["eval"](messageURI);
             else
             if (iframe.frameElement)
-              iframe.frameElement.contentWindow["eval"](cmd.messageURI);
+              iframe.frameElement.contentWindow["eval"](messageURI);
           } else
             alert("error evaluating command");
 
@@ -1237,13 +1237,6 @@
     }
 
     function searchForFrame(cmd) {
-      if (cmd.getClassName() == "RefreshOptionsCommand") {
-        // RefreshOptionsCommand always executed for the active frame
-        if (activeDojoFrame) {
-          var activeFrameRef = parseInt(activeDojoFrame.id.substring(5));
-          return tda.model[activeFrameRef];
-        }
-      }
 
       var retVal = searchForFrameDirect(cmd);
       if (retVal)
@@ -1265,103 +1258,113 @@
       return null;
     }
 
-    function searchForFrameAndExecuteCommand(cmd) {
-
-      require(["dojox/layout/ContentPane", "dijit/registry", "/webappos.js", "dojo/domReady!"], function (ContentPane,
+    // redefining...
+    console.log("REDEFINING GET_WIN...");
+    window.webappos.get_client_webcall_window = async function(actionName, arg) {
+      console.log("IN REDEFINED GET_WIN");
+      var p = new Promise(async function (resolve, reject) {
+        require(["dojox/layout/ContentPane", "dijit/registry", "/webappos.js", "dojo/domReady!"], function (ContentPane,
         registry) {
 
-        var cmdFrame = searchForFrame(cmd);
-        if (!cmdFrame) {
-          console.log("Could not find the frame for command, trying within EE", cmd);
-          try {
-            // try within EE window...
-            window["execute" + cmd.getClassName().split("#").join("_")](cmd);
-          } catch (t) {
-            console.log("No-frame exec in EE failed: execute" + cmd.getClassName().split("#").join("_"), t);
-          }
-          cmd.delete();
+          var frameReference = 0;
 
-          return;
-        }
-
-        console.log("EE: found frame " + cmdFrame.reference + " for command " + cmd.getClassName() + " r=" + cmd
-          .reference, cmd);
-
-        whenFrameLoaded(cmdFrame.reference, function () {
-          var frame = registry.byId("frame" + cmdFrame.reference);
-          if (frame.getParent())
-            frame.getParent().selectChild(frame);
-          var iframe = document.getElementById('iframe' + cmdFrame.reference);
-          if (iframe) {
-            try {
-              if (iframe.contentWindow) {
-                iframe.contentWindow["execute" + cmd.getClassName().split("#").join("_")](cmd);
-              } else
-              if (iframe.frameElement)
-                iframe.frameElement.contentWindow["execute" + cmd.getClassName().split("#").join("_")](cmd);
-            } catch (t) {
-              if (cmd) {
-                try {
-                  // try within EE window...
-                  window["execute" + cmd.getClassName().split("#").join("_")](cmd);
-                } catch (tt) {
-                  console.log("First, exec in frame failed: execute" + cmd.getClassName().split("#").join("_"),
-                    t);
-                  console.log("Second, exec in EE failed: execute" + cmd.getClassName().split("#").join("_"),
-                    tt);
-                  //                  alert("Failed to launch " + "execute" + cmd.getClassName().split("#").join("_"));
-                  cmd.delete();
-                }
-              } else
-                console.log(t);
+          if (arg && arg.reference) { // webmem argument
+            if ((arg.getClassName() == "AttachFrameCommand") || (arg.getClassName() == "DetachFrameCommand") || (arg.getClassName() == "PostMessageToFrameCommand")) {
+              // always execute these commands in the main window
             }
-          } else {
-            alert("Frame not found for command " + cmd.getClassName());
-            console.log("Frame not found for command " + cmd.getClassName());
-            if (cmd)
-              cmd.delete();
+            else
+            if (arg.getClassName() == "RefreshOptionsCommand") {
+              // RefreshOptionsCommand always executed for the active frame
+              if (activeDojoFrame) {
+                frameReference = parseInt(activeDojoFrame.id.substring(5));
+              }
+            }
+            else {
+              // trying to get the frame reference anyway...
+                var argFrame = searchForFrame(arg);
+                if (argFrame) {
+                  frameReference = argFrame.reference;
+                }
+            }
+          }
+          else { // non webmem argument
+            let ok = true;
+
+            if (typeof arg == "string") {
+              try {
+                arg = eval("("+arg+")");
+              }
+              catch(t) {
+                console.log(t);
+                ok = false;
+              }
+            }
+
+            if (ok) {
+              if (frameReference==0) {
+                if (arg && arg.frameReference)
+                  frameReference = arg.frameReference;
+              }
+              if (frameReference==0) {
+                if (arg && arg.frame && arg.frame.reference)
+                  frameReference = arg.frame.reference;
+              }
+              if (frameReference==0) {
+                if (arg && arg.frame && arg.frame[0] && arg.frame[0].reference)
+                  frameReference = arg.frame[0].reference;
+              }
+            }
           }
 
-          // if we were not using iframes, we would have to find some other mechanism...
+          if (frameReference!=0) {
 
-        });
+              console.log("EnvironmentEngine: Found inner frame " + frameReference+"!");
+              whenFrameLoaded(frameReference, function () {
+                var frame = registry.byId("frame" + frameReference);
+                if (frame.getParent())
+                  frame.getParent().selectChild(frame);
+                var iframe = document.getElementById('iframe' + frameReference);
+                if (iframe) {
+                  if (iframe.contentWindow) {
+                    resolve(iframe.contentWindow);
+                    return;
+                  } 
+                  else {
+                    if (iframe.frameElement) {
+                      resolve(iframe.frameElement.contentWindow);
+                      return;
+                    }
+                  }
+                } else {
+                  console.log("EnvironmentEngine: iframe with DOM ID frame"+frameReference+" not found, trying in the main window.");
+                  resolve(window);
+                }
+              }); // whenFrameLoaded
 
-      });
-    }
+          } // if frameReference
+          else {
+              console.log("EnvironmentEngine: Could not detetermine/find the inner frame for a client-side webcall "+actionName+", assuming the main window.",arg);
+              resolve(window);
+          }
 
-    function searchForFrameAndHandleEvent(ev, action) {
 
-      require(["dojox/layout/ContentPane", "dijit/registry", "/webappos.js", "dojo/domReady!"], function (ContentPane,
-        registry) {
-        var evFrame = searchForFrame(ev);
-        if (!evFrame) {
-          console.log("Could not find the frame for event", ev);
-          return;
-        }
-        funcName = "handle" + ev.getClassName();
-        if (action && action.resolvedLocation)
-          funcName = action.resolvedLocation;
 
-        whenFrameLoaded(evFrame.reference, function () {
-          var frame = registry.byId("frame" + evFrame.reference);
-          if (frame.getParent())
-            frame.getParent().selectChild(frame);
-          var iframe = document.getElementById('iframe' + evFrame.reference);
-          if (iframe) {
-            if (iframe.contentWindow)
-              iframe.contentWindow[funcName](ev);
-            else
-            if (iframe.frameElement)
-              iframe.frameElement.contentWindow[funcName](ev);
-          } else
-            alert("error evaluating event");
 
-          // if we were not using iframes, we would have to find some other mechanism...
 
-        });
+        }); // require
 
-      });
-    }
+      }); // promise
+      return p;
+    };
+
+
+          function resizeFrame(r, w, h) {
+              var iframe = window.parent["iframe" + r];
+              if (iframe) {
+                $(iframe).css("width", w);
+                $(iframe).css("height", h);
+              }
+          };
 
     function fOptionSelectedEvent(opt) {
       return function () {
@@ -1811,35 +1814,44 @@
         mainLayout.startup();
         initToolbar();
 
+        document.title = webappos.app_displayed_name;
+
         webappos.request_scopes("webappos_scopes", "project_id").then(function () {
-          tda.ee = {
-            searchForFrameAndExecuteCommand: searchForFrameAndExecuteCommand,
-            searchForFrameAndHandleEvent: searchForFrameAndHandleEvent,
-            log: function (s) {
-              console.log(s);
-            },
-            resizeFrame: function (r, w, h) {
-              var iframe = window.parent["iframe" + r];
-              if (iframe) {
-                $(iframe).css("width", w);
-                $(iframe).css("height", h);
-              }
-            },
-            getScreenWidth: function () {
-              return window.top.document.body.clientWidth;
-            },
-            getScreenHeight: function () {
-              return window.top.document.body.clientHeight;
-            },
-            updateProjectId: function (new_project_id) {
+
+
+          // redefining webappos.set_project_id to update the displayed project name
+          webappos.set_project_id = function (new_project_id) {
+              // inherited code:
+              if (webappos.project_id == new_project_id)
+                  return;
+
+              webappos.project_id = new_project_id;
+              webappos.js_util.update_query_value("project_id", new_project_id);
+
+              // new code:
               var d_el = dijit.byId("project_id_label");
               if (d_el)
                 d_el.domNode.style.visibility = 'visible';
               var div_el = document.getElementById("project_id_div");
               if (div_el)
                 div_el.innerHTML = new_project_id;
-            }
           };
+
+          let arr=Object.keys(webmem.Frame.getAllObjects());
+          for (let i=0;i<arr.length;i++) {
+            console.log("deleting frame "+arr[i]);
+            webmem[arr[i]].delete();
+          }
+
+          arr=Object.keys(webmem.Option.getAllObjects());
+          for (let i=0;i<arr.length;i++) {
+            console.log("deleting option "+arr[i]);
+            webmem[arr[i]].delete();
+          }
+
+          if (!webmem.EnvironmentEngine.getFirstObject()) {
+            let e = new webmem.EnvironmentEngine();
+          }
 
           let event = new tda.model.ProjectOpenedEvent();
           tda.model.submit(event);

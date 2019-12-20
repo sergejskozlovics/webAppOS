@@ -12,6 +12,7 @@ import org.webappos.webmem.IWebMemory;
 import org.webappos.webmem.WebMemoryContext;
 
 import lv.lumii.tda.kernel.IEventsCommandsHook;
+import lv.lumii.tda.raapi.RAAPI;
 import lv.lumii.tda.raapi.RAAPIHelper;
 import lv.lumii.tda.raapi.RAAPI_Synchronizer;
 
@@ -22,7 +23,7 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 	
 	public static BridgeEventsCommandsHook INSTANCE = new BridgeEventsCommandsHook();
 	
-	private void tokenizeEventHandlers(String names, ArrayList<String> arr) {
+	private static void tokenizeEventHandlers(String names, ArrayList<String> arr) {
 		if ((names==null) || (names.isEmpty()))
 			return;
 		
@@ -39,7 +40,7 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 		}		
 	}
 	
-	private String[] getEventHandlers(IWebMemory webmem, long rEvent) {
+	private static String[] getEventHandlers(IWebMemory webmem, long rEvent) {
 		ArrayList<String> arr = new ArrayList<String>();
 		
 		String className = RAAPIHelper.getObjectClassName(webmem, rEvent);
@@ -120,13 +121,13 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 		return arr.toArray(new String[] {});
 	}
 	
-	@Override
-	synchronized public boolean handleEvent(IWebMemory webmem, long rEvent) {
-		logger.trace("Caught web memory event "+rEvent);
-		
+	
+	public static boolean launchEventHandlers_webcall(IWebMemory webmem, long rEvent) {
 		try {
 			
-			WebMemoryContext o = webmem.getContext();
+			logger.info("in launchEventHandlers_webcall "+rEvent);
+			
+			WebMemoryContext ctx = webmem.getContext();
 	
 			String[] handlers = getEventHandlers(webmem, rEvent);
 			if (handlers.length==0)
@@ -146,14 +147,49 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 				seed.webmemArgument = rEvent2;
 				
 		
-				if (o!=null) {
-					seed.login = o.login;
-					seed.project_id = o.project_id;
+				if (ctx!=null) {
+					seed.login = ctx.login;
+					seed.project_id = ctx.project_id;
 				}
 
 				webmem.flush();
 		  		API.webCaller.enqueue(seed);
 			}
+	  		
+			return true; // we forwarded this event to the foreground thread
+		}
+		finally {
+			webmem.deleteObject(rEvent);
+		}
+		
+	}
+	
+	@Override
+	synchronized public boolean handleEvent(IWebMemory webmem, long rEvent) {
+		logger.trace("Caught web memory event "+rEvent);
+		
+		try {
+			WebMemoryContext ctx = webmem.getContext();
+			
+			long rEvent2 = webmem.replicateObject(rEvent);
+			if (rEvent2 == 0)
+				return false;
+					
+			IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
+			
+			seed.actionName = "webappos.internal.launchEventHandlers";
+			
+			seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
+			seed.webmemArgument = rEvent2;
+			
+	
+			if (ctx!=null) {
+				seed.login = ctx.login;
+				seed.project_id = ctx.project_id;
+			}
+
+			webmem.flush();
+	  		API.webCaller.enqueue(seed);
 	  		
 			return true; // we forwarded this event to the foreground thread
 		}
@@ -167,7 +203,7 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 		
 		try {
 			
-			WebMemoryContext o = webmem.getContext();
+			WebMemoryContext ctx = webmem.getContext();
 			
 			long it = webmem.getIteratorForDirectObjectClasses(rCommand);
 			long rCls = webmem.resolveIteratorFirst(it);		
@@ -192,9 +228,9 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 			seed.webmemArgument = rCommand2;
 			
 	
-			if (o!=null) {
-				seed.login = o.login;
-				seed.project_id = o.project_id;
+			if (ctx!=null) {
+				seed.login = ctx.login;
+				seed.project_id = ctx.project_id;
 			}
 	  		
 	  		API.webCaller.enqueue(seed);
@@ -208,31 +244,24 @@ public class BridgeEventsCommandsHook implements IEventsCommandsHook {
 	
 	synchronized public boolean handleSyncedEvent(IWebMemory webmem, long rEvent, RAAPI_Synchronizer singleSynchronizer, String login, String project_id, String fullAppName) {		
 		try {
-			String[] handlers = getEventHandlers(webmem, rEvent);
-			if (handlers.length==0)
-				return true;
+			long rEvent2 = webmem.replicateObject(rEvent);
+			if (rEvent2 == 0)
+				return false;
 			
-			for (String handler : handlers) {
-	
-				long rEvent2 = webmem.replicateObject(rEvent);
-				if (rEvent2 == 0)
-					return false;
-				
-				WebCaller.SyncedWebCallSeed seed = new WebCaller.SyncedWebCallSeed();
-				
-				seed.actionName = handler;
-				
-				seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
-				seed.webmemArgument = rEvent2;
-				
-				seed.singleSynchronizer = singleSynchronizer;
-				seed.login = login;
-				seed.project_id = project_id;
-		  		
-				webmem.flush();
-		  		API.webCaller.enqueue(seed);
-			}
+			WebCaller.SyncedWebCallSeed seed = new WebCaller.SyncedWebCallSeed();
+			
+			seed.actionName = "webappos.internal.launchEventHandlers";
+			
+			seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
+			seed.webmemArgument = rEvent2;
+			
+			seed.singleSynchronizer = singleSynchronizer;
+			seed.login = login;
+			seed.project_id = project_id;
 	  		
+			webmem.flush();
+	  		API.webCaller.enqueue(seed);
+			
 			return true; // we forwarded this event to the foreground thread
 		}
 		finally {
