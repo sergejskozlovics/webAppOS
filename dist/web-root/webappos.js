@@ -1043,7 +1043,7 @@ script_label: {
     The authentication info is then stored in browser's localStorage keys "login" and "ws_token"
     as well as in as properties webappos.login and webappos.ws_token.
     For the "project_id" scope, the webappos.project_id property is set and web memory is being initialized by connecting to the
-    corresponding server-side MRAM slot.
+    corresponding server-side web memory slot.
   
     Parameters:
       driver_name - the name of the scopes driver (e.g., "webappos_scopes" or "google_scopes") that is able to authenticate the requested scopes;
