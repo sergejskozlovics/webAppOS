@@ -14,7 +14,7 @@ public class WebServiceProperties extends SomeProperties {
 	public String service_url_name;
 	public String service_dir;
 	
-	public boolean hidden = false;
+	//public boolean hidden = false;
 	
 	public String service_type = "javaservlet";	
 	
@@ -41,10 +41,10 @@ public class WebServiceProperties extends SomeProperties {
 			}
 			
 			String simpleName = serviceFullName;
-			if (simpleName.startsWith(".")) {
+			/*if (simpleName.startsWith(".")) {
 				hidden = true;
 				simpleName = simpleName.substring(1);
-			}
+			}*/
 			int i = simpleName.lastIndexOf(".");
 			if (i>=0)
 				simpleName = simpleName.substring(0, i);
@@ -60,9 +60,6 @@ public class WebServiceProperties extends SomeProperties {
 			service_url_name = properties.getProperty("service_url_name", _urlName.toString());
 			
 			
-/*			String s = properties.getProperty("service_type", "ONETIME").trim().toUpperCase();
-			if (s.equals("PERMANENT"))
-				service_type = ServiceType.PERMANENT;*/
 			service_type = properties.getProperty("service_type", service_type);
 			
 			if (properties.getProperty("service_type","").trim().equals("")) {

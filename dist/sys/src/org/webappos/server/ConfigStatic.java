@@ -51,9 +51,7 @@ public abstract class ConfigStatic {
 	public String acme_url = "acme://letsencrypt.org/staging";
 	public int acme_renew_interval = 60;
 	public String registry_url = ""; // empty string for JSON files; use "http://webappos:webappos@127.0.0.1:5984" for CouchDB
-	
-	public String preferred_engine_adapter = "web";
-	
+		
 	public String smtp_server = ""; // e.g., "smtp.gmail.com:587";
 	public String smtp_auth = ""; // user:password
 	public String smtp_from = ""; // e.g., noreply@domain.org
@@ -66,6 +64,7 @@ public abstract class ConfigStatic {
 	public int project_user_predefined_bits_count = 1; // depends on the previous value
 	
 	public boolean inline_webcalls = false;
+	public boolean allow_undeclared_webcalls = true;
 	
 	public boolean inWebMode = true; // TODO
 	

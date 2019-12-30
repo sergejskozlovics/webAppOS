@@ -51,9 +51,12 @@ method: Download a file from the project
 GET http[s]://[domain_or_ip]/services/filedownload/[project_id]/[path-to-a-file-within-a-project]?login=[your-login]&ws_token=[your-ws_token]&project_id=[project_id]
 ---------------
 
+An additional no-value query parameter "auto_content_type" can be specified to
+instruct the service to guess the content type.
+
 Returns:
 
-  an octet stream contatining the given file (content type will be "application/octet-stream").
+  an octet stream contatining the given file (content type will be "application/octet-stream", unless the "auto_content_type" parameter was specified).
 
   On error, returns a JSON:
 ---code---

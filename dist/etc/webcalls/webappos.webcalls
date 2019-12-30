@@ -11,8 +11,8 @@
 #     a JSON object
 #   ---Code---
 #      {
-#        fullName: "<name-of-webAppOS-app.app>",
-#        displayedName:: "<name-of-webAppOS-app>",
+#        fullName: "<name-of-webAppOS-app.webapp>",
+#        displayedName:: "<name-of-webAppOS-web-app>",
 #        urlName: "<name-of-app-without-blanks-lower-case>",
 #        iconURL: "<icon-path>",
 #        projectExtension: "app-project-extension",
@@ -33,8 +33,8 @@ public\ static\ webappos.getAppPropertiesByFullName(appFullName)=staticjava:org.
 #     a JSON object
 #   ---Code---
 #      {
-#        fullName: "<name-of-webAppOS-app.app>",
-#        displayedName:: "<name-of-webAppOS-app>",
+#        fullName: "<name-of-webAppOS-app.webapp>",
+#        displayedName:: "<name-of-webAppOS-web-app>",
 #        urlName: "<name-of-app-without-blanks-lower-case>",
 #        iconURL: "<icon-path>",
 #        projectExtension: "app-project-extension",
@@ -56,8 +56,8 @@ public\ static\ webappos.getAppPropertiesByUrlName(appUrlName)=staticjava:org.we
 #     a JSON _array_ of objects
 #   ---Code---
 #      {
-#        fullName: "<name-of-webAppOS-app.app>",
-#        displayedName:: "<name-of-webAppOS-app>",
+#        fullName: "<name-of-webAppOS-app.webapp>",
+#        displayedName:: "<name-of-webAppOS-web-app>",
 #        urlName: "<name-of-app-without-blanks-lower-case>",
 #        iconURL: "<icon-path>",
 #        projectExtension: "app-project-extension"
@@ -73,8 +73,8 @@ static\ webappos.getAssociatedAppsByExtension(extension)=staticjava:org.webappos
 #     a JSON _array_ of objects
 #   ---Code---
 #      {
-#        fullName: "<name-of-webAppOS-app.app>",
-#        displayedName:: "<name-of-webAppOS-app>",
+#        fullName: "<name-of-webAppOS-app.webapp>",
+#        displayedName:: "<name-of-webAppOS-web-app>",
 #        urlName: "<name-of-app-without-blanks-lower-case>",
 #        iconURL: "<icon-path>"
 #      }

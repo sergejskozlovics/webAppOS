@@ -35,10 +35,10 @@ public class WebAppProperties extends SomeProperties {
 	
 	public String main = "";	
 	
-	public enum MemoryScope { NONE, USER, PROJECT, TEMP };
+/*	public enum MemoryScope { NONE, USER, PROJECT, TEMP };
 	public MemoryScope memory_scope = MemoryScope.PROJECT;
 	
-	public boolean suid = false;
+	public boolean suid = false;*/
 	
 	public String[] requires_web_libraries = {};
 	
@@ -154,7 +154,8 @@ public class WebAppProperties extends SomeProperties {
 			}
 			
 			main = properties.getProperty("main", main);
-			
+
+			/*
 			String s = properties.getProperty("memory_scope", "PROJECT").trim().toUpperCase();
 			if (s.equals("NONE") || s.isEmpty())
 				memory_scope = MemoryScope.NONE;
@@ -171,6 +172,7 @@ public class WebAppProperties extends SomeProperties {
 			}
 			catch(Throwable t) {				
 			}
+			*/
 			
 			String _requires_web_libraries = properties.getProperty("requires_web_libraries", "").trim();			
 			ArrayList<String> arr = new ArrayList<String>();			

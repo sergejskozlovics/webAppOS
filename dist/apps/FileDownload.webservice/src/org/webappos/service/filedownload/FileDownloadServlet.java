@@ -43,6 +43,7 @@ public class FileDownloadServlet extends HttpServlet
 	        ValidityChecker.checkRelativePath(pathToDownload, false);
 	        
 			String login=null, ws_token=null, project_id=null;
+			boolean auto_content_type = false;
 			
 			// checking for attributes in query string...
 			String qs = request.getQueryString();			
@@ -61,6 +62,8 @@ public class FileDownloadServlet extends HttpServlet
 					if (s.startsWith("project_id=")) {
 						project_id = s.substring("project_id=".length());
 					}
+					if (s.equals("auto_content_type"))
+						auto_content_type=true;
 				}
 			}
 	        
@@ -95,7 +98,13 @@ public class FileDownloadServlet extends HttpServlet
 	        	OutputStream out = null;
 	        	try {
 		        	is = new FileInputStream(f);
-		        	response.setContentType("application/octet-stream");
+		        	if (auto_content_type) {
+		            	// guessing content-type
+		        		String mimeType = getServletContext().getMimeType(f.getAbsolutePath());
+			            response.setContentType(mimeType);
+		        	}
+		        	else
+		        		response.setContentType("application/octet-stream");
 		        	out = response.getOutputStream();
 		            IOUtils.copy(is, response.getOutputStream());
 	        	}
@@ -152,9 +161,9 @@ public class FileDownloadServlet extends HttpServlet
 			}
 			String msg = t.getMessage();
 			if (msg == null)
-				response.getOutputStream().println("{\"error\":\"+"+t.toString()+"\"");
+				response.getOutputStream().println("{\"error\":\""+t.toString()+"\"");
 			else
-				response.getOutputStream().println("{\"error\":\"+"+msg+"\"");			
+				response.getOutputStream().println("{\"error\":\""+msg+"\"");			
 		}
     }	
 }

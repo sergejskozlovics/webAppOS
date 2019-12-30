@@ -166,13 +166,17 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					try {						
 						logger.debug("WebCaller dequeue "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",kernel="+API.dataMemory.getWebMemory(seed2.project_id)+",arg="+seed2.webmemArgument);
 						WebCallDeclaration action = map.get(seed2.actionName);
-						if (action == null && seed2.fullAppName!=null) {
+						if (action == null && seed2.fullAppName!=null && API.config.allow_undeclared_webcalls) {
 							// Lua patch...
 							int i = seed2.actionName.indexOf(':');
 							if (i>=0) {
 								WebAppProperties props = API.propertiesManager.getWebAppPropertiesByFullName(seed2.fullAppName);
-								action = new WebCallDeclaration(seed2.actionName, props.app_dir);
-								action.callingConventions = CallingConventions.WEBMEMCALL;
+								if (props!=null) {
+									action = new WebCallDeclaration(seed2.actionName, props.app_dir);
+									action.callingConventions = CallingConventions.WEBMEMCALL;
+									API.status.setValue("webcalls/undeclared/"+seed2.actionName, action.toString());
+									API.status.setValue("webcalls/undeclared/"+seed2.actionName+"/appName", seed2.fullAppName);
+								}
 							}
 						}
 						
@@ -471,7 +475,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					seed2.jsonResult.complete(jsonResult);
 			}
 			catch(Throwable t) {
-				jsonResult = "ERROR:"+t.getMessage();
+				jsonResult = "{\"error\":\""+t.getMessage()+"\"}";
 				if (seed2.jsonResult!=null)
 					seed2.jsonResult.completeExceptionally(new RuntimeException(jsonResult));
 			}
@@ -485,7 +489,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					seed2.jsonResult.complete(jsonResult);
 			}
 			catch(Throwable t) {
-				jsonResult = "ERROR:"+t.getMessage();
+				jsonResult = "{\"error\":\""+t.getMessage()+"\"}";
 				if (seed2.jsonResult!=null)
 					seed2.jsonResult.completeExceptionally(new RuntimeException(jsonResult));
 			}
@@ -587,8 +591,8 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 					}
 				
 				map.put(key, action);
-				API.status.setValue("webcalls/"+key, action.toString());
-				API.status.setValue("webcalls/"+key+"/declared_in", whereDefined);
+				API.status.setValue("webcalls/actions/"+key, action.toString());
+				API.status.setValue("webcalls/actions/"+key+"/declared_in", whereDefined);
 				if (loaded != null)
 					loaded.add(key);
 				

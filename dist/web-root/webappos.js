@@ -1737,7 +1737,8 @@ script_label: {
                               that they have already used this input and now they are going to replace those previously uploaded files)
 
     Returns:
-      nothing
+      the names of previously chosen files encoded as string (using ";" as a delimiter);
+      TODO: the return value may differ from the value of the previouslyChosenFiles argument, if such files do not exist any more
     */
    webappos.js_util.initialize_file_input = function(inputElement, previouslyChosenFiles)
     {
@@ -1765,6 +1766,8 @@ script_label: {
         else
           justChosenDiv.html("");
       };
+      // TODO: check if files exists and alter previouslyChosenFiles accordingly
+      return previouslyChosenFiles;
     };
 
     /**
@@ -2633,6 +2636,8 @@ script_label: {
 
         createGeneralization: function (rSub, rSuper) {
           // create attribute and association setters and getters for sub objects...
+          if (rSub == rSuper)
+            return;
           var subCls = tda.model[rSub];
           var superCls = tda.model[rSuper];
 

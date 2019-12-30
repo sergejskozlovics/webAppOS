@@ -122,8 +122,6 @@ public class ConfigEx extends ConfigStatic implements Serializable {
 			}
 			registry_url = properties.getProperty("registry_url", registry_url);
 			
-			preferred_engine_adapter = properties.getProperty("preferred_engine_adapter", preferred_engine_adapter);
-			
 			smtp_server = properties.getProperty("smtp_server", smtp_server);
 			smtp_auth = properties.getProperty("smtp_auth", smtp_auth);
 			smtp_from = properties.getProperty("smtp_from", "noreply@"+simple_domain_or_ip);
@@ -147,8 +145,12 @@ public class ConfigEx extends ConfigStatic implements Serializable {
 			}
 			catch(Throwable t) {				
 			}
-
-
+						
+			try {
+				allow_undeclared_webcalls = Boolean.parseBoolean(properties.getProperty("allow_undeclared_webcalls", allow_undeclared_webcalls+""));
+			}
+			catch(Throwable t) {				
+			}
 			
 		} catch (Throwable t) {
 			logger.error("Could not initialize webAppOS properties - "+t.getMessage());
@@ -169,7 +171,7 @@ public class ConfigEx extends ConfigStatic implements Serializable {
 	/**
 	 * Registers mime types.
 	 * @param mimes the semicolon(";")-delimited list of strings in the form of name:value, where name
-	 * is an extension (including the dot, e.g., ".lua") or a directory name realited to the home folder (including the
+	 * is an extension (including the dot, e.g., ".lua") or a directory name relative to the home folder (including the
 	 * starting "/", e.g., "/Desktop"), while value is the mime-type, e.g., "source/lua" or "directory/desktop";
 	 * the value is used when searching for the corresponding icon
 	 */

@@ -1,26 +1,27 @@
 package org.webappos.apps.helloworld;
 
-import org.webappos.apps.helloworld.mm.HelloWorldMetamodelFactory;
+import org.webappos.apps.helloworld.mm.HelloWorldMetamodelFactory; // generated
+import org.webappos.webmem.IWebMemory; // the interface for accessing web memory
+
 import org.webappos.server.API;
 import org.webappos.webcaller.IWebCaller;
 import org.webappos.webcaller.IWebCaller.WebCallSeed;
 
-import lv.lumii.tda.raapi.RAAPI;
 
 public class HelloWorld {
 	
-	public static void initial(RAAPI raapi, String project_id, long r)
+	public static void initial(IWebMemory webmem, String project_id, long r)
 	{		
 		
 		try {
-			HelloWorldMetamodelFactory HWMM = new HelloWorldMetamodelFactory();
-			HWMM.setRAAPI(raapi, "", true);
+			
+			HelloWorldMetamodelFactory factory = webmem.elevate(HelloWorldMetamodelFactory.class);
 			
 			org.webappos.apps.helloworld.mm.HelloWorld objectWithMessage
-				= org.webappos.apps.helloworld.mm.HelloWorld.firstObject(HWMM);
+				= org.webappos.apps.helloworld.mm.HelloWorld.firstObject(factory);
 			
 			if (objectWithMessage==null) {
-				objectWithMessage = HWMM.createHelloWorld();
+				objectWithMessage = factory.createHelloWorld();
 				objectWithMessage.setMessage("Hello for the first time!");
 			}
 			else
