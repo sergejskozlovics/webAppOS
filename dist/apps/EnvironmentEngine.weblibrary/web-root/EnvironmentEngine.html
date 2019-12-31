@@ -1269,15 +1269,9 @@
           var frameReference = 0;
 
           if (arg && arg.reference) { // webmem argument
-            if ((arg.getClassName() == "AttachFrameCommand") || (arg.getClassName() == "DetachFrameCommand") || (arg.getClassName() == "PostMessageToFrameCommand")) {
+            if ((arg.getClassName() == "AttachFrameCommand") || (arg.getClassName() == "DetachFrameCommand") || (arg.getClassName() == "PostMessageToFrameCommand") || (arg.getClassName() == "RefreshOptionsCommand")) {
               // always execute these commands in the main window
-            }
-            else
-            if (arg.getClassName() == "RefreshOptionsCommand") {
-              // RefreshOptionsCommand always executed for the active frame
-              if (activeDojoFrame) {
-                frameReference = parseInt(activeDojoFrame.id.substring(5));
-              }
+              return resolve(window);
             }
             else {
               // trying to get the frame reference anyway...
@@ -1298,6 +1292,11 @@
                 console.log(t);
                 ok = false;
               }
+            }
+
+            if ((actionName == "executeRefreshOptionsCommand") || (actionName=="executeAttachFrameCommand") || (actionName=="executeDetachFrameCommand") || (actionName=="executePostMessageToFrameCommand") ){
+              // always execute these commands in the main window
+              return resolve(window);
             }
 
             if (ok) {
