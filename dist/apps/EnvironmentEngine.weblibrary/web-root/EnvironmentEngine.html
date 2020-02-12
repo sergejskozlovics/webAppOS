@@ -555,11 +555,13 @@
             if ((width=="0") || (height=="0"))
               hidden = true;
             else {
+              if (parseInt(width,10)==width) width+="px"; // add "px" if raw integer
+              if (parseInt(height,10)==height) height+="px"; // add "px" if raw integer
               if (width.length > 0)
-                style += "width:" + width + "px;";
+                style += "width:" + width+";";
 
               if (height.length > 0)
-                style += "height:" + height + "px;";
+                style += "height:" + height+";";
             }
           }
         

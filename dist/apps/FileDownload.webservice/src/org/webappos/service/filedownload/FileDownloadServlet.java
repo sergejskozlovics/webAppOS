@@ -161,9 +161,9 @@ public class FileDownloadServlet extends HttpServlet
 			}
 			String msg = t.getMessage();
 			if (msg == null)
-				response.getOutputStream().println("{\"error\":\""+t.toString()+"\"");
+				response.getOutputStream().println("{\"error\":\""+t.toString()+"\"}");
 			else
-				response.getOutputStream().println("{\"error\":\""+msg+"\"");			
+				response.getOutputStream().println("{\"error\":\""+msg+"\"}");			
 		}
     }	
 }
