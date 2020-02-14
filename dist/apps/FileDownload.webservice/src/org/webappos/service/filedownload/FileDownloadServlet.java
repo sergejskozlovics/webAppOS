@@ -91,7 +91,7 @@ public class FileDownloadServlet extends HttpServlet
 	        		throw new RuntimeException("Invalid path to download");
 	        	
 	        	File f = new File(projectFolder + File.separator + pathToDownload);
-	        	if (!f.exists())
+	        	if (!f.exists() || !f.isFile())
 	        		throw new RuntimeException("Invalid path to download");
 	        	
 	        	InputStream is = null;
