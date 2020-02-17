@@ -9,30 +9,35 @@ script_label: {
 
 
   ///// ensure the require is defined /////
+  let css_loaded = document.querySelector("#the_webappos_css")!=null;
+  if (!css_loaded) {
+    let webappos_script = "/webappos.js"; //document.currentScript.src || document.querySelector('script[src*=webappos.js]').src;
+
+    ///// adding webAppOS fonts /////
+    document.write("<link id=\"the_webappos_css\" href=\"/webappos/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
+    document.write('\n<script src="' + webappos_script + '"></script>');
+
+    if (document.currentScript)
+      document.currentScript.parentElement.removeChild(document.currentScript);
+
+    break script_label;
+  }
+
   if (typeof require == 'undefined') {
 
-    let webappos_script = document.currentScript.src || document.querySelector('script[src*=webappos.js]').src;
+    let webappos_script = "/webappos.js"; //document.currentScript.src || document.querySelector('script[src*=webappos.js]').src;
 
-    /*    document.write('<script src="/dojo/dojo.js" data-dojo-config="async:1"></script>');*/
-
+    document.write("<link href=\"" + "/webappos/djtheme/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
     document.write('<script src="/dojo/dojo.js" data-dojo-config="async:1, packages: [{ name: \'jquery\', location: \'/\', main: \'jquery\' }]"></script>');
-    /*    document.write('<script>define.amd.jQuery = true;</script>');*/
+    document.write('\n<script src="' + webappos_script + '"></script>');
 
-    document.write('<script src="' + webappos_script + '"></script>');
-    document.write("<link id=\"the_webappos_css\" href=\"" + "/webappos/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
-    document.write("<link id=\"the_webappos_css\" href=\"" + "/webappos/djtheme/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
-    document.write("<link id=\"the_webappos_css\" href=\"" + "/webappos/djtheme/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
-
+    if (document.currentScript)
+      document.currentScript.parentElement.removeChild(document.currentScript);
   
     console.log(webappos_script + " loaded without dojo; adding the dojo script tag and loading " + webappos_script + " again...");
     break script_label;
     //variant w/o a label: throw new Error(webappos_script+" loaded without dojo; adding the dojo script tag and loading "+webappos_script+" again...");
   }
-
-
-  ///// adding webAppOS fonts /////
-  if (!document.getElementById("the_webappos_css"))
-    document.write("<link id=\"the_webappos_css\" href=\"/webappos/webappos.css\" rel=\"stylesheet\" type=\"text/css\" />");
 
 
   // Trying to get window.webappos from the parent window

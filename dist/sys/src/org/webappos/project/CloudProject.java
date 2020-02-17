@@ -177,7 +177,7 @@ public class CloudProject implements IProject {
 			return false;
 		}
 		
-		folder = ProjectCache.getCloudProjectCacheDirectory(name, appProps);
+		folder = ProjectCache.getCloudProjectCacheDirectory(name, appProps, false, true);
 		if (folder==null) {
 			cleanup(false, false);
 			return false;
@@ -230,7 +230,7 @@ public class CloudProject implements IProject {
 		// search for free name
 		this.name = getFreeName(appProps, desiredName);
 		
-		folder = ProjectCache.getCloudProjectCacheDirectory(name, appProps, true);
+		folder = ProjectCache.getCloudProjectCacheDirectory(name, appProps, true, false);
 		if (folder==null) {
 			cleanup(false, false);
 			return false;

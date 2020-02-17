@@ -141,17 +141,18 @@ public class ProjectCache {
 	
 
 	public static String getCloudProjectCacheDirectory(String project_id, WebAppProperties appProps) {
-		return getCloudProjectCacheDirectory(project_id, appProps, false);
+		return getCloudProjectCacheDirectory(project_id, appProps, false, false);
 	}
 	
 	/**
 	 * Downloads/extracts the project with the given project_id into a project cache directory.
 	 * @param project_id in the form login/subdir/name.extension (must be validated)
 	 * @param appName application name to open project with
-	 * @param create
+	 * @param isNew whether the project is being bootstrapped (without a template)
+	 * @param isTemplate whether the project is being created from a template
 	 * @return full path of the project cache directory, or null on error
 	 */
-	public static String getCloudProjectCacheDirectory(String project_id, WebAppProperties appProps, boolean create) {		
+	public static String getCloudProjectCacheDirectory(String project_id, WebAppProperties appProps, boolean isNew, boolean isTemplate) {		
 		JsonElement el = API.registry.getValue("projects/"+project_id);
 		String uuid = null;
 		if (el!=null)
@@ -162,11 +163,11 @@ public class ProjectCache {
 			API.registry.setValue("projects/"+project_id, uuid);
 			
 			// download + unzip + validate
-			return downloadUnzipValidate(project_id, appProps, uuid, create);			
+			return downloadUnzipValidate(project_id, appProps, uuid, isNew);			
 		}
 
 		File fcache = new File(ConfigStatic.PROJECTS_CACHE_DIR+File.separator+uuid);
-		if (create && fcache.exists()) {
+		if ((isNew||isTemplate) && fcache.exists()) {
 			deleteProjectCache(project_id, uuid);
 		}
 		
@@ -174,7 +175,7 @@ public class ProjectCache {
 			fcache.mkdirs();
 			
 			// download + unzip + validate
-			return downloadUnzipValidate(project_id, appProps, uuid, create);			
+			return downloadUnzipValidate(project_id, appProps, uuid, isNew);			
 		}
 		
 		
