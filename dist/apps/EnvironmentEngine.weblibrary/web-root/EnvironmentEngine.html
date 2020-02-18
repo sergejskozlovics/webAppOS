@@ -1854,6 +1854,8 @@
             let e = new webmem.EnvironmentEngine();
           }
 
+          initToolbar(); // make the close button visible
+
           let event = new tda.model.ProjectOpenedEvent();
           tda.model.submit(event);
         });
