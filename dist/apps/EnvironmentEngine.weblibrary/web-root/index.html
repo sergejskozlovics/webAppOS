@@ -12,9 +12,9 @@
   <link rel="stylesheet" type="text/css" href="/webappos/djtheme/document.css">
   <link rel="stylesheet" type="text/css" href="/webappos/djtheme/webappos.css">
   <link rel="stylesheet" href="EnvironmentEngine.css" media="screen">
-  <script src="webappos.js"></script>
+  <script src="/webappos.js"></script>
 
-  <script src="jquery.js"></script>
+  <script src="/jquery.js"></script>
 
   <style id="styles">
     /*    body {
@@ -458,7 +458,7 @@
       frames["loading" + reference] = true;
 
       var innerhtml = false;
-
+ 
       if (contentURI.indexOf("innerhtml:") == 0) {
         innerhtml = true;
         contentURI = contentURI.substring(10);
@@ -745,9 +745,9 @@
       } else
         // NON-POPUP
         require(["dijit/registry", "dijit/layout/BorderContainer", "dijit/layout/TabContainer",
-            "dojox/layout/ContentPane", "dojo/dom-construct", "dijit/Dialog", "dojo/on", "dojo/domReady!"
+            "dojox/layout/ContentPane", "dojo/dom-construct", "dijit/Dialog", "dijit/form/Button", "dojo/on", "dojo/domReady!"
           ],
-          function (registry, BorderContainer, TabContainer, ContentPane, domConstruct, Dialog, on) {
+          function (registry, BorderContainer, TabContainer, ContentPane, domConstruct, Dialog, Button, on) {
             var container = centerContainer;
             if ("left".localeCompare(location) == 0)
               container = leftContainer;
@@ -764,7 +764,7 @@
               //        href: contentURI,  // -- this would be needed when not using iframes
               title: caption,
               id: "frame" + reference,
-              style: "padding:0;"
+              style: "padding:0;",
             });
 
             if (isClosable == true) {
@@ -816,14 +816,12 @@
 
             container.addChild(frame);
 
-
             if (container.getChildren().length == 1) {
               // the child has been added to an empty (and, thus, invisible) container; showing it...
               showContainer(container);
             }
 
             container.selectChild(frame);
-
 
             if (innerhtml) {
               frame.set("content", contentURI);
@@ -1158,8 +1156,9 @@
 
         commandJSON.messageURI = commandJSON.messageURI.substring(11);
 
-        if (frame.getParent())
+        if (frame.getParent()) {
           frame.getParent().selectChild(frame);
+        }
 
 
         whenFrameLoaded(commandJSON.frame[0].reference, function () {
@@ -1195,8 +1194,9 @@
         console.log("EE PostMessage",messageURI.length, messageURI);
         cmd.delete();
 
-        if (frame.getParent())
+        if (frame.getParent()) {
           frame.getParent().selectChild(frame);
+        }
 
 
         whenFrameLoaded(cmdFrame.reference, function () {
@@ -1322,8 +1322,9 @@
               console.log("EnvironmentEngine: Found inner frame " + frameReference+"!");
               whenFrameLoaded(frameReference, function () {
                 var frame = registry.byId("frame" + frameReference);
-                if (frame.getParent())
+                /*if (frame.getParent()) {
                   frame.getParent().selectChild(frame);
+                }*/
                 var iframe = document.getElementById('iframe' + frameReference);
                 if (iframe) {
                   if (iframe.contentWindow) {
@@ -1759,7 +1760,7 @@
         centerContainer = new TabContainer({
           region: "center",
           id: "centerContainer",
-          tabPosition: "bottom",
+          tabPosition: "top",//"bottom",
           "class": "centerPanel"
         });
 
