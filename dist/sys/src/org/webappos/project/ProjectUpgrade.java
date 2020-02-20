@@ -90,8 +90,7 @@ public class ProjectUpgrade {
 			
 			for (File f : new File(ConfigStatic.APPS_DIR).listFiles()) {
 				if (f.isDirectory() && f.getName().endsWith(".webapp")) {						
-					((PropertiesManager)API.propertiesManager).loadWebAppPropertiesByFullName(f.getName(),
-							f.getAbsolutePath());
+					API.propertiesManager.getWebAppPropertiesByFullName(f.getName());
 				}
 			}
 

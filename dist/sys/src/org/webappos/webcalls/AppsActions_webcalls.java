@@ -239,7 +239,7 @@ public class AppsActions_webcalls {
 		}
 						
 		// loading required web libraries (inserting their MMs and calling on_load)...
-		for (String fullLibraryName : props.requires_web_libraries) {
+		for (String fullLibraryName : props.all_required_web_libraries) {
 			if (bootstrapped)
 				insertSomeMetamodels(fullLibraryName, webmem);
 			

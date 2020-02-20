@@ -137,15 +137,15 @@ public class AppAdapter implements IAppAdapter {
 		ArrayList<String> arr = new ArrayList<String>();
 		
 		arr.add( ConfigStatic.APPS_DIR+File.separator+appProps.app_full_name+File.separator+"web-root" ); // must always present, then other folders in the search path follow
-		arr.add( ConfigStatic.WEB_ROOT_DIR );
-		for (int i=0; i<appProps.requires_web_libraries.length; i++) {
-			String dir = ConfigStatic.APPS_DIR+File.separator+appProps.requires_web_libraries[i]+File.separator+"web-root"; 
+		for (String lib : appProps.all_required_web_libraries) {
+			String dir = ConfigStatic.APPS_DIR+File.separator+lib+File.separator+"web-root"; 
 			if (new File(dir).isDirectory()) 
 				arr.add(dir);
 			
 			
 		}
 		
+		arr.add( ConfigStatic.WEB_ROOT_DIR );
 		arr.add( ConfigStatic.WEB_ROOT_CACHE_DIR);
 		
 		ResourceCollection resources = new ResourceCollection(arr.toArray(new String[] {}));

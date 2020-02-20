@@ -748,16 +748,7 @@
             "dojox/layout/ContentPane", "dojo/dom-construct", "dijit/Dialog", "dijit/form/Button", "dojo/on", "dojo/domReady!"
           ],
           function (registry, BorderContainer, TabContainer, ContentPane, domConstruct, Dialog, Button, on) {
-            var container = centerContainer;
-            if ("left".localeCompare(location) == 0)
-              container = leftContainer;
-            else if ("right".localeCompare(location) == 0)
-              container = rightContainer;
-            else if ("top".localeCompare(location) == 0)
-              container = topContainer;
-            else if ("bottom".localeCompare(location) == 0)
-              container = bottomContainer;
-
+            var container = getContainer(location);
 
             console.log("Registering FRAME frame"+reference);
             var frame = new ContentPane({
@@ -815,12 +806,6 @@
             });
 
             container.addChild(frame);
-
-            if (container.getChildren().length == 1) {
-              // the child has been added to an empty (and, thus, invisible) container; showing it...
-              showContainer(container);
-            }
-
             container.selectChild(frame);
 
             if (innerhtml) {
@@ -936,7 +921,7 @@
               if (frame && (frame.destroy)) {
                 // This is a dojo frame...
                 if (commandJSON.permanently == false) {
-                  frame.getParent().removeChild(frame);
+                  removeChildFromParentContainer(frame);
                   frame.hide();
                   detachFrameInRepository(commandJSON.frame[0].reference);
                 } else {
@@ -950,11 +935,9 @@
                           setTimeout(function () {
                             if (frames["frame" + commandJSON.frame[0].reference])
                               delete frames["frame" + commandJSON.frame[0].reference];
-                            if (frame.getParent())
-                              frame.getParent().removeChild(frame);
+                            removeChildFromParentContainer(frame);
                             frame.destroy();
                             detachFrameInRepository(commandJSON.frame[0].reference);
-
                           }, 0);
                         }, 0);
                       }, 0);
@@ -1033,7 +1016,7 @@
               if (frame && (frame.destroy)) {
                 // This is a dojo frame...
                 if (permanently == false) {
-                  frame.getParent().removeChild(frame);
+                  removeChildFromParentContainer(frame);
                   frame.hide();
                   detachFrameInRepository(reference);
                 } else {
@@ -1050,8 +1033,7 @@
 
                             if (frames["frame" + reference])
                               delete frames["frame" + reference];
-                            if (frame.getParent())
-                              frame.getParent().removeChild(frame);
+                            removeChildFromParentContainer(frame);
                             frame.destroy();
                             detachFrameInRepository(reference, permanently);
 
@@ -1502,11 +1484,8 @@
                 var label = new dijit.layout.ContentPane({
                   content: option.caption + "&nbsp;"
                 });
-                //                  label.addChild(s);
                 label.startup();
                 container.addChild(label);
-                //                  s.startup();
-
 
                 for (var i = 0; i < option.child.length; i++) {
 
@@ -1518,12 +1497,7 @@
                   if (!selected)
                     selected = false;
 
-
-                  //                      var childi = option.child[i];
-                  //                      var fchildi = fOptionSelectedEvent(childi);
-
                   var label = new dijit.layout.ContentPane({
-                    //                        content: "<div id='"+option.child[i].id+"'></div>",
                     content: "&nbsp;&nbsp;&nbsp;&nbsp;<div id='" + option.child[i].id + "'></div>&nbsp;" +
                       option.child[i].caption
                   });
@@ -1545,13 +1519,7 @@
                         this.childi.setLocation("");
                     }
                   }, option.child[i].id);
-                  //                      label.addChild(radioOne);
-                  //                      label.set("content", "&nbsp;&nbsp;&nbsp;&nbsp;"+label.get("content")+"&nbsp;"+option.child[i].caption);
                   radioOne.startup();
-
-                  //label.addChild(radioOne);
-                  //label.addChild("ABC");
-
                 }
 
 
@@ -1615,8 +1583,6 @@
               processSimpleOption(opt, toolbar);
             }
           } // for k
-          //       }, 0); // setTimeout
-          //       }, 0); // setTimeout
         });
 
     }
@@ -1625,11 +1591,96 @@
     var toolbar = null;
     var mainLayout;
     var appLayout;
-    var centerContainer;
-    var leftContainer;
-    var rightContainer;
-    var topContainer;
-    var bottomContainer;
+    var centerContainer = null;
+    var leftContainer = null;
+    var rightContainer = null;
+    var topContainer = null;
+    var bottomContainer = null;
+
+    require(["dijit/layout/TabContainer"], function (TabContainer) {
+      window.getContainer = function(location) { // location can be "center|left|right|top|bottom"
+        if (location=="left") {
+          if (!leftContainer) {
+            leftContainer = new TabContainer({
+              region: "left",
+              id: "leftContainer",
+              tabPosition: "left",
+              "class": "edgePanel",
+              splitter: true
+            });
+            appLayout.addChild(leftContainer);
+          }
+          return leftContainer;
+        }
+
+        if (location=="right") {
+          if (!rightContainer) {
+            rightContainer = new TabContainer({
+              region: "right",
+              id: "rightContainer",
+              tabPosition: "right",
+              "class": "edgePanel",
+              splitter: true
+            });
+            appLayout.addChild(rightContainer);
+          }
+          return rightContainer;
+        }
+
+        if (location=="top") {
+          if (!topContainer) {
+            topContainer = new TabContainer({
+              region: "top",
+              id: "topContainer",
+              tabPosition: "top",
+              "class": "edgePanel",
+              splitter: true
+            });
+            appLayout.addChild(topContainer);
+          }
+          return topContainer;
+        }
+
+        if (location=="bottom") {
+          if (!bottomContainer) {
+            bottomContainer = new TabContainer({
+              region: "bottom",
+              id: "bottomContainer",
+              tabPosition: "bottom",
+              "class": "edgePanel",
+              splitter: true
+            });
+            appLayout.addChild(bottomContainer);
+          }
+          return bottomContainer;
+        }
+
+        // else "center" container:
+
+        if (!centerContainer) {
+          centerContainer = new TabContainer({
+            region: "center",
+            id: "centerContainer",
+            tabPosition: "top",
+            "class": "edgePanel",
+          });
+          appLayout.addChild(centerContainer);
+        }
+        console.log("CENTER", centerContainer);
+        return centerContainer;
+      }
+
+      window.removeChildFromParentContainer = function(frame) {
+        let parent = frame.getParent();
+        if (!parent)
+          return;
+        parent.removeChild(frame);
+        if (parent.getChildren().length == 0) {                    
+          window[parent.id] = null;
+          parent.destroy();
+        }
+      }
+    }); //require TabContainer
     //    <!-- DOJO LAYOUT -->
 
 
@@ -1755,60 +1806,6 @@
           //          design: "headline"
         });
 
-
-        // create the TabContainer
-        centerContainer = new TabContainer({
-          region: "center",
-          id: "centerContainer",
-          tabPosition: "top",//"bottom",
-          "class": "centerPanel"
-        });
-
-        leftContainer = new TabContainer({
-          region: "left",
-          id: "leftContainer",
-          tabPosition: "left",
-          "class": "edgePanel",
-          splitter: true
-        });
-
-        rightContainer = new TabContainer({
-          region: "right",
-          id: "rightContainer",
-          tabPosition: "right",
-          "class": "edgePanel",
-          splitter: true
-        });
-
-        topContainer = new TabContainer({
-          region: "top",
-          id: "topContainer",
-          tabPosition: "top",
-          "class": "edgePanel",
-          splitter: true
-        });
-
-        bottomContainer = new TabContainer({
-          region: "bottom",
-          id: "bottomContainer",
-          tabPosition: "bottom",
-          "class": "edgePanel",
-          splitter: true
-        });
-
-        // add the TabContainer as a child of the BorderContainer
-        appLayout.addChild(centerContainer);
-        appLayout.addChild(leftContainer);
-        appLayout.addChild(rightContainer);
-        appLayout.addChild(topContainer);
-        appLayout.addChild(bottomContainer);
-
-        hideContainer(centerContainer);
-        hideContainer(leftContainer);
-        hideContainer(rightContainer);
-        hideContainer(topContainer);
-        hideContainer(bottomContainer);
-
         // start up and do layout
 
         mainLayout.addChild(appLayout);
@@ -1903,28 +1900,7 @@
               messageBar.destroy();
             } catch (t) {}
           }, 5000);
-          //         messageBar.show();
         });
-
-      /*      require(["dojox/widget/UpgradeBar", "dojo/domReady!"],
-            function(UpgradeBar) {
-              if (upgradeBar) {
-                upgradeBar.destroy();
-              }
-              upgradeBar = new UpgradeBar({
-                notifications:[
-                {
-                    validate:function(){
-                      return true;
-                    }, 
-                    message: cmd.message
-                }
-                ],
-                style:"top:0px;position:absolute;",
-              });
-              upgradeBar.show();
-      console.log(upgradeBar);
-            });*/
     }
   </script>
 
@@ -1933,7 +1909,6 @@
 <body id="body" class="webappos" background="checked_background.png">
   <div id="mainLayout" style="padding:0; margin:0; height:100%">
   </div>
-
 </body>
 
 </html>

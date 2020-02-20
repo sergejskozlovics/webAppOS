@@ -83,7 +83,7 @@ public class PropertiesClassLoader extends URLClassLoader  {
 		
 		if (props instanceof WebAppProperties) {
 			
-			for (String fullLibraryName : ((WebAppProperties)props).requires_web_libraries) {
+			for (String fullLibraryName : ((WebAppProperties)props).all_required_web_libraries) {
 				if (!loadedIds.contains(fullLibraryName)) {
 					WebLibraryProperties eprops = API.propertiesManager.getWebLibraryPropertiesByFullName(fullLibraryName);
 					if (eprops!=null) {
@@ -126,7 +126,7 @@ public class PropertiesClassLoader extends URLClassLoader  {
 		
 		if (props instanceof WebAppProperties) {
 			
-			for (String engineName : ((WebAppProperties)props).requires_web_libraries) {
+			for (String engineName : ((WebAppProperties)props).all_required_web_libraries) {
 					WebLibraryProperties eprops = API.propertiesManager.getWebLibraryPropertiesByFullName(engineName);
 					if (eprops!=null) {
 						for (String cp : eprops.classpaths) {

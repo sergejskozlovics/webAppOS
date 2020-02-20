@@ -40,7 +40,6 @@ public class WebAppProperties extends SomeProperties {
 	
 	public boolean suid = false;*/
 	
-	public String[] requires_web_libraries = {};
 	
 	public String[] app_templates_search_path = {};
 	public String[] published_templates_search_path = {};
@@ -173,19 +172,7 @@ public class WebAppProperties extends SomeProperties {
 			catch(Throwable t) {				
 			}
 			*/
-			
-			String _requires_web_libraries = properties.getProperty("requires_web_libraries", "").trim();			
-			ArrayList<String> arr = new ArrayList<String>();			
-			for (String libName : _requires_web_libraries.split(",")) {
-				libName = libName.trim();
-				if (!libName.isEmpty()) {
-					if (!libName.endsWith(".weblibrary"))
-						libName += ".weblibrary";
-					arr.add(libName);
-				}
-			}
-			requires_web_libraries = arr.toArray(new String[] {});
-						
+									
 			app_templates_search_path = process_templates_path( properties.getProperty("app_templates_search_path", default_app_templates_search_path).trim() );
 			published_templates_search_path = process_templates_path( properties.getProperty("published_templates_search_path", default_published_templates_search_path).trim() );
 			user_templates_search_path = process_templates_path( properties.getProperty("user_templates_search_path", default_user_templates_search_path).trim() );

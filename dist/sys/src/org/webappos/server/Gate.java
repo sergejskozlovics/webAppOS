@@ -1,20 +1,18 @@
 package org.webappos.server;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.Optional;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.proxy.ProxyServlet;
@@ -35,10 +33,10 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.webappos.bridge.BridgeSocket;
 import org.webappos.properties.WebAppProperties;
 import org.webappos.properties.PropertiesManager;
+import org.webappos.properties.SomeProperties;
 import org.webappos.properties.WebLibraryProperties;
 import org.webappos.properties.WebServiceProperties;
 import org.webappos.webcaller.WebCaller;
-import org.webappos.util.Browser;
 import org.webappos.util.PID;
 import org.webappos.util.Ports;
 
@@ -138,8 +136,19 @@ public class Gate {
 			
 		};
 	}
+	
+	private static boolean depsAttached(SomeProperties props) {
+		for (String depName: props.all_required) {
+			if (API.status.getValue("apps/"+depName+"/error")!=null) {
+				logger.error("Could not load "+props.id+" because of a dependency error.");
+				API.status.setValue("apps/"+props.id+"/error", "Dependency error ("+depName+")");
+				return false;
+			}
+		}
+		return true;		
+	}
 
-	synchronized public static void attachWebAppOrService(String name, String appDir) { // reads app/service config, adds sub-domain and sub-path for the given app/service
+	synchronized public static void attachWebAppOrService(String name) { // reads app/service config, adds sub-domain and sub-path for the given app/service
 
 		assert API.propertiesManager instanceof PropertiesManager;
 		assert API.webCaller instanceof WebCaller;
@@ -162,12 +171,16 @@ public class Gate {
 		
 		if (isApp) {	
 			// app
-			WebAppProperties appProps = ((PropertiesManager)API.propertiesManager).loadWebAppPropertiesByFullName(name, appDir);
+			WebAppProperties appProps = API.propertiesManager.getWebAppPropertiesByFullName(name);
 			if (appProps == null) {
-				logger.error("Could not load app "+name+" from "+appDir);
+				logger.error("Could not load app "+name+".");
 				API.status.setValue("apps/"+name+"/error", "Could not load app properties.");
 				return;
 			}
+						
+			if (!depsAttached(appProps)) // sets the status to an error
+				return;				
+			
 			// adding .webcalls functions provided by this app
 			((WebCaller)API.webCaller).loadWebCalls(appProps);
 			
@@ -179,9 +192,9 @@ public class Gate {
 			}
 
 			
-			// loading web calls of required engines
-			for (int i=0; i<appProps.requires_web_libraries.length; i++) {
-				WebLibraryProperties props = ((PropertiesManager)API.propertiesManager).loadWebLibraryPropertiesByFullName(appProps.requires_web_libraries[i]);
+			// loading web calls of required web libraries
+			for (String lib : appProps.all_required_web_libraries) {
+				WebLibraryProperties props = API.propertiesManager.getWebLibraryPropertiesByFullName(lib);
 				if (props!=null)
 					((WebCaller)API.webCaller).loadWebCalls(props);
 			}
@@ -270,7 +283,7 @@ public class Gate {
 							API.status.setValue("apps/"+name+"/secure_port", securePort);
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
+						API.status.setValue("apps/"+name+"/error", "Could not attach port server.");
 					}
 	
 	
@@ -368,12 +381,16 @@ public class Gate {
 			API.status.setValue("apps/"+name+"/status", "stopped");
 			
 			// service
-			WebServiceProperties svcProps = ((PropertiesManager)API.propertiesManager).loadWebServicePropertiesByFullName(name, appDir);
+			WebServiceProperties svcProps = API.propertiesManager.getWebServicePropertiesByFullName(name);
 			if (svcProps == null) {
-				logger.error("Could not load service "+name+" from "+appDir);
+				logger.error("Could not load service "+name+".");
 				API.status.setValue("app/"+name+"/error", "Could not load service properties.");
 				return;
 			}
+			
+			if (!depsAttached(svcProps)) // sets the status to an error
+				return;				
+			
 			// adding .webcalls functions provided by this service
 			((WebCaller)API.webCaller).loadWebCalls(svcProps);
 			
@@ -424,7 +441,6 @@ public class Gate {
 		        catch(Throwable t) {
 					logger.error("Could not attach "+svcProps.service_full_name+". "+t.getMessage());
 					API.status.setValue("apps/"+name+"/error", "Could not attach for /");
-					t.printStackTrace();
 					return;
 		        }
 		        
@@ -740,6 +756,38 @@ public class Gate {
 		//Browser.openURL("http://localhost:"+pp[1]+"/apps/configuration");
 		
 	}
+	
+	private static void DFS(SomeProperties v, Set<SomeProperties> discovered, List<SomeProperties> topologicalOrder) {
+		if (discovered.contains(v))
+			return;
+		
+		discovered.add(v);
+		for (String req : v.requires) {
+			SomeProperties w = API.propertiesManager.getPropertiesByFullName(req);
+			if (w==null) {
+				logger.error("Could not find the dependency "+req+" required by "+v.id);
+				API.status.setValue("apps/"+req+"/error", "Not found (required by "+v.id+").");
+			}
+			else {
+				if (!discovered.contains(w))
+					DFS(w, discovered, topologicalOrder);
+			}
+		}
+		
+		topologicalOrder.add(v);
+	}
+	
+	private static void topologicalSort(List<SomeProperties> list) {				
+		Set<SomeProperties> discovered = new HashSet<SomeProperties>();
+		List<SomeProperties> topologicalOrder = new LinkedList<SomeProperties>();
+		
+		for (SomeProperties v: list) {
+			DFS(v, discovered, topologicalOrder);
+		}
+		
+		list.clear();
+		list.addAll(topologicalOrder);
+	}
 
 	public static void main(String[] args) {
 		
@@ -860,11 +908,7 @@ public class Gate {
 				mainContextHandler.setVirtualHosts(new String[]{API.config.simple_domain_or_ip, "localhost"});
 			}
 			
-			//mainContextHandler.setHandler(mainContext);
-			//handlerColl.addHandler(mainContextHandler);
 			handlerColl.addHandler(mainContext);
-			//mainContextHandler.start();
-			//mainContext.start();
 			
 			webServer.start();
 		
@@ -927,18 +971,32 @@ public class Gate {
 			}
 			
 			
-			// for all not-installing apps and services: attachWebAppOrService; services first (since, e.g., login app requires login service)
-			for (File f : new File(API.config.APPS_DIR).listFiles()) {
-				if (f.isDirectory() && f.getName().endsWith(".webservice")) {
-					attachWebAppOrService(f.getName(), f.getAbsolutePath());
+			
+			// Topological sort of apps&services, and attaching them... (web libraries are considered individually within each app/service requiring them)
+			
+			List<SomeProperties> list = new ArrayList<SomeProperties>();
+			for (File f : new File(ConfigStatic.APPS_DIR).listFiles()) {
+				SomeProperties props = API.propertiesManager.getPropertiesByFullName(f.getName());
+				if (props != null)
+					list.add(props);
+			}
+			
+			topologicalSort(list);
+			
+			if (logger.isDebugEnabled()) {
+				System.out.println("Topological order:");
+				for (SomeProperties props : list) {
+					System.out.println("  "+props.id);				
+					System.out.println("     deps: "+props.requires);				
+					System.out.println("     all deps: "+props.all_required);				
+					System.out.println("     all required web libs: "+props.all_required_web_libraries);				
 				}
 			}
-	        
-			for (File f : new File(API.config.APPS_DIR).listFiles()) {
-				if (f.isDirectory() && f.getName().endsWith(".webapp")) {
-					attachWebAppOrService(f.getName(), f.getAbsolutePath());
-				}
+			for (SomeProperties props : list) {
+				if ((props instanceof WebAppProperties) || (props instanceof WebServiceProperties))
+					attachWebAppOrService(props.id);
 			}
+			
 
 			// ws://domain:port/ws/
 			

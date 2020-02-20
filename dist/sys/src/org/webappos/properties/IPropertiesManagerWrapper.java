@@ -45,7 +45,7 @@ public class IPropertiesManagerWrapper implements IPropertiesManager {
 
 	public WebLibraryProperties getWebLibraryPropertiesByFullName(String engineName) {
 		try {
-			return delegate.getWebLibraryPropertiesByEngineName_R(engineName);
+			return delegate.getWebLibraryPropertiesByFullName_R(engineName);
 		} catch (RemoteException e) {
 			return null;
 		}

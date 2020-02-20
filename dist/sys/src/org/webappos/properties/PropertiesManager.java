@@ -31,7 +31,7 @@ public class PropertiesManager extends UnicastRemoteObject implements IPropertie
 		return getAllInstalledWebApps(); // TODO: for some users not all apps can be available
 	}
 	
-	public synchronized WebAppProperties loadWebAppPropertiesByFullName(String fullAppName, String appDir) {
+	private synchronized WebAppProperties loadWebAppPropertiesByFullName(String fullAppName, String appDir) {
 		if (fullAppName==null)
 			return null;
 		
@@ -73,20 +73,18 @@ public class PropertiesManager extends UnicastRemoteObject implements IPropertie
 		if (appFullName==null)
 			return null;
 		
-		WebAppProperties appProps = appPropsMap.get(appFullName);		
-		return appProps;
+		WebAppProperties appProps = appPropsMap.get(appFullName);
+		if (appProps!=null)
+			return appProps;
+		else {
+			File f = new File(ConfigStatic.APPS_DIR+File.separator+appFullName);
+			if (!f.isDirectory())
+				return null;
+			return loadWebAppPropertiesByFullName(appFullName, f.getAbsolutePath());
+		}
 	}
 	
-/*	public synchronized static String getAppByProjectId(String project_id) {
-		if (project_id==null)
-			return null;
-		int i = project_id.lastIndexOf('.');
-		if (i<0)
-			return null;
-		return AppsManager.getAppByExtension(project_id.substring(i+1));
-	}*/
-	
-	public synchronized WebServiceProperties loadWebServicePropertiesByFullName(String serviceFullName, String serviceDir) {
+	private synchronized WebServiceProperties loadWebServicePropertiesByFullName(String serviceFullName, String serviceDir) {
 		if (serviceFullName==null)
 			return null;
 				
@@ -108,27 +106,33 @@ public class PropertiesManager extends UnicastRemoteObject implements IPropertie
 		}
 	}
 	
-	public synchronized WebServiceProperties getWebServicePropertiesByFullName(String serviceName) {
+	public synchronized WebServiceProperties getWebServicePropertiesByFullName(String serviceFullName) {
 		
-		if (serviceName==null)
+		if (serviceFullName==null)
 			return null;
 		
-		WebServiceProperties svcProps = svcPropsMap.get(serviceName);
-		return svcProps;
+		WebServiceProperties svcProps = svcPropsMap.get(serviceFullName);
+		if (svcProps!=null)
+			return svcProps;
+		else {
+			File f = new File(ConfigStatic.APPS_DIR+File.separator+serviceFullName);
+			if (!f.isDirectory())
+				return null;
+			
+			return loadWebServicePropertiesByFullName(serviceFullName, ConfigStatic.APPS_DIR+File.separator+serviceFullName);
+		}
 	}
 		
 	
-	public synchronized WebLibraryProperties loadWebLibraryPropertiesByFullName(String libFullName) {
+	private synchronized WebLibraryProperties loadWebLibraryPropertiesByFullName(String libFullName, String dir) {
 		
 		if (libFullName==null)
 			return null;
 				
-		String engineDirS = ConfigStatic.APPS_DIR+File.separator+libFullName;
-		
 		WebLibraryProperties props = libPropsMap.get(libFullName);
 		
-		if (props == null) {
-			props = new WebLibraryProperties(libFullName, engineDirS+File.separator+"weblibrary.properties");
+		if (props == null) {			
+			props = new WebLibraryProperties(libFullName, dir);
 			libPropsMap.put(libFullName, props);
 			return props;
 		}
@@ -143,7 +147,14 @@ public class PropertiesManager extends UnicastRemoteObject implements IPropertie
 			return null;
 		
 		WebLibraryProperties props = libPropsMap.get(libraryFullName);
-		return props;
+		if (props!=null)
+			return props;
+		else {
+			File f = new File(ConfigStatic.APPS_DIR+File.separator+libraryFullName);
+			if (!f.isDirectory())
+				return null;
+			return loadWebLibraryPropertiesByFullName(libraryFullName, ConfigStatic.APPS_DIR+File.separator+libraryFullName);
+		}
 	}
 	//TODO:
 	// installAppOrService	
@@ -190,14 +201,17 @@ public class PropertiesManager extends UnicastRemoteObject implements IPropertie
 	
 	
 	public synchronized SomeProperties getPropertiesByFullName(String id) {
-		SomeProperties p;
-		p = appPropsMap.get(id);
-		if (p!=null)
-			return p;
-		p = svcPropsMap.get(id);
-		if (p!=null)
-			return p;
-		return libPropsMap.get(id);
+		if (id==null)
+			return null;
+		
+		if (id.endsWith(".webapp"))
+			return this.getWebAppPropertiesByFullName(id);
+		if (id.endsWith(".webservice"))
+			return this.getWebServicePropertiesByFullName(id);
+		if (id.endsWith(".weblibrary"))
+			return this.getWebLibraryPropertiesByFullName(id);
+		
+		return null;
 	}
 
 	@Override
@@ -221,7 +235,7 @@ public class PropertiesManager extends UnicastRemoteObject implements IPropertie
 	}
 
 	@Override
-	public WebLibraryProperties getWebLibraryPropertiesByEngineName_R(String engineName) throws RemoteException {
+	public WebLibraryProperties getWebLibraryPropertiesByFullName_R(String engineName) throws RemoteException {
 		return this.getWebLibraryPropertiesByFullName(engineName);
 	}
 

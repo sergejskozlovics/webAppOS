@@ -4,7 +4,7 @@ group: Introduction
 
 The FileDialog app contains just one file FileDialog.html, which relies on the
 shipped FileBrowser app to provide the dialog window. (We can switch later to another undelying app,
-but the communication with FileDialog.html must remain the same.)
+but the communication with FileDialog.html will remain the same.)
 
 FileDialog.html is designed to be embedded inside iframes.
 
@@ -30,6 +30,12 @@ URL example for the FileDialog.html iframe:
 /apps/filedialog/FileDialog.html?type=open&filter=Word%20document%20(*.doc,*.rtf)%0AC%2B%2B%20file(*.cpp,*.h,*.hpp)&browse_id=12345
 ----------
 
+An example of the full iframe tag:
+---code---
+<iframe id='theiframe' style='width:700px;height:465px;' src='/apps/filedialog/FileDialog.html?type=open&filter=Word%20document%20(*.doc,*.rtf)&browse_id=12345'>
+</iframe>
+----------
+
 group: Getting the Chosen File Name
 
 When the file has been selected, FileDialog.html
@@ -43,7 +49,29 @@ If the Cancel button is pressed, the message will be:
 window.parent.postMessage({protocol:"file_dialog_result", browse_id:"{passed_browse_id}", result: ""}, "*");
 ----------
 
-The parent must also check when the embedded FileDialog iframe is being removed from the screen
-(e.g., when the user clicks the "x" button of a window/div border, which contains the iframe).
-In this case, FileDialog.html sends nothing to the parent: the parent has to catch that
-event by its own and assume the result is "".
+An example of the function for receiving the dialog result:
+---code---
+<script>
+var receiveMessage2 = function(event) {
+  if (event.data.browse_id!="12345") return;
+  alert(event.data.result); // here is your file name
+};
+
+window.addEventListener("message", receiveMessage2, true);
+</script>
+----------
+
+group: Destroying the file dialog
+
+The FileDailog app does not destroy its iframe, neither does it react to outer "x" buttons
+that can be provided by the outer window or div.
+
+It is your responsibility to destroy the iframe containing the dialog. For example, you can
+just remove the iframe element from the DOM. If you use some outer window for the iframe, you
+should destroy it as well.
+
+If you have the "x" button in the outer window,
+you must implement the corresponding event handler
+(in this case, assume the dialog result is ""; notice that this result won't be sent by the FileDialog app,
+since it knows nothing about the outer window).
+
