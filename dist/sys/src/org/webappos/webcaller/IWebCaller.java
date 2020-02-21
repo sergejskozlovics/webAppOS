@@ -1,6 +1,7 @@
 package org.webappos.webcaller;
 
 import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -91,6 +92,13 @@ public interface IWebCaller {
 		}
 	}
 	
+	/**
+	 * Returns how many web calls have been enqueued for the given project (including the web call currently being executed).
+	 * @param project_id the project id to check
+	 * @return whether the length of the queue
+	 */
+	public int getQueueSize(String project_id);
+
 	/**
 	 * Enqueues a web call.
 	 * @param seed the information required to make a web call

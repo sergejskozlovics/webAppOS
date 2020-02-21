@@ -104,6 +104,18 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 	 */
 	private Map<String, Queue<WebCallSeed> > p2q = new HashMap<String, Queue<WebCallSeed> >();	
 	
+	@Override
+	synchronized public int getQueueSize(String project_id) {
+		if (project_id==null)
+			return 0;
+		Queue<WebCallSeed> q = p2q.get(project_id);
+		if (q==null)
+			return 0;
+		else
+			return q.size();
+	}
+	
+	@Override
 	synchronized public void enqueue(WebCallSeed _seed) {
 		assert API.wpbService instanceof WebProcessorBusService;
 		
@@ -576,17 +588,28 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 
 				// Validating the action:
 				
-				// isSingle implies isClient
-				if (action.isSingle)
+				// isSingle implies isClient & webmemcall
+				if (action.isSingle) {
 					if (!action.isClient) {
-						logger.warn("web call "+value+" not added: it is single, but not client");
+						String reason = "web call "+value+" not added: it is single, but not client";
+						logger.warn(reason);
+						API.status.setValue("webcalls/ignored/"+key+"/reason", reason);
 						continue;
 					}
+					if (action.callingConventions != CallingConventions.WEBMEMCALL) {
+						String reason = "web call "+value+" not added: it is single, but does not conform to the 'webmemcall' calling conventions";
+						logger.warn(reason);
+						API.status.setValue("webcalls/ignored/"+key+"/reason", reason);
+						continue;
+					}
+				}
 				
 				// webmemcall implies !isPublic && !isStatic
 				if (action.callingConventions == CallingConventions.WEBMEMCALL)
 					if (action.isPublic || action.isStatic) {
-						logger.warn("web call "+value+" not added: webmemcall must be neither public, nor static");
+						String reason = "web call "+value+" not added: webmemcall calling conventions imply that the web call must be neither public, nor static";
+						logger.warn(reason);
+						API.status.setValue("webcalls/ignored/"+key+"/reason", reason);
 						continue;
 					}
 				
@@ -657,6 +680,11 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		for (String fname : props.webcallsFiles) {
 			unloadWebCalls(fname);
 		}
+	}
+
+	@Override
+	public int getQueueSize_R(String project_id) throws RemoteException {
+		return this.getQueueSize(project_id);
 	}
 
 	@Override

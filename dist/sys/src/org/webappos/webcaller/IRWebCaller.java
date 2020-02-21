@@ -8,6 +8,7 @@ import org.webappos.webcaller.IWebCaller.WebCallDeclaration;
 import org.webappos.webcaller.IWebCaller.WebCallSeed;
 
 public interface IRWebCaller extends Remote {	
+	public int getQueueSize_R(String project_id) throws RemoteException;
 	public void enqueue_R(final WebCallSeed seed) throws RemoteException;
 	public boolean invokeNow_R(final WebCallSeed seed) throws RemoteException;
 	public boolean webCallExists_R(String actionName) throws RemoteException;

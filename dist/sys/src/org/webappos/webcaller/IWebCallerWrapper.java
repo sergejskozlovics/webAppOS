@@ -66,5 +66,20 @@ public class IWebCallerWrapper implements IWebCaller {
 		}
 	}
 
+	@Override
+	public int getQueueSize(String project_id) {
+		if (project_id==null)
+			return 0;
+		
+		IWebMemory webmem = API.dataMemory.getWebMemory(project_id);
+		if (webmem!=null)
+			webmem.flush();
+		try {
+			return delegate.getQueueSize_R(project_id);
+		} catch (RemoteException e) {
+			return 0;
+		}
+	}
+
 
 }
