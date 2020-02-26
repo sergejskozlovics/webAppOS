@@ -717,9 +717,7 @@
             $("#frame" + reference).css(".dijitDialogCloseIcon", "display: none;");
 
             on(popupDialog, "hide", function (e) {
-              on(popupDialog, "hide", function (e) {});
-
-              //              popupDialog.show(); // to finish some actions with the frame...
+              on(popupDialog, "hide", function (e) {}); // clear hide
               var ev = new tda.model.CloseFrameRequestedEvent();
               ev.setForce(true);
               ev.setFrame(tda.model[reference]);
@@ -1005,6 +1003,7 @@
     }
 
     function detachFrame(reference, permanently) {
+
       require(["dijit/registry", "dijit/layout/BorderContainer", "dijit/layout/TabContainer",
           "dojox/layout/ContentPane", "dojo/domReady!"
         ],
