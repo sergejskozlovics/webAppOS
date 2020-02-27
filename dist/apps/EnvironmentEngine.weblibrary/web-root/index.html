@@ -536,6 +536,8 @@
       } else
       if ((location.indexOf("popup") == 0) || (location.indexOf("modalpopup") == 0)) {
 
+        let widthpx=600, heightpx=400;
+
         var hidden = false;
         // POPUP
         i = location.indexOf("[");
@@ -555,8 +557,8 @@
             if ((width=="0") || (height=="0"))
               hidden = true;
             else {
-              if (parseInt(width,10)==width) width+="px"; // add "px" if raw integer
-              if (parseInt(height,10)==height) height+="px"; // add "px" if raw integer
+              if (parseInt(width,10)==width) {widthpx=parseInt(width,10); width+="px";} // add "px" if raw integer
+              if (parseInt(height,10)==height) {heightpx=parseInt(height,10); height+="px";} // add "px" if raw integer
               if (width.length > 0)
                 style += "width:" + width+";";
 
@@ -565,8 +567,11 @@
             }
           }
         
-        } else
+        } else {
           style = "width: 30%; height:40%";
+          widthpx = Math.round(0.3*window.innerWidth);
+          heightpx = Math.round(0.4*window.innerHeight);
+        }
 
         i = location.indexOf("(");
         j = location.indexOf(")");
@@ -584,10 +589,24 @@
             } else
               style += ";";
 
-            if ((x.trim().length > 0) && (x != "undefined"))
+            if ((x.trim().length > 0) && (x != "undefined")) {              
+              let leftpx = parseInt(x,10);
+              if (leftpx==x) {
+                if (leftpx+widthpx>=window.innerWidth) {
+                  x=window.innerWidth-widthpx;
+                }
+              }
               style += "left:" + x + ";";
-            if ((y.trim().length > 0) && (y != "undefined"))
+            }
+            if ((y.trim().length > 0) && (y != "undefined")) {
+              let toppx = parseInt(y,10);
+              if (toppx==y) {
+                if (toppx+heightpx>=window.innerHeight) {
+                  y=window.innerHeight-heightpx;
+                }
+              }
               style += "top:" + y;
+            }
           }
         }
 
