@@ -129,7 +129,7 @@ public class ServiceAdapter implements IServiceAdapter {
 		
 		String servlet_class = svcProps.properties.getProperty("servlet_class");
 		if (servlet_class==null) {
-			throw new RuntimeException("Servlet class not specified for "+svcProps.service_full_name+" in service.properties (and no web-root found).");
+			throw new RuntimeException("The servlet_class setting not specified for "+svcProps.service_full_name+" in service.properties. It is required for web services of type 'javaservlet'.");
 		}
 				
 		API.classLoader.addClasspathsForPropertiesId(svcProps.id);

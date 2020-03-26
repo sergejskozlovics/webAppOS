@@ -141,6 +141,11 @@ public class AppAdapter implements IAppAdapter {
 			String dir = ConfigStatic.APPS_DIR+File.separator+lib+File.separator+"web-root"; 
 			if (new File(dir).isDirectory()) 
 				arr.add(dir);
+			else {
+				dir = ConfigStatic.APPS_DIR+File.separator+lib+File.separator+"dist"; 
+				if (new File(dir).isDirectory()) 
+					arr.add(dir);				
+			}
 			
 			
 		}

@@ -18,7 +18,7 @@ public class ServiceAdapter implements IServiceAdapter {
 		String dirName = svcProps.service_dir+File.separator+"web-root";
 		File f = new File(dirName);
 		if (!f.exists() || !f.isDirectory())
-			throw new RuntimeException("Directory "+dirName+" not found.");
+			throw new RuntimeException("Directory "+dirName+" not found. It is required for web services of type 'webroot'.");
 
 		WebAppContext appContext = new WebAppContext();
 		appContext.setWar(dirName);
