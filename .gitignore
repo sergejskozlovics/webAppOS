@@ -14,3 +14,17 @@
 /dist/etc/registry
 /dist/etc/webappos.properties
 /dist/etc/registry/xusers/webappos
+/dist/lib
+!/dist/lib/lua
+/dist/bin
+!/dist/bin/mmd2java
+/dist/var
+/dist/home
+/dist/cache
+/dist/apps/DataGalaxies.webapp
+/dist/apps/DialogEngine.weblibrary/bin
+/dist/apps/GraphDiagramEngine.weblibrary/bin
+/dist/apps/OWLGrEd.webapp
+/dist/apps/DataGalaxies.webapp
+/src/.gradle
+

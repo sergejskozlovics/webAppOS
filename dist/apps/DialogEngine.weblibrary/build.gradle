@@ -1,21 +1,33 @@
-  apply plugin: 'java'
+plugins {
+	id "java"
+	id "de.undercouch.download" version "4.0.4"
+}
+
+dependencies {
+	compile project(':sys')
+	compile files('../../sys/bin')
+	compile 'org.slf4j:slf4j-api:1.7.25'
+	compile 'org.codehaus.jettison:jettison:1.4.0'
+}
+
+sourceSets {
+	main.java.srcDirs = ['src']
+	main {
+		output.resourcesDir = file('bin')
+		java.outputDir = file('bin')
+	}
+}
 
 
-  dependencies {
-    compile project(':sys')
-    compile files('../../sys/bin')
-    compile 'org.slf4j:slf4j-api:1.7.25'
-    compile 'org.codehaus.jettison:jettison:1.4.0'
-  }
+jar.enabled = false
 
-  sourceSets {
-    main.java.srcDirs = ['src']
-    main {
-      output.resourcesDir = file('bin')
-      java.outputDir = file('bin')
-    }
-  }
-
-
-  jar.enabled = false
-
+download {
+    src 'https://raw.githubusercontent.com/LUMII-Syslab/imcs_layoutengine/master/imcs_layoutengine.min.js'
+    dest 'web-root/imcs_dialogvisualizer/lib/imcs_layoutengine.js'
+    onlyIfModified true
+}
+download {
+    src 'https://raw.githubusercontent.com/LUMII-Syslab/imcs_layoutengine/master/imcs_layoutengine.COPYING'
+    dest 'web-root/imcs_dialogvisualizer/lib/imcs_layoutengine.COPYING'
+    onlyIfModified true
+}
