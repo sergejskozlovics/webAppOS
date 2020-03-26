@@ -1,0 +1,8 @@
+<module>
+        <inherits name="com.google.gwt.core.Core" />
+	<inherits name="com.levigo.util.GwtAwt" />
+	<source path="client" />
+	<super-source path="code" />
+	<entry-point class="client.IMCSLayoutEngineEntryPoint" />
+	<add-linker name="sso" />	
+</module>

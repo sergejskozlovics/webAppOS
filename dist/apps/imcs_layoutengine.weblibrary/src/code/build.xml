@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="test" default="javac" basedir=".">
+
+  <target name="javac" depends="" description="Compile java source">
+    <javac srcdir="." includes="**" encoding="utf-8" includeantruntime="false"
+        destdir="."
+        source="1.8" target="1.8" nowarn="true"
+        debug="true" debuglevel="lines,vars,source">
+    </javac>
+  </target>
+
+</project>

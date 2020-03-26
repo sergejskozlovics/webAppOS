@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"> 
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>IMCS layout engine test</title>
+    <script type="text/javascript" src="imcs_layoutengine.js"></script>
+  </head>
+  <body bgcolor="white"> 
+    <script>
+    var components = {
+      "1": {
+         layoutName: "VerticalBox", // form
+         children: [2],
+         leftPadding: 10,
+         rightPadding: 10,
+         topPadding: 5,
+         bottomPadding: 5,
+      },
+      "2": {
+         minimumWidth: 220.0,
+         minimumHeight: 55,
+         layoutName: null, // e.g., button
+         children: [],
+      }
+    };
+
+    function f() {
+       var callback = {
+         load: function(rComponent) { console.log("c.load",rComponent); },
+         getAnchor: function(rComponent) { return "parent"; },
+         getChildren: function(rComponent) { return components[rComponent].children; },
+         getBounds: function(rComponent) { return components[rComponent]; },
+         getHorizontalRelativeInfo: function(rComponent) { return components[rComponent]; },
+         getVerticalRelativeInfo: function(rComponent) { return components[rComponent]; },
+         getHorizontalRelativeInfoGroup: function(rComponent) { return 0; },
+         getVerticalRelativeInfoGroup: function(rComponent) { return 0; },
+         getLayoutName: function(rComponent) { return components[rComponent].layoutName; },
+         layout: function(rComponent, x, y, w, h) { console.log("layout",rComponent,x,y,w,h); },
+         destroy: function(rComponent) { console.log("c.destroy",rComponent); },
+       };
+
+       var l = new IMCSDialogLayout(callback);
+       l.loadAndLayout(1);
+    }
+    </script>
+    <button onclick='f();'>Launch IMCS Dialog Layout and output the result in the console</button>
+  </body>
+</html>
