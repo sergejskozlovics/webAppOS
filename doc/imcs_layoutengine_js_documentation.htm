@@ -1,0 +1,739 @@
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+<meta name=Generator content="Microsoft Word 15 (filtered)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:"Calibri Light";
+	panose-1:2 15 3 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:Consolas;
+	panose-1:2 11 6 9 2 2 4 3 2 4;}
+@font-face
+	{font-family:"DejaVu Sans Mono";
+	panose-1:2 11 6 9 3 8 4 2 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:8.0pt;
+	margin-left:0cm;
+	line-height:107%;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;}
+h1
+	{mso-style-link:"Heading 1 Char";
+	margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:0cm;
+	margin-bottom:.0001pt;
+	line-height:107%;
+	page-break-after:avoid;
+	font-size:16.0pt;
+	font-family:"Calibri Light",sans-serif;
+	color:#2E74B5;
+	font-weight:normal;}
+h2
+	{mso-style-link:"Heading 2 Char";
+	margin-top:2.0pt;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:0cm;
+	margin-bottom:.0001pt;
+	line-height:107%;
+	page-break-after:avoid;
+	font-size:13.0pt;
+	font-family:"Calibri Light",sans-serif;
+	color:#2E74B5;
+	font-weight:normal;}
+pre
+	{mso-style-link:"HTML Preformatted Char";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:8.0pt;
+	margin-left:36.0pt;
+	line-height:107%;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;}
+p.MsoListParagraphCxSpFirst, li.MsoListParagraphCxSpFirst, div.MsoListParagraphCxSpFirst
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:36.0pt;
+	margin-bottom:.0001pt;
+	line-height:107%;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;}
+p.MsoListParagraphCxSpMiddle, li.MsoListParagraphCxSpMiddle, div.MsoListParagraphCxSpMiddle
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:36.0pt;
+	margin-bottom:.0001pt;
+	line-height:107%;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;}
+p.MsoListParagraphCxSpLast, li.MsoListParagraphCxSpLast, div.MsoListParagraphCxSpLast
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:8.0pt;
+	margin-left:36.0pt;
+	line-height:107%;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;}
+span.Heading1Char
+	{mso-style-name:"Heading 1 Char";
+	mso-style-link:"Heading 1";
+	font-family:"Calibri Light",sans-serif;
+	color:#2E74B5;}
+span.HTMLPreformattedChar
+	{mso-style-name:"HTML Preformatted Char";
+	mso-style-link:"HTML Preformatted";
+	font-family:"Courier New";}
+span.Heading2Char
+	{mso-style-name:"Heading 2 Char";
+	mso-style-link:"Heading 2";
+	font-family:"Calibri Light",sans-serif;
+	color:#2E74B5;}
+.MsoChpDefault
+	{font-family:"Calibri",sans-serif;}
+.MsoPapDefault
+	{margin-bottom:8.0pt;
+	line-height:107%;}
+@page WordSection1
+	{size:595.3pt 841.9pt;
+	margin:36.0pt 36.0pt 36.0pt 36.0pt;}
+div.WordSection1
+	{page:WordSection1;}
+ /* List Definitions */
+ ol
+	{margin-bottom:0cm;}
+ul
+	{margin-bottom:0cm;}
+-->
+</style>
+
+</head>
+
+<body lang=LV>
+
+<div class=WordSection1>
+
+<h2><span lang=EN-US>Preliminaries</span></h2>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>The src/code
+folder contains Java classes. JavaScript classes are generated from Java
+classes using GWT and Google closure compiler via ant script (build.xml). See
+file readme-sources.txt for licensing information on the tools/libraries used.</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>The initial
+low-level Java code lays in the package lv.lumii.layoutengine. The
+documentation (JavaDoc) for it can be found in the folder doc/internal_javadoc.</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>Sergejs
+Kozlovičs developed two wrappers over the initial low-level Java code. These
+wrappers lay in the packages lv.lumii.diagramlayout and lv.lumii.dialoglayout.
+It is advised to use these wrappers instead of the initial low-level code
+(unless you have certain reasons to do otherwise). The wrappers provide two
+Java classes:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt;line-height:normal'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>IMCSDiagramLayout for laying out graph diagrams,
+and</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt;line-height:normal'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>IMCSDialogLayout for laying out dialog windows.</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>The client
+package contains glue code for generating JavaScript from Java. The JavaScript
+code is compiled as imcs_layoutengine.js script, which can be embedded into
+your web page. In order to include it in your code use the following HTML
+string:<br>
+</span><span lang=EN-US style='font-family:Consolas'>&lt;script
+type=&quot;text/javascript&quot;
+src=&quot;imcs_layoutengine.js&quot;&gt;&lt;/script&gt;</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>The script provides
+two JavaScript classes with the same names as the corresponding Java classes:
+IMCSDiagramLayout and IMCSDialogLayout.</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>The
+documentation below explains the API of these classes in JavaScript syntax. If
+you prefer to use the Java version, the syntax is similar (id’s are of type
+long; x, y, width and height are doubles in Java; refer to the Java code for
+more details).</span></p>
+
+<h2><span lang=EN-US>IMCSDiagramLayout Introduction</span></h2>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>You can
+initialize the corresponding instance using the JavaScript new operator:<br>
+</span><span lang=EN-US style='font-family:Consolas'>var layout = new IMCSDiagramLayout();</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>If you do not
+pass any constructor parameters, or pass the string “UNIVERSAL”, then the
+universal layout algorithm will be used. Other layout algorithms are
+“SYMMETRIC”, “VERTICAL” (for an edge a→b the layout algorithm will return y_max[a]≤y_min[b]),
+“INVERSE_VERTICAL”, “HORIZONTAL”, and “INVERSE_HORIZONTAL”. Pass the
+corresponding string to the constructor:</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US
+style='font-family:Consolas'>var layout = new IMCSDiagramLayout(“UNIVERSAL”);</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>Then you can
+add/remove boxes and lines (using appropriate methods) as well as to call either
+the arrangeIncrementally(), or arrangeFromScratch() method. They both return
+the calculated layout information.</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>An important
+feature of the JavaScript implementation is that you specify integer IDs for
+boxes and lines. For instance, these IDs may be equal to database primary keys
+or references to model repository objects.</span></p>
+
+<h2><span lang=EN-US>IMCSDiagramLayout Methods</span></h2>
+
+<p class=MsoNormal style='line-height:normal'><b><span lang=EN-US>IMCSDiagramLayout.addBox(boxId,
+x, y, w, h)<br>
+</span></b><span lang=EN-US>adds a box with the given id (some integer), x, y,
+width, and height to the layout;<br>
+during the initial layout, when no coordinates of boxes are known, you may
+specify x=y=0;<br>
+if a new box is added to the existing layout, use the current mouse position
+for x and y;<br>
+returns whether the operation succeeded;</span></p>
+
+<p class=MsoNormal style='line-height:normal'><b><span lang=EN-US>IMCSDiagramLayout.addLine(lineId,
+srcId, tgtId, options)<br>
+</span></b><span lang=EN-US>adds an orthogonal line connecting the two boxes
+with the given id-s to the layout; optional options are in the following format
+(default values are specified):<br>
+{<br>
+  lineType: “ORTHOGONAL”, // or “POLYLINE”, or “STRAIGHT”<br>
+  startSides: 15, // =parseInt('1111', 2)=0b1111, see bit mask values below<br>
+  endSides: 15, // =parseInt('1111', 2)=0b1111, see bit mask values below<br>
+}</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>Bit mask values:<br>
+</span><span style='font-size:10.5pt;font-family:"DejaVu Sans Mono";color:#474747'>0b0001:
+top (if y=0 is on top) = min_y = 1<br>
+0b0010: right = 2<br>
+0b0100: bottom (if y=0 is on top) = max_y = 4<br>
+0b1000: left = 8</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>returns whether
+the operation succeeded;</span></p>
+
+<p class=MsoNormal style='line-height:normal'><b><span lang=EN-US>IMCSDiagramLayout.addLineLabel(labelId,
+lineId, w, h, placement)<br>
+</span></b><span lang=EN-US>adds the label with the given labelId to the line
+with the given lineId; the size of the label is w*h; the position is specified
+in the placement attribute and is one of the following values:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt;line-height:normal'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;start-left&quot;, i.e., left, if we follow
+the line direction (from start to end), near the start</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt;line-height:
+normal'><span lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;start-right&quot;,</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt;line-height:
+normal'><span lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;end-left&quot;, i.e., left, if we follow
+the line direction, near the end</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt;line-height:
+normal'><span lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;end-right&quot;,</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt;line-height:
+normal'><span lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;middle-left&quot;,</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt;line-height:normal'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;middle-right&quot;.</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>returns whether
+the operation succeeded;</span></p>
+
+<p class=MsoNormal style='line-height:normal'><b><span lang=EN-US>IMCSDiagramLayout.removeLine(lineId)<br>
+</span></b><span lang=EN-US>removes the given line from the layout;<br>
+the layout is not re-arranged;<br>
+returns whether the operation succeeded;</span></p>
+
+<p class=MsoNormal style='line-height:normal'><b><span lang=EN-US>IMCSDiagramLayout.removeBox(boxId)<br>
+</span></b><span lang=EN-US>remove the box as well as the incident lines from
+the layout;<br>
+the layout is not re-arranged;<br>
+returns the array of id-s of the removed lines (perhaps, an empty array);<br>
+on error, returns false</span></p>
+
+<p class=MsoNormal style='line-height:normal'><b><span lang=EN-US>IMCSDiagramLayout.moveBox(boxId,
+newX, newY)<br>
+</span></b><span lang=EN-US>Warning: arrange() or arrangeFromScratch() must be
+called some time before, if you use a hierarchical layout other from
+“VERTICAL”!<br>
+sets new desired coordinates for the box with the given id;<br>
+the layout is not re-arranged (call arrange() after the desired coordinates of
+all the desired boxes are set);<br>
+returns whether the operation succeeded;</span></p>
+
+<p class=MsoNormal style='line-height:normal'><b><span lang=EN-US>IMCSDiagramLayout.resizeBox(boxId,
+w, h)<br>
+</span></b><span lang=EN-US>sets new desired dimensions for the box with the
+given id;<br>
+the layout is not re-arranged (call arrange() after the desired dimensions of
+all the desired boxes are set);<br>
+returns whether the operation succeeded;</span></p>
+
+<p class=MsoNormal style='line-height:normal'><b><span lang=EN-US>IMCSDiagramLayout.moveLine(lineId,
+srcId, tgtId, points)<br>
+</span></b><span lang=EN-US>Warning: arrange() or arrangeFromScratch() must be
+called some time before, if you use a hierarchical layout other from
+“VERTICAL”!<br>
+sets new line start and end boxes and (optionally) line points;<br>
+the points are specified as an array of objects with the x and y attributes;<br>
+the layout is not re-arranged (call arrange() after all desired manipulations
+are called);<br>
+returns whether the operation succeeded;</span></p>
+
+<p class=MsoNormal style='line-height:normal'><b><span lang=EN-US>IMCSDiagramLayout.arrangeIncrementally()</span></b><span
+lang=EN-US><br>
+arranges the diagram taking into a consideration recently added elements and
+trying to preserve existing coordinates;<br>
+returns an objects with the &quot;boxes&quot;, &quot;lines&quot;, and
+&quot;labels&quot; maps containing information about the layout:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt;line-height:normal'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>the boxes map is in the form &lt;id&gt; -&gt;
+{x, y, width, height};</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt;line-height:
+normal'><span lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>the lines map is in the form &lt;id&gt; -&gt; [
+{x:x1,y:y1}, {x:x2,y:y2}, ... ]</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt;line-height:normal'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>the labels map is in the form &lt;id&gt; -&gt;
+{x, y, width, height};</span></p>
+
+<p class=MsoNormal style='line-height:normal'><b><span lang=EN-US>IMCSDiagramLayout.arrangeFromScratch()</span></b><span
+lang=EN-US><br>
+arranges the diagram from scratch not preserving existing coordinates;<br>
+returns an objects with the &quot;boxes&quot;, &quot;lines&quot;, and
+&quot;labels&quot; maps containing information about the layout:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt;line-height:normal'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>the boxes map is in the form &lt;id&gt; -&gt;
+{x, y, width, height};</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt;line-height:
+normal'><span lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>the lines map is in the form &lt;id&gt; -&gt; [
+{x:x1,y:y1}, {x:x2,y:y2}, ... ]</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt;line-height:normal'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>the labels map is in the form &lt;id&gt; -&gt;
+{x, y, width, height};</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>&nbsp;</span></p>
+
+<h2><span lang=EN-US>IMCSDialogLayout Introduction</span></h2>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>IMCSDialogLayout
+is a pseudo class that implements IMCS layout algorithms for laying out dialog
+windows in JavaScript.</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>Additional
+information on how to use the layout or on the meaning of certain parameters
+can be found in the papers:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt;line-height:normal'><span
+lang=EN-US>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>Kozlovics, S.: A Dialog Engine Metamodel for the
+Transformation-Driven Architecture. In: Scientific Papers, University of
+Latvia. vol. 756, pp. 151-170 (2010)</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt;line-height:normal'><span
+lang=EN-US>2.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>Kozlovics, S.: Calculating The Layout For Dialog
+Windows Specified As Models. In: Scientific Papers, University of Latvia. vol.
+787, pp. 106-124 (2012)</span></p>
+
+<p class=MsoNormal style='line-height:normal'><span lang=EN-US>You can
+initialize the corresponding instance using the JavaScript new operator:<br>
+</span><span lang=EN-US style='font-family:Consolas'>var dialogLayout = new
+IMCSDialogLayout(callback);</span></p>
+
+<p class=MsoNormal><span lang=EN-US>The callback parameter is a JavaScript
+object, which defines certain functions for getting information about dialog
+components to be layed out. Each dialog component is referenced by an id (the
+rComponent parameter, which is a natural number). The callback functions are as
+follows:</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>getAnchor(</span></b><b><span lang=EN-US
+style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>Specifies what coordinates are passed back
+to the layout callback of the given component. Possible return values are:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;parent&quot; (parent’s x and y are
+considered zeroes, when laying out child elements)</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;sibling&quot; (component’s x and y are
+relative to the previous sibling)</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;zero&quot; (component’s x and y are
+relative to the form’s left-top corner, which has coordinates (0;0) ).</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt'><span lang=EN-US
+style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>? &quot;grandparent&quot; (grandparent’s x and y
+are considered zeroes, when laying out grandchild elements)</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Default is “parent”.</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>&nbsp;</span></b></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>load(</span></b><b><span lang=EN-US
+style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>Creates a HTML (dojo, jQuery, or other)
+element for the given rComponent (but not for its children). The load function
+will be called for all child components recursively by IMCSDialogLayout.</span></p>
+
+<p class=MsoNormal><span lang=EN-US>If the component is being loaded
+asynchronously, call IMCSDialogLayout.loadStarted(rComponent) during load() and
+call IMCSDialogLayout.loadFinished(rComponent) when the component is fully
+loaded, e.g.,</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal'><span lang=EN-US style='font-family:Consolas'>callback.load = function
+load(rComponent) {</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal'><span lang=EN-US style='font-family:Consolas'>  dialogLayout.loadStarted(rComponent);</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal'><span lang=EN-US style='font-family:Consolas'> 
+asyncFunctionToLoadComponent(rComponent, function(callback_args) {</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal'><span lang=EN-US style='font-family:Consolas'>   
+dialogLayout.loadFinished(rComponent);</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal'><span lang=EN-US style='font-family:Consolas'>  });</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal'><span lang=EN-US style='font-family:Consolas'>}</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>              </span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>getChildren(</span></b><b><span lang=EN-US
+style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>Returns an array of numbers, which identify
+child component of the given rComponent.</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>getBounds(</span></b><b><span lang=EN-US
+style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>Returns an object contacting information of
+the component bounds in the following fields.</span></p>
+
+<p class=MsoNormal><span lang=EN-US>For leaf components (without children):</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>minimumWidth</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>maximumWidth</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>preferredWidth</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>minimumHeight</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>maximumHeight</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>preferredHeight</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>leftMargin</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>rightMargin</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>topMargin</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt'><span lang=EN-US
+style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>bottomMargin</span></p>
+
+<p class=MsoNormal><span lang=EN-US>For containers (components that may contain
+other components) the following fields are also considered:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>leftPadding</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>rightPadding</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>topPadding</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>bottomPadding</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>horizontalSpacing</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>verticalSpacing</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>horizontalAlignment ( “LEFT”, “RIGHT”, or
+“CENTER”)</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt'><span lang=EN-US
+style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>verticalAlignment ( “TOP”, “BOTTOM”, or
+“CENTER”)</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>getHorizontalRelativeInfo(</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>Returns an object contacting relative sizes
+w.r.t. to other components in the same group. See also </span><span lang=EN-US
+style='font-size:10.0pt;line-height:107%;font-family:Consolas;color:black'>getHorizontalRelativeInfoGroup/getVerticalRelativeInfoGroup</span><span
+lang=EN-US>, which define relative groups.</span></p>
+
+<p class=MsoNormal><span lang=EN-US>The fields are:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>minimumRelativeWidth</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>preferredRelativeWidth</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt'><span lang=EN-US
+style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>maximumRelativeWidth</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>getVerticalRelativeInfo(</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>Returns an object contacting relative sizes
+w.r.t. to other components in the same group. See also </span><span lang=EN-US
+style='font-size:10.0pt;line-height:107%;font-family:Consolas;color:black'>getHorizontalRelativeInfoGroup/getVerticalRelativeInfoGroup</span><span
+lang=EN-US>, which define relative groups.</span></p>
+
+<p class=MsoNormal><span lang=EN-US>The fields are:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>minimumRelativeHeight</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>preferredRelativeHeight</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt'><span lang=EN-US
+style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>maximumRelativeHeight</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>getHorizontalRelativeInfoGroup(</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)</span></b></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>getVerticalRelativeInfoGroup(</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>Return an integer representing a group.
+Relative infos are attached to groups defined by these integers. The same
+integer can be returned for horizontal and vertical groups to specify
+horizontal and vertical dimensions that relate on each other.</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>              </span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>getLayoutName(</span></b><b><span lang=EN-US
+style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>Returns null, if a component is a
+leaf-component, which does not contain children (e.g., a button or an input
+field). Otherwise, returns one of the following values:</span></p>
+
+<p class=MsoListParagraphCxSpFirst style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;VerticalBox&quot;</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;HorizontalBox&quot;</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;VerticalScrollBox&quot;</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;HorizontalScrollBox&quot;</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;ScrollBox&quot;</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;Column&quot;</span></p>
+
+<p class=MsoListParagraphCxSpMiddle style='text-indent:-18.0pt'><span
+lang=EN-US style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;Row&quot;</span></p>
+
+<p class=MsoListParagraphCxSpLast style='text-indent:-18.0pt'><span lang=EN-US
+style='font-family:Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span lang=EN-US>&quot;Stack&quot;</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>              </span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>layout(</span></b><b><span lang=EN-US
+style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>, </span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>x</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>, </span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>y</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>, </span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>w</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>, </span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>h</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>When the layout has been calculated, this
+function is called for each dialog component to set its physical coordinates
+and dimensions. The numbers are relative to the parent. For the root forms
+x=y=0.</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt;line-height:
+normal;text-autospace:none'><b><span lang=EN-US style='font-size:10.0pt;
+font-family:Consolas;color:black'>destroy(</span></b><b><span lang=EN-US
+style='font-size:10.0pt;font-family:Consolas;color:#6A3E3E'>rComponent</span></b><b><span
+lang=EN-US style='font-size:10.0pt;font-family:Consolas;color:black'>)  </span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>When a form (or a part of the form) is
+unloaded (e.g., during refresh), the corresponding components in the subtree
+must be destroyed. This function is called for such components to physically remove
+them (e.g., from the HTML DOM).</span></p>
+
+<h2><span lang=EN-US>IMCSDialogLayout Methods</span></h2>
+
+<p class=MsoNormal><b><span lang=EN-US>IMCSDialogLayout.loadAndLayout(rForm)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>Loads the component tree starting from the
+root component rForm and performs the initial layout (e.g., the layout callback
+function will be called for each component).</span></p>
+
+<p class=MsoNormal><b><span lang=EN-US>IMCSDialogLayout.refreshAndLayout
+(rRootComponent, formWidth, formHeight)</span></b></p>
+
+<p class=MsoNormal><span lang=EN-US>When some component subtree is changed,
+this function may be called to re-load that subtree and to perform incremental
+layout of the dialog window. If form width and height have been changed
+(e.g.,during resize), they may also be specified (thus, the form will try to be
+of that size).</span></p>
+
+</div>
+
+</body>
+
+</html>
