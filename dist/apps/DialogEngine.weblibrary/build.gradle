@@ -22,7 +22,7 @@ sourceSets {
 jar.enabled = false
 
 download {
-    src 'https://raw.githubusercontent.com/LUMII-Syslab/imcs_layoutengine/master/imcs_layoutengine.min.js'
+    src 'https://raw.githubusercontent.com/LUMII-Syslab/imcs_layoutengine/master/dist/imcs_layoutengine.min.js'
     dest 'web-root/imcs_dialogvisualizer/lib/imcs_layoutengine.js'
     onlyIfModified true
 }
