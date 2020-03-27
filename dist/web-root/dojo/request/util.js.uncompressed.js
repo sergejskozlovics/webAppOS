@@ -18,12 +18,13 @@ define("dojo/request/util", [
 		return has('native-blob') && value instanceof Blob
 	}
 	
-	function isFormElement(value) {
-		if(typeof HTMLFormElement !== 'undefined') { //all other
-			return value instanceof HTMLFormElement;
-		} else { //IE<=7
-			value.tagName === "FORM"
+	function isElement(value) {
+		if(typeof Element !== 'undefined') { //all other
+			return value instanceof Element;
 		}
+
+		//IE<=7
+		return value.nodeType === 1;
 	}
 
 	function isFormData(value) {
@@ -34,7 +35,7 @@ define("dojo/request/util", [
 		return value &&
 			typeof value === 'object' &&
 			!isFormData(value) &&
-			!isFormElement(value) &&
+			!isElement(value) &&
 			!isBlob(value) &&
 			!isArrayBuffer(value)
 	}
@@ -43,7 +44,7 @@ define("dojo/request/util", [
 		for (var name in source) {
 			var tval = target[name],
   			    sval = source[name];
-			if (tval !== sval) {
+			if (name !== '__proto__' && tval !== sval) {
 				if (shouldDeepCopy(sval)) {
 					if (Object.prototype.toString.call(sval) === '[object Date]') { // use this date test to handle crossing frame boundaries
 						target[name] = new Date(sval);

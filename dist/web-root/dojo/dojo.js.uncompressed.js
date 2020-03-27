@@ -2920,7 +2920,7 @@ define(["../global", "../has", "./config", "require", "module"], function(global
 		//		- flag: String: Descriptor flag. If total version is "1.2.0beta1", will be "beta1"
 		//		- revision: Number: The Git rev from which dojo was pulled
 
-		major: 1, minor: 15, patch: 0, flag: "",
+		major: 1, minor: 16, patch: 2, flag: "",
 		revision: rev ? rev[0] : NaN,
 		toString: function(){
 			var v = dojo.version;
@@ -8032,6 +8032,49 @@ define([
 			throwAbstract();
 		},
 
+		"finally": function(callback) {
+			// summary:
+			//		Add a callback to the promise that will fire whether it
+			//		resolves or rejects.
+			// description:
+			//		Conforms to ES2018's `Promise.prototype.finally`.
+			//		Add a callback to the promise that will fire whether it
+			//		resolves or rejects. No value is passed to the callback.
+			//		Returns a promise that reflects the state of the original promise,
+			//		with two exceptions:
+			//		- If the callback return a promise, the outer promise will wait
+			//		until the returned promise is resolved, then it will resolve
+			//		with the original value.
+			//		- If the callback throws an exception or returns a promise that
+			//		is rejected (or rejects later), the outer promise will reject
+			//		with the inner promise's rejection reason.
+			// callback: Function?
+			//		Callback to be invoked when the promise is resolved
+			//		or rejected. Doesn't receive any value.
+			// returns: dojo/promise/Promise
+			//		Returns a new promise that reflects the state of the original promise,
+			//		with two small exceptions (see description).
+			//
+
+			return this.then(function (value){
+				var valueOrPromise = callback();
+				if (valueOrPromise && typeof valueOrPromise.then === "function"){
+					return valueOrPromise.then(function (){
+						return value;
+					});
+				}
+				return value;
+			}, function(reason) {
+				var valueOrPromise = callback();
+				if (valueOrPromise && typeof valueOrPromise.then === "function"){
+					return valueOrPromise.then(function (){
+						throw reason;
+					});
+				}
+				throw reason;
+			});
+		},
+
 		always: function(callbackOrErrback){
 			// summary:
 			//		Add a callback to be invoked when the promise is resolved
@@ -9450,12 +9493,13 @@ define([
 		return has('native-blob') && value instanceof Blob
 	}
 	
-	function isFormElement(value) {
-		if(typeof HTMLFormElement !== 'undefined') { //all other
-			return value instanceof HTMLFormElement;
-		} else { //IE<=7
-			value.tagName === "FORM"
+	function isElement(value) {
+		if(typeof Element !== 'undefined') { //all other
+			return value instanceof Element;
 		}
+
+		//IE<=7
+		return value.nodeType === 1;
 	}
 
 	function isFormData(value) {
@@ -9466,7 +9510,7 @@ define([
 		return value &&
 			typeof value === 'object' &&
 			!isFormData(value) &&
-			!isFormElement(value) &&
+			!isElement(value) &&
 			!isBlob(value) &&
 			!isArrayBuffer(value)
 	}
@@ -9475,7 +9519,7 @@ define([
 		for (var name in source) {
 			var tval = target[name],
   			    sval = source[name];
-			if (tval !== sval) {
+			if (name !== '__proto__' && tval !== sval) {
 				if (shouldDeepCopy(sval)) {
 					if (Object.prototype.toString.call(sval) === '[object Date]') { // use this date test to handle crossing frame boundaries
 						target[name] = new Date(sval);
@@ -12553,6 +12597,31 @@ define(["./sniff", "./_base/window","./dom", "./dom-style"],
 		return geom.boxModel == "border-box" || node.tagName.toLowerCase() == "table" || isButtonTag(node); // boolean
 	}
 
+	function getBoundingClientRect(/*DomNode*/ node) {
+		// summary:
+		//		Gets the bounding client rectangle for a dom node.
+		// node: DOMNode
+
+		// This will return the result of node.getBoundingClientRect if node is in the dom, and
+		// {x:0, y:0, width:0, height:0, top:0, right:0, bottom:0, left:0} if it throws an error or the node is not on the dom
+		// This will handle when IE throws an error or Edge returns an empty object when node is not on the dom
+
+		var retEmpty = { x: 0, y: 0, width: 0, height: 0, top: 0, right: 0, bottom: 0, left: 0 },
+			ret;
+
+		try {
+			ret = node.getBoundingClientRect();
+		} catch (e) {
+			// IE throws an Unspecified Error if the node is not in the dom. Handle this by returning an object with 0 values
+			return retEmpty;
+		}
+
+		// Edge returns an empty object if the node is not in the dom. Handle this by returning an object with 0 values
+		if (typeof ret.left === "undefined") { return retEmpty; }
+
+		return ret;
+	}
+
 	geom.setContentSize = function setContentSize(/*DomNode*/ node, /*Object*/ box, /*Object*/ computedStyle){
 		// summary:
 		//		Sets the size of the node's contents, irrespective of margins,
@@ -12656,7 +12725,7 @@ define(["./sniff", "./_base/window","./dom", "./dom-style"],
 		// returns: Object
 
 		doc = doc || win.doc;
-		var node = win.doc.parentWindow || win.doc.defaultView;   // use UI window, not dojo.global window.   TODO: use dojo/window::get() except for circular dependency problem
+		var node = doc.parentWindow || doc.defaultView;   // use UI window, not dojo.global window.   TODO: use dojo/window::get() except for circular dependency problem
 		return "pageXOffset" in node ? {x: node.pageXOffset, y: node.pageYOffset } :
 			(node = has("quirks") ? win.body(doc) : doc.documentElement) &&
 				{x: geom.fixIeBiDiScrollLeft(node.scrollLeft || 0, doc), y: node.scrollTop || 0 };
@@ -12721,7 +12790,7 @@ define(["./sniff", "./_base/window","./dom", "./dom-style"],
 
 		node = dom.byId(node);
 		var	db = win.body(node.ownerDocument),
-			ret = node.getBoundingClientRect();
+			ret= getBoundingClientRect(node);
 		ret = {x: ret.left, y: ret.top, w: ret.right - ret.left, h: ret.bottom - ret.top};
 
 		if(has("ie") < 9){
@@ -12759,7 +12828,7 @@ define(["./sniff", "./_base/window","./dom", "./dom-style"],
 
 		node = dom.byId(node);
 		var me = geom.getMarginExtents(node, computedStyle || style.getComputedStyle(node));
-		var size = node.getBoundingClientRect();
+		var size = getBoundingClientRect(node);
 		return {
 			w: (size.right - size.left) + me.w,
 			h: (size.bottom - size.top) + me.h
