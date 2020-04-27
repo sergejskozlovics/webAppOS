@@ -309,7 +309,7 @@ public class ZippedProject implements IProject {
 		if (appProps != null) {
 			for (String awc : appProps.auto_webcalls) {
 				
-				System.out.println("Executing auto webcall `"+awc+"'... ["+this.getName()+"]");
+				logger.debug("Executing auto webcall `"+awc+"'... ["+this.getName()+"]");
 				IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
 				
 				seed.actionName = awc;

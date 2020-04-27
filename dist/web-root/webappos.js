@@ -1857,8 +1857,30 @@ script_label: {
     };
 
 
+    /**
+    Function: webappos.js_util.download_string
+  
+    Displays a download dialog for an in-memory file created from the given string.
+  
+    Parameters:
+      s - the string representing the body of the file to download
+      defaultFileName - the default file name to offer to the user
 
+    Returns:
+      nothing; the browser will offer the user to download the string as file
+    */
+   webappos.js_util.download_string = function (s, defaultFileName) {
+      var element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(s));
+      element.setAttribute('download', defaultFileName);
 
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+
+      document.body.removeChild(element);
+    };
 
   }; // if (window.webappos.defined_here)
 
@@ -2422,6 +2444,16 @@ script_label: {
               if (!obj2[inverseRoleName])
                 obj2[inverseRoleName] = [];
               obj2[inverseRoleName].push(this);
+
+              var assoc = tda.model[rAssoc];
+              if (assoc.isComposition) {
+                // delete other inverse linked objects...
+                obj2[inverseRoleName] = [this];
+              }
+              if (assoc.inverse && assoc.inverse.isComposition) {
+                // delete other direct linked objects...
+                this[roleName] = [obj2];
+              }
             }
 
             var arr = new Float64Array(4);
@@ -2494,10 +2526,34 @@ script_label: {
                 return;
             }
 
+
+            var assoc = tda.model[rAssoc];
+            if (assoc.inverse && assoc.inverse.isComposition) {
+              if (newArr.length>0) {
+                newArr = [newArr[0]]; // keeping just 1 element
+              }
+            }
+
+
             if (inverseRoleName) {
               for (var k = 0; k < newArr.length; k++) {
-                var arr = newArr[k][inverseRoleName];
-                if (!arr) {
+                var arr = newArr[k][inverseRoleName]; 
+                if (arr && assoc.isComposition) {
+                  // delete links to previous owners;
+                  // arr is the list of previous owners for newArr[k]
+                  for (var w = 0; w < arr.length; w++) { // here arr.length should be 0 or 1
+                    let arr2 = arr[w][roleName]; // all siblings of the previous owner
+                    if (arr2)
+                      for (var z = 0; z < arr2.length; z++)
+                        if (arr2[z] == newArr[k]) { // we are the sibling!!!
+                          arr2.splice(z, 1); // remove ourself from the owner's siblings
+                        }
+                    arr[w][roleName] = [];
+                  }
+                  arr = [];
+                  newArr[k][inverseRoleName] = [];
+                }
+                if (!arr) { 
                   arr = [];
                   newArr[k][inverseRoleName] = [];
                 }
@@ -2829,14 +2885,21 @@ script_label: {
           var assoc = tda.model[rAssoc];
           if (tda.model.linkExists(r1, r2, rAssoc))
             return;
+
           if (!tda.model.checkEventOrCommand(r1, r2, rAssoc, true)) {
             if (!obj1[assoc.roleName])
               obj1[assoc.roleName] = [];
             obj1[assoc.roleName].push(obj2);
             if (assoc.inverse) {
+              if (assoc.inverse.isComposition) {
+                obj1[assoc.roleName] = [obj2]; // delete all other links to the owner
+              }
               if (!obj2[assoc.inverse.roleName])
-                obj2[assoc.inverse.roleName] = [];
+                obj2[assoc.inverse.roleName] = [];              
               obj2[assoc.inverse.roleName].push(obj1);
+              if (assoc.isComposition) {
+                obj2[assoc.inverse.roleName] = [obj1]; // delete all other links to the owner
+              }
             }
 
             // validate server-side link...
@@ -2860,9 +2923,15 @@ script_label: {
               obj1[assoc.roleName] = [];
             obj1[assoc.roleName].splice(i, 0, obj2);
             if (assoc.inverse) {
+              if (assoc.inverse.isComposition) {
+                obj1[assoc.roleName] = [obj2]; // delete all other links to the owner
+              }
               if (!obj2[assoc.inverse.roleName])
                 obj2[assoc.inverse.roleName] = [];
               obj2[assoc.inverse.roleName].push(obj1);
+              if (assoc.isComposition) {
+                obj2[assoc.inverse.roleName] = [obj1]; // delete all other links to the owner
+              }
             }
             // validate server-side link...
             var arr = new Float64Array(4);
@@ -3407,6 +3476,10 @@ script_label: {
 
         console.log("submit" + obj.getClassName() + ", r=" + obj.reference+", time since connect finished="+dt);
 
+        if (obj.getClassName()=="LaunchTransformationCommand") {
+          console.log(obj.getUri())
+        }
+
         if (obj.linkSubmitter)
           obj.linkSubmitter(tda.model["Submitter"].getFirstObject());
         else {
@@ -3530,6 +3603,52 @@ script_label: {
         });
 
       };
+
+      /**
+      Function: webmem.extract
+    
+      Extracts a subtree of objects from web memory starting from the given root object.
+      Child objects are determined by compositions (association ends where isComposition==true).
+      The returned object will contain only value properties and arrays for compositions but no functions such as getClassName() or get<RoleName>().
+      However, the name of the first class will be available as the "className" property.
+    
+      Parameters:
+        obj - root object
+
+      Returns:
+        a cloned JS object with attributes and descendants corresponding to composition relations;
+        functions are removed from the cloned object; thus, it can be serialized using JSON.stringify
+      */
+      tda.model.extract = function(obj) {
+        var root = {};
+
+        root.className = obj.getClassName();
+
+        // cloning child objects accessible by compositions...
+        for (let i=0; i<obj.classes.length; i++) {
+          let assocs = obj.classes[i].getAllAssociations();
+          for (let j in assocs) {
+            let name = assocs[j].roleName;
+            if (obj[name] && assocs[j].isComposition) {
+              // recurse into children by composition...
+              if (!root[name])
+                root[name] = [];
+              for (let k=0; k<obj[name].length; k++) {
+                root[name].push( tda.model.extract(obj[name][k]) );
+              }              
+            }
+          }
+        }
+
+        for (var attr in obj) {
+          if (obj.hasOwnProperty(attr) && !webappos.js_util.is_array(obj[attr])) { // not an array means this is an attribute value; cloning it...
+            root[attr] = obj[attr];
+          }
+        }
+
+        return root;
+      };
+    
 
     }; // if (!window.tda)
 

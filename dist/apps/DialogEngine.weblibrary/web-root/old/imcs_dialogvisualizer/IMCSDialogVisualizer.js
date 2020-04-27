@@ -78,6 +78,15 @@ if (typeof IMCSDialogLayout === 'undefined')
  */
 
 var IMCSDialogVisualizer = function (treeRoot, settings) { // class
+
+  /*
+  // debug>:
+  let json = webmem.extract(treeRoot);
+  console.log(json);
+  webappos.js_util.download_string(JSON.stringify(json, null, 2), "dialog2.json");
+  // < debug
+  */
+  
   var myThis = this;
 
   this.treeRoot = treeRoot;

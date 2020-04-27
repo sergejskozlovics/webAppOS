@@ -96,6 +96,31 @@ public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAP
 			}
 		}
 		else {
+			long rInv = getDelegate().getInverseAssociationEnd(rAssociationEnd);
+			if (rInv!=0) {				
+				if (getDelegate().isComposition(rAssociationEnd)) {
+					// clear all links from the target object...
+					long it = getDelegate().getIteratorForLinkedObjects(rTargetObject, rInv);
+					long linked = getDelegate().resolveIteratorFirst(it);
+					while (linked!=0) {
+						getDelegate().deleteLink(rTargetObject, linked, rInv);
+						linked = getDelegate().resolveIteratorNext(it);
+					}
+					getDelegate().freeIterator(it);
+				}
+				else
+				if (getDelegate().isComposition(rInv)) {
+					// clear all links from the source object...
+					long it = getDelegate().getIteratorForLinkedObjects(rSourceObject, rAssociationEnd);
+					long linked = getDelegate().resolveIteratorFirst(it);
+					while (linked!=0) {
+						getDelegate().deleteLink(rSourceObject, linked, rAssociationEnd);
+						linked = getDelegate().resolveIteratorNext(it);
+					}
+					getDelegate().freeIterator(it);
+				}
+
+			}
 			return getDelegate().createLink(rSourceObject, rTargetObject, rAssociationEnd);
 		}
 	}
@@ -128,6 +153,31 @@ public class TDAKernelDelegate extends DelegatorToRepositoryBase implements RAAP
 			}
 		}
 		else {
+			long rInv = getDelegate().getInverseAssociationEnd(rAssociationEnd);
+			if (rInv!=0) {				
+				if (getDelegate().isComposition(rAssociationEnd)) {
+					// clear all links from the target object...
+					long it = getDelegate().getIteratorForLinkedObjects(rTargetObject, rInv);
+					long linked = getDelegate().resolveIteratorFirst(it);
+					while (linked!=0) {
+						getDelegate().deleteLink(rTargetObject, linked, rInv);
+						linked = getDelegate().resolveIteratorNext(it);
+					}
+					getDelegate().freeIterator(it);
+				}
+				else
+				if (getDelegate().isComposition(rInv)) {
+					// clear all links from the source object...
+					long it = getDelegate().getIteratorForLinkedObjects(rSourceObject, rAssociationEnd);
+					long linked = getDelegate().resolveIteratorFirst(it);
+					while (linked!=0) {
+						getDelegate().deleteLink(rSourceObject, linked, rAssociationEnd);
+						linked = getDelegate().resolveIteratorNext(it);
+					}
+					getDelegate().freeIterator(it);
+				}
+
+			}
 			return getDelegate().createOrderedLink(rSourceObject, rTargetObject, rAssociationEnd, position);
 		}
 	}

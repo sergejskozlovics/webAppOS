@@ -334,9 +334,17 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		
 		
  	}
-	
+
 	@Override
-	synchronized public boolean invokeNow(WebCallSeed _seed) {
+	synchronized public boolean invokeNow(WebCallSeed seed) {
+		
+		IWebMemory webmem = API.dataMemory.getWebMemory(seed.project_id);
+
+		return invokeNow(seed, webmem);
+		
+	}
+	
+	synchronized public boolean invokeNow(WebCallSeed _seed, IWebMemory webmem) {
 		if (_seed==null)
 			return false;
 
@@ -364,7 +372,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		
 
 	
-		logger.trace("WebCaller trying to invoke now "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",kernel="+API.dataMemory.getWebMemory(seed2.project_id)+",arg="+seed2.webmemArgument);
+		logger.trace("WebCaller trying to invoke now "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",webmem="+webmem+",arg="+seed2.webmemArgument);
 		WebCallDeclaration action = map.get(seed2.actionName);
 		if (action==null && seed2.fullAppName!=null) {
 			// Lua patch...
@@ -404,7 +412,6 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 							sync = ((WebMemoryArea)API.dataMemory).getSingleSynchronizer(seed2.project_id);
 				}
 				else {
-					IWebMemory webmem = API.dataMemory.getWebMemory(seed2.project_id);
 					if (webmem instanceof TDAKernel)
 						sync = ((TDAKernel)webmem).getSynchronizer();
 				}
@@ -439,7 +446,6 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 							sync = ((WebMemoryArea)API.dataMemory).getSingleSynchronizer(seed2.project_id);
 				}
 				else {
-					IWebMemory webmem = API.dataMemory.getWebMemory(seed2.project_id);
 					if (webmem instanceof TDAKernel)
 						sync = ((TDAKernel)webmem).getSynchronizer();					
 				}
@@ -477,7 +483,6 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 			return false;
 		}
 		
-		IWebMemory kernel = API.dataMemory.getWebMemory(seed2.project_id);
 		String jsonResult = null;
 										
 		if ((seed2.callingConventions == CallingConventions.JSONCALL) && (adapter instanceof IJsonWebCallsAdapter)) {
@@ -496,7 +501,7 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		else
 		if ((seed2.callingConventions == CallingConventions.WEBMEMCALL) && (adapter instanceof IWebMemWebCallsAdapter)) {
 			try {
-				((IWebMemWebCallsAdapter)adapter).webmemcall(action.resolvedLocation, action.pwd, seed2.webmemArgument, kernel, seed2.project_id, seed2.fullAppName, seed2.login);
+				((IWebMemWebCallsAdapter)adapter).webmemcall(action.resolvedLocation, action.pwd, seed2.webmemArgument, webmem, seed2.project_id, seed2.fullAppName, seed2.login);
 				if (seed2.jsonResult!=null)
 					seed2.jsonResult.complete(jsonResult);
 			}

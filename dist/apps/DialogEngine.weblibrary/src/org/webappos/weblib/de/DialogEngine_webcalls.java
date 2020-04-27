@@ -48,7 +48,7 @@ public class DialogEngine_webcalls {
 			f.setContentURI("html:DialogEngine.html?frameReference="+f.getRAAPIReference());
 			f.setForm(df);
 			if (modal) {
-				f.setLocation("modalpopup[0*0]"); // will be resized by DialogEngine
+				f.setLocation("modalpopup[330*440]"); // will be resized by DialogEngine
 			}
 			else
 				f.setLocation("popup");

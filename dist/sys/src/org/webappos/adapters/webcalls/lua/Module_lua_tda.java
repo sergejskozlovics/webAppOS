@@ -120,7 +120,9 @@ public class Module_lua_tda extends TwoArgFunction {
 
 		@Override
 		synchronized public LuaValue call(LuaValue _where, LuaValue _what) {
-			String s = searchRecursively(new File(_where.tojstring()), _what.tojstring());
+			String s = searchRecursively(new File(_where.tojstring().replace('\\', '/')), _what.tojstring().replace('\\', '/'));
+			
+			//String s = searchRecursively(new File(_where.tojstring()), _what.tojstring());
 			if (s == null)
 				return LuaValue.NIL;
 			else

@@ -1,0 +1,476 @@
+<html>
+
+<head>
+	<script src="dojo/dojo.js" data-dojo-config="async:1"></script>
+	<link rel="stylesheet" href="/webappos/djtheme/webappos.css">
+	<script type="text/javascript" src="/webappos.js"></script>
+	<script type="text/javascript" src="imcs_dialogvisualizer/IMCSDialogVisualizer.js"></script>
+</head>
+
+<body id="theBody" class="webappos" style="padding:0; margin:0;">
+	<script>
+		if (!tda.model.DialogEngine)
+			document.body.innerHTML = "Dialog Engine requires webAppOS web memory with Dialog Engine Metamodel loaded.";
+	</script>
+	<div id="mainLayout" style="padding:0; margin:0;">
+	</div>
+
+	<script>
+		var bkg = webappos.js_util.get_query_value("bkg");
+		if (bkg)
+			theBody.style["background-color"] = "#" + bkg;
+
+		var frameRef = webappos.js_util.get_query_value("frameReference");
+		var iframe = window.parent["iframe" + frameRef];
+
+		var formObject = null;
+		var closeCommandGiven = false;
+
+		// >>>>> global event handler
+		function callEventHandler(event) {
+
+
+			console.log("DLG EVENT", event);
+			var c = event.source;
+			var eventName = event.name;
+			var eventSpecificValue = event.data;
+
+			// store value of checkbox:
+
+			if (c.isKindOf("D#CheckBox")) {
+				c.setChecked(eventSpecificValue);
+			}
+
+			// store value for inputfield:
+			if (c.isKindOf("D#InputField")) {
+				if (typeof eventSpecificValue != "undefined") {
+					c.setText(eventSpecificValue);
+				}
+			}
+
+			// store value for combobox:
+			if (c.isKindOf("D#ComboBox")) {
+				if ((eventName == "Change") || (eventName == "FocusLost")) {
+					c.setText(eventSpecificValue);
+					c.setSelected([]);
+					var items = c.getItem();
+					for (var i = 0; i < items.length; i++) {
+						if (eventSpecificValue == items[i].getValue()) {
+							c.setSelected(items[i]);
+							break;
+						}
+					}
+				}
+			}
+
+			// store value for radiobutton:
+			if (c.isKindOf("D#RadioButton")) {
+				if ((eventName == "Click") || (eventName == "UnClick")) {
+					c.setSelected(eventSpecificValue);
+				}
+			}
+
+			// store values for listbox:
+			if (c.isKindOf("D#ListBox")) {
+				var ids = eventSpecificValue;
+				var arr = [];
+				for (i = 0; i < ids.length; i++)
+					arr.push(tda.model[ids[i]]); // ?parseInt
+				c.setSelected(arr);
+			}
+
+			// stores position and lines of multi line text box:
+			if (c.isKindOf("D#MultiLineTextBox")) {
+				// storing position
+				if (eventSpecificValue && typeof eventSpecificValue.position != "undefined") {
+					var position = eventSpecificValue.position;
+					var arr = c.getTextLine();
+
+					if (arr.length == 0) {
+						var line = new tda.model["D#TextLine"]();
+						line.setDeleted(false);
+						line.setInserted(true);
+						line.setEdited(false);
+						c.setTextLine([line]);
+						c.setCurrent([line]); // == line.setParentMultiLineTextBox(c);
+						arr = c.getTextLine();
+					}
+
+					for (var q = 0; q < arr.length; q++) {
+						if (!arr[q].getDeleted()) {
+							var text = arr[q].text ? arr[q].text : "";
+							if (position <= text.length) {
+								c.setCurrent(arr[q]);
+								break;
+							} else {
+								position -= text.length;
+								position--; // \n
+							}
+						}
+					}
+					if (c.getCurrent().length == 0) {
+						if (arr.length > 0) {
+							c.setCurrent([arr[0]]);
+							// ??? area.textbox.setSelectionRange(0, 0);
+						}
+					}
+				}
+				// storing text lines, if specified...
+				if (eventSpecificValue && typeof eventSpecificValue.text != "undefined") {
+					c.setText(eventSpecificValue.text);
+
+					var arr = c.getTextLine();
+					var vArr = eventSpecificValue.text.split("\n");
+
+					var i = 0;
+					while ((i < arr.length) && (i < vArr.length) && (arr[i].text ==
+							vArr[i]))
+						i++;
+					var j = arr.length - 1;
+					var jv = vArr.length - 1;
+					while ((j >= 0) && (jv >= 0) && (arr[j].text == vArr[jv])) {
+						j--;
+						jv--;
+					}
+					j++; // exactly where the "tail" starts
+					jv++;
+
+					if (jv == j) { // the same amount of rows...
+						for (var k = 0; k < i; k++) {
+							arr[k].setDeleted(false);
+							arr[k].setInserted(false);
+							arr[k].setEdited(false);
+						}
+						for (var k = i; k < j; k++) {
+							arr[k].setDeleted(false);
+							arr[k].setInserted(false);
+							arr[k].setEdited(true);
+							arr[k].setText(vArr[k]);
+						}
+						for (var k = j; k < arr.length; k++) {
+							arr[k].setDeleted(false);
+							arr[k].setInserted(false);
+							arr[k].setEdited(false);
+						}
+						c.setTextLine(arr);
+					} else
+					if (jv < j) { // some rows deleted...
+						for (var k = 0; k < i; k++) {
+							arr[k].setDeleted(false);
+							arr[k].setInserted(false);
+							arr[k].setEdited(false);
+						}
+						for (var k = i; k < jv; k++) {
+							arr[k].setDeleted(false);
+							arr[k].setInserted(false);
+							arr[k].setEdited(true);
+							arr[k].setText(vArr[k]);
+						}
+						for (var k = jv; k < j; k++) {
+							arr[k].setDeleted(true);
+							arr[k].setInserted(false);
+							arr[k].setEdited(false);
+						}
+						for (var k = j; k < arr.length; k++) {
+							arr[k].setDeleted(false);
+							arr[k].setInserted(false);
+							arr[k].setEdited(false);
+						}
+					} else { // (j<jv)
+						var newArr = [];
+						// some rows inserted...
+						for (var k = 0; k < i; k++) {
+							var line = arr[k];
+							line.setDeleted(false);
+							line.setInserted(false);
+							line.setEdited(false);
+							newArr.push(line);
+						}
+						for (var k = i; k < j; k++) {
+							var line = arr[k];
+							line.setDeleted(false);
+							line.setInserted(false);
+							line.setEdited(true);
+							line.setText(vArr[k]);
+							newArr.push(line);
+						}
+						for (var k = j; k < jv; k++) {
+							var line = new tda.model["D#TextLine"]();
+							line.setDeleted(false);
+							line.setInserted(true);
+							line.setEdited(false);
+							newArr.push(line);
+						}
+						for (var k = j; k < arr.length; k++) {
+							var line = arr[k];
+							line.setDeleted(false);
+							line.setInserted(false);
+							line.setEdited(false);
+							newArr.push(line);
+						}
+						c.setTextLine(arr);
+					}
+
+				}
+			}
+
+			if (c.isKindOf("D#TextArea")) {
+				if (eventSpecificValue && typeof eventSpecificValue.text != "undefined") {
+					c.setText(eventSpecificValue.text);
+				}
+			}
+
+			// check for modern event handler obj.on[EventName]Event...
+			if (c["getOn"+eventName+"Event"]) {
+				let actionName = c["getOn"+eventName+"Event"]();
+				if (actionName) {
+					var ev = new tda.model["D#Event"];
+							ev.setEventName(eventName);
+							ev.setInfo(eventName);
+							ev.setSource(c);
+					tda.model.webcall(actionName, ev.reference);
+				}
+			}
+
+			// check for legacy event handlers...
+			if (c.eventHandler && (c.eventHandler.length > 0)) {
+				for (var i = 0; i < c.eventHandler.length; i++) {
+					if ((c.eventHandler[i].eventName == eventName) ||
+						((eventName == "Close") && (c.eventHandler[i].eventName == "Click")) ||
+						((eventName == "Close") && (c.eventHandler[i].eventName == "CancelButtonClick"))
+					) {
+
+						// deleting previous D#Event-s 
+						/*var cls = tda.model["D#Event"];
+						var obj = cls.getFirstObject();
+						while (obj != null) {
+							console.log("deleting d#event"); //!!!
+							obj.delete();
+							obj = cls.getFirstObject();
+						}*/
+
+						if (c.eventHandler[i].transformationName != "lua_engine") {
+							console.log("!!!non-lua legacy transformation: ", c.eventHandler[i].transformationName, c
+								.eventHandler[i].procedureName);
+							continue;
+						}
+						if ((eventName.toLowerCase() == "change") ||
+							(eventName.toLowerCase() == "focuslost") ||
+							(eventName.toLowerCase() == "focusgained")
+						) {
+							var ev = new tda.model["D#Event"];
+							ev.setEventName(eventName);
+							ev.setInfo(eventName);
+							ev.setSource(c);
+
+
+							var cmd = new tda.model["LaunchTransformationCommand"];
+							if (c.eventHandler[i].procedureName.indexOf("lua.") == 0)
+								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName.substring(4));
+							else
+								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName);
+							console.log("Submitting LaunchTransformationCommand "+cmd.reference+" ["+cmd.uri+"] for D#Event "+ev.reference);
+							tda.model.submit(cmd);
+						}
+						if (eventName.toLowerCase() == "close") {
+							if (window.closeCommandGiven)
+								continue; // do not emit close event, if the form is closed via a transformation
+							var ev = new tda.model["D#Event"];
+
+							if ((typeof c.buttonClickOnClose != 'undefined') && ((c.buttonClickOnClose == false) || (c
+									.buttonClickOnClose == "false"))) {
+								ev.setEventName("Close");
+								ev.setInfo("Close");
+								ev.setSource(c);
+							} else {
+								// searching for cancelButton or defaultButton
+								var b = null;
+								if (c.cancelButton && (c.cancelButton.length > 0))
+									b = c.cancelButton[0];
+								if (b == null)
+									if (c.defaultButton && (c.defaultButton.length > 0))
+										b = c.defaultButton[0];
+
+								if (b != null) {
+									// simulate "Click"...
+									ev.setEventName("Click");
+									ev.setInfo("Click");
+									ev.setSource(b);
+								} else {
+									ev.setEventName("CancelButtonClick");
+									ev.setInfo("CancelButtonClick");
+									ev.setSource(c);
+								}
+							}
+
+							var cmd = new tda.model["LaunchTransformationCommand"];
+							if (c.eventHandler[i].procedureName.indexOf("lua.") == 0)
+								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName.substring(4));
+							else
+								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName);
+							tda.model.submit(cmd);
+						}
+						if (eventName.toLowerCase() == "click") {
+							var ev = new tda.model["D#Event"];
+
+							ev.setEventName("Click");
+							ev.setInfo("Click");
+							ev.setSource(c);
+
+							var cmd = new tda.model["LaunchTransformationCommand"];
+							if (c.eventHandler[i].procedureName.indexOf("lua.") == 0)
+								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName.substring(4));
+							else
+								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName);
+							tda.model.submit(cmd);
+
+							/*
+							if ((c.defaultButtonForm && (c.defaultButtonForm.length > 0)) ||
+								(c.cancelButtonForm && (c.cancelButtonForm.length > 0))) {
+								if ((formObject != null) && (closeCommandGiven == false)) {
+									var saved = tda.model.last_submitted;
+									//setTimeout(function () {
+									callEventHandler({
+										source: formObject,
+										name: "Close"
+									});
+									tda.model.last_submitted = saved;
+									//}, 10);
+								}
+
+							}
+							*/
+						}
+					}
+				}
+			}
+		}
+		// <<<<< global event handler
+
+		// >>>>> window.finalize
+		require(["dijit/registry"], function (registry) {
+			function getWidgetByNode(node) {
+				var result = null;
+				while (!result && node) {
+					result = registry.byNode(node);
+					if (node.parentElement)
+						node = node.parentElement;
+					else
+						node = null;
+				}
+				return result;
+			}
+
+
+			window.finalize = function () {
+				require(["dijit/focus"], function (focusUtil) {
+					var focusedWidget = getWidgetByNode(focusUtil.curNode);
+					if (focusedWidget != null) {
+						if (focusedWidget.onChange)
+							focusedWidget.onChange();
+						if (focusedWidget.onBlur)
+							focusedWidget.onBlur();
+					}
+					if ((formObject != null) && (closeCommandGiven == false)) {
+						callEventHandler({
+							source: formObject,
+							name: "Close"
+						});
+					}
+				});
+			};
+
+
+		});
+		// <<<<< window.finalize
+
+		function executeAfterConfigCmd(cmd) {
+			console.log("AFTERCONFIG CMD");
+			if (cmd)
+				cmd.delete();
+		}
+
+		function executeD_Command(cmd) {
+			console.log("executeD_Command " + cmd.info, cmd);
+			var dForm = cmd.receiver[0];
+
+			if (cmd.info == "Close") {
+				closeCommandGiven = true;
+
+
+				var r = cmd.reference;
+				var arr = cmd.getReceiver();
+				cmd.delete();
+				for (var i = 0; i < arr.length; i++) {
+					dForm = arr[i];
+					if (dForm.frame && (dForm.frame.length > 0)) {
+						callEventHandler({
+							source: dForm,
+							name: "Close"
+						});
+						var cmd2 = new tda.model.DetachFrameCommand();
+						cmd2.setPermanently(true);
+						cmd2.setFrame(dForm.frame[0]);
+						tda.model.submit(cmd2);
+					}
+					console.log("DDDeleting form "+dForm.caption+" "+dForm.reference);
+					dForm.delete();
+				}
+				return;
+			}
+
+
+			if (cmd.info == "Refresh") {
+
+				var r;
+				if (cmd.receiver && ((cmd.receiver.length > 1) || (cmd.receiver.length == 0))) {
+					var arr = cmd.getReceiver();
+					for (var i = 0; i < arr.length; i++) {
+						if (i < arr.length - 1)
+							arr[i].delete();
+						else
+							r = arr[i].reference;
+					}
+					if (!r)
+						r = window.formObject.reference;
+				} else {
+					var component = cmd.receiver[0];
+					r = component.reference;
+				}
+				cmd.delete();
+
+				window.dialogVisualizer.refresh(r);
+				return;
+			}
+
+			window.formObject = dForm;
+
+			var settings = {
+				iframe: iframe,
+				screenWidth: webappos.desktop.get_width(),
+				screenHeight: webappos.desktop.get_height(),
+				divID: "mainLayout",
+				eventHandler: callEventHandler,
+				resizeFrame: window.parent.resizeFrame // defined in EnvironmentEngine
+			};
+
+			try {
+				var d = new Date();
+				var time1 = d.getTime();
+				window.dialogVisualizer = new IMCSDialogVisualizer(dForm, settings);
+				d = new Date();
+				var time2 = d.getTime();
+				console.log("imcs de viz init "+(time2-time1));
+				window.dialogVisualizer.visualize();
+			} catch (t) {
+				console.log(t);
+			}
+
+			cmd.delete();
+
+		}
+	</script>
+
+</body>
+
+</html>

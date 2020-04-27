@@ -12,6 +12,8 @@ import org.webappos.antiattack.ValidityChecker;
 import org.webappos.fs.HomeFS;
 import org.webappos.properties.WebAppProperties;
 import org.webappos.server.API;
+import org.webappos.webcaller.IWebCaller;
+import org.webappos.webcaller.WebCaller;
 
 import lv.lumii.tda.kernel.IEventsCommandsHook;
 import lv.lumii.tda.kernel.TDAKernel;
@@ -251,9 +253,25 @@ public class CloudProject implements IProject {
 	}
 	
 	private void postOpen(final boolean bootstrap, final String login, RAAPI_Synchronizer sync, IEventsCommandsHook hook) {
+		
 		if (appProps != null) {
-			for (String awc : appProps.auto_webcalls)
-				System.out.println("Executing auto webcall `"+awc+"'...");
+			if (API.webCaller instanceof WebCaller) {
+				for (String awc : appProps.auto_webcalls) {
+					logger.debug("Executing auto webcall `"+awc+"'... ["+this.getName()+"]");
+					IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
+					
+					seed.actionName = awc;
+					seed.project_id = this.getName();
+					
+					
+					seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
+					seed.webmemArgument = 0;
+					
+			  		((WebCaller)API.webCaller).invokeNow(seed, this.tdaKernel);
+				}
+			}
+			else
+				logger.warn("API.webCaller is not of type WebCaller; thus, we were unable to execute auto.webcalls");
 		}
 
 		

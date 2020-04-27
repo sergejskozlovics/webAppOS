@@ -1,10 +1,12 @@
 <html>
 
 <head>
-	<script src="dojo/dojo.js" data-dojo-config="async:1"></script>
+	<script src="dojo/dojo.js" data-dojo-config="async:0"></script>
 	<link rel="stylesheet" href="/webappos/djtheme/webappos.css">
 	<script type="text/javascript" src="/webappos.js"></script>
-	<script type="text/javascript" src="imcs_dialogvisualizer/IMCSDialogVisualizer.js"></script>
+	<script type="text/javascript" src="/jquery.js"></script>
+	<link rel="stylesheet" href="imcs_dialogvisualizer.css">
+	<script type="text/javascript" src="imcs_dialogvisualizer.js"></script>
 </head>
 
 <body id="theBody" class="webappos" style="padding:0; margin:0;">
@@ -12,7 +14,7 @@
 		if (!tda.model.DialogEngine)
 			document.body.innerHTML = "Dialog Engine requires webAppOS web memory with Dialog Engine Metamodel loaded.";
 	</script>
-	<div id="mainLayout" style="padding:0; margin:0;">
+	<div id="mainLayout" style="padding:0; margin:0;width:100%;height:100%;">
 	</div>
 
 	<script>
@@ -26,64 +28,12 @@
 		var formObject = null;
 		var closeCommandGiven = false;
 
-		// >>>>> global event handler
-		function callEventHandler(event) {
 
-
-			console.log("DLG EVENT", event);
-			var c = event.source;
-			var eventName = event.name;
-			var eventSpecificValue = event.data;
-
-			// store value of checkbox:
-
-			if (c.isKindOf("D#CheckBox")) {
-				c.setChecked(eventSpecificValue);
-			}
-
-			// store value for inputfield:
-			if (c.isKindOf("D#InputField")) {
-				if (typeof eventSpecificValue != "undefined") {
-					c.setText(eventSpecificValue);
-				}
-			}
-
-			// store value for combobox:
-			if (c.isKindOf("D#ComboBox")) {
-				if ((eventName == "Change") || (eventName == "FocusLost")) {
-					c.setText(eventSpecificValue);
-					c.setSelected([]);
-					var items = c.getItem();
-					for (var i = 0; i < items.length; i++) {
-						if (eventSpecificValue == items[i].getValue()) {
-							c.setSelected(items[i]);
-							break;
-						}
-					}
-				}
-			}
-
-			// store value for radiobutton:
-			if (c.isKindOf("D#RadioButton")) {
-				if ((eventName == "Click") || (eventName == "UnClick")) {
-					c.setSelected(eventSpecificValue);
-				}
-			}
-
-			// store values for listbox:
-			if (c.isKindOf("D#ListBox")) {
-				var ids = eventSpecificValue;
-				var arr = [];
-				for (i = 0; i < ids.length; i++)
-					arr.push(tda.model[ids[i]]); // ?parseInt
-				c.setSelected(arr);
-			}
-
+		function storeMultiLineTextBox(c, text, position) {
 			// stores position and lines of multi line text box:
 			if (c.isKindOf("D#MultiLineTextBox")) {
 				// storing position
-				if (eventSpecificValue && typeof eventSpecificValue.position != "undefined") {
-					var position = eventSpecificValue.position;
+				if (typeof position !== "undefined") {
 					var arr = c.getTextLine();
 
 					if (arr.length == 0) {
@@ -116,11 +66,11 @@
 					}
 				}
 				// storing text lines, if specified...
-				if (eventSpecificValue && typeof eventSpecificValue.text != "undefined") {
-					c.setText(eventSpecificValue.text);
+				if (typeof text !== "undefined") {
+					c.setText(text);
 
 					var arr = c.getTextLine();
-					var vArr = eventSpecificValue.text.split("\n");
+					var vArr = text.split("\n");
 
 					var i = 0;
 					while ((i < arr.length) && (i < vArr.length) && (arr[i].text ==
@@ -214,25 +164,34 @@
 				}
 			}
 
-			if (c.isKindOf("D#TextArea")) {
-				if (eventSpecificValue && typeof eventSpecificValue.text != "undefined") {
-					c.setText(eventSpecificValue.text);
-				}
-			}
 
-			// check for modern event handler obj.on[EventName]Event...
-			if (c["getOn"+eventName+"Event"]) {
-				let actionName = c["getOn"+eventName+"Event"]();
+
+		}
+
+		function invokeOnHandler(c, name, className, f) {
+			if (!name)
+				return;
+
+			let nameEvent = name;
+			if (name.indexOf("Event") < 0)
+				nameEvent += "Event";
+
+			if (c["getOn" + nameEvent]) {
+				let actionName = c["getOn" + nameEvent]();
 				if (actionName) {
-					var ev = new tda.model["D#Event"];
-							ev.setEventName(eventName);
-							ev.setInfo(eventName);
-							ev.setSource(c);
+					var ev = new tda.model[className];
+					ev.setEventName(name);
+					ev.setInfo(name);
+					ev.setSource(c);
+					if (f) f(ev);
 					tda.model.webcall(actionName, ev.reference);
 				}
 			}
+		}
 
-			// check for legacy event handlers...
+		function invokeLegacyHandler(c, eventName, className, f) {
+			if (!eventName)
+				return;
 			if (c.eventHandler && (c.eventHandler.length > 0)) {
 				for (var i = 0; i < c.eventHandler.length; i++) {
 					if ((c.eventHandler[i].eventName == eventName) ||
@@ -258,10 +217,11 @@
 							(eventName.toLowerCase() == "focuslost") ||
 							(eventName.toLowerCase() == "focusgained")
 						) {
-							var ev = new tda.model["D#Event"];
+							var ev = new tda.model[className];
 							ev.setEventName(eventName);
 							ev.setInfo(eventName);
 							ev.setSource(c);
+							if (f) f(ev);
 
 
 							var cmd = new tda.model["LaunchTransformationCommand"];
@@ -269,13 +229,14 @@
 								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName.substring(4));
 							else
 								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName);
-							console.log("Submitting LaunchTransformationCommand "+cmd.reference+" ["+cmd.uri+"] for D#Event "+ev.reference);
+							console.log("Submitting LaunchTransformationCommand " + cmd.reference + " [" + cmd.uri +
+								"] for "+className+" reference " + ev.reference);
 							tda.model.submit(cmd);
 						}
 						if (eventName.toLowerCase() == "close") {
 							if (window.closeCommandGiven)
 								continue; // do not emit close event, if the form is closed via a transformation
-							var ev = new tda.model["D#Event"];
+							var ev = new tda.model[className];
 
 							if ((typeof c.buttonClickOnClose != 'undefined') && ((c.buttonClickOnClose == false) || (c
 									.buttonClickOnClose == "false"))) {
@@ -302,6 +263,7 @@
 									ev.setSource(c);
 								}
 							}
+							if (f) f(ev);
 
 							var cmd = new tda.model["LaunchTransformationCommand"];
 							if (c.eventHandler[i].procedureName.indexOf("lua.") == 0)
@@ -311,11 +273,12 @@
 							tda.model.submit(cmd);
 						}
 						if (eventName.toLowerCase() == "click") {
-							var ev = new tda.model["D#Event"];
+							var ev = new tda.model[className];
 
 							ev.setEventName("Click");
 							ev.setInfo("Click");
 							ev.setSource(c);
+							if (f) f(ev);
 
 							var cmd = new tda.model["LaunchTransformationCommand"];
 							if (c.eventHandler[i].procedureName.indexOf("lua.") == 0)
@@ -341,47 +304,297 @@
 							}
 							*/
 						}
+						if (eventName == "TreeNodeSelect") {
+							var ev = new tda.model[className];
+
+							console.log("CLS", className, ev);
+							//ev.setEventName("TreeNodeSelect");
+							ev.setInfo("TreeNodeSelect");
+							//ev.setSource(c);
+							if (f) f(ev);
+
+							var cmd = new tda.model["LaunchTransformationCommand"];
+							if (c.eventHandler[i].procedureName.indexOf("lua.") == 0)
+								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName.substring(4));
+							else
+								cmd.setUri("lua(" + ev.reference + "):" + c.eventHandler[i].procedureName);
+							tda.model.submit(cmd);
+
+						}
 					}
 				}
 			}
+
+		}
+
+		// >>>>> global event handler
+		function callEventHandler(event) {
+
+
+			// To boost the performance and to deal with asynchronous issues, we use the following mapping 
+			// from IMCSDialogVisualizer events to legacy events (instances of D#Event with info/eventName values):
+			//
+			// ChangeEvent, MultiLineTextBoxChangeEvent
+			//                 => nothing (for InputField, MultiLineTextBox, and TextArea)
+			//                 => Change (for other components)
+			//
+			// FocustLostEvent
+			//                 => FocusLost (only when the value has been changed)
+			//                 => Change (for InputField, and TextArea)
+			//				   => MultiLineTextBoxChange (D#Event will be a D#MultiLineTextBoxChangeEvent instance with the corresponding inserted/edited/deleted links)
+			//
+			// FocusGainedEvent
+			//                 => DropDown (for D#ComboBox) + one common setTimeout to refresh the whole form after 1 second (we wait for the combo box tree element to be filled with items)
+			//                 => nothing (for other components)
+			//
+			// ResizeEvent
+			//                 => nothing (however, we will change the form size)
+			//
+			// TabChangeEvent
+			//                 => TabChange (D#Event will be a D#TabChangeEvent instance with the tab link)
+
+			// RightClickEvent => just do not forward
+
+			// forwarded event names...
+			let name1 = null;
+			let class1 = "D#Event";
+			let f1 = null;
+			let name2 = null;
+
+
+
+			console.log("DLG EVENT", event);
+			var c = event.component;
+			var eventName = event.eventName;
+			var eventSpecificValue = event.value;
+
+			if (eventName === "ChangeEvent") {
+				if (c.isKindOf("D#InputField") || c.isKindOf("D#MultiLineTextBox") || c.isKindOf("D#TextArea") || c.isKindOf(
+						"D#TextBox"))
+					return; // will handle on focus lost
+
+				if (c.isKindOf("D#CheckBox")) {
+					c.setChecked(eventSpecificValue);
+					name1 = "Change";
+				}
+				if (c.isKindOf("D#ImageButton")) {
+					c.setFileName(eventSpecificValue);
+					name1 = "Change";
+				}
+				if (c.isKindOf("D#ComboBox")) {
+					name1 = "Change";
+					// store the new value and the selected link
+					c.setText(eventSpecificValue);
+					c.setSelected([]);
+					var items = c.getItem();
+					for (var i = 0; i < items.length; i++) {
+						if (eventSpecificValue == items[i].getValue()) {
+							c.setSelected(items[i]);
+							break;
+						}
+					}
+				}
+
+			} else
+			if (eventName === "ImageChangeEvent") {
+				if (c.isKindOf("D#Image") || c.isKindOf("D#ImageButton")) {
+					c.setFileName(eventSpecificValue);
+					name1 = "Change";
+				}
+			} else
+			if (eventName === "MultiLineTextBoxChangeEvent") {
+				return; // will handle on focus lost
+			} else
+			if (eventName === "ListBoxChangeEvent") {
+				name1 = "Change";
+				class1 = "D#ListBoxChangeEvent";
+
+				// storing the selected link
+				var ids = eventSpecificValue;
+				var arr = [];
+				for (i = 0; i < ids.length; i++)
+					arr.push(tda.model[ids[i]]); // ?parseInt
+				c.setSelected(arr);
+			} else
+			if (eventName === "TabChangeEvent") {
+				if (c.isKindOf("D#TabContainer")) {
+					name1 = "TabChangeEvent";
+					class1 = "D#TabChangeEvent";
+					c.setActiveTab(eventSpecificValue);
+				}
+			} else
+			if (eventName === "RightClickEvent") {
+				return; // do not forward
+			} else
+			if (eventName === "FocusLostEvent") {
+				if (c.isKindOf("D#InputField") || c.isKindOf("D#TextArea") || c.isKindOf("D#TextBox")) {
+					if (c.getText() !== eventSpecificValue) {
+						c.setText(eventSpecificValue);
+						name1 = "Change";
+						name2 = "FocusLost";
+					}
+				} else
+				if (c.isKindOf("D#MultiLineTextBox")) {
+					if (c.getText() !== eventSpecificValue) {
+						name1 = "MultiLineTextBoxChange";
+						class1 = "D#MultiLineTextBoxChangeEvent";
+						name2 = "FocusLost";
+						storeMultiLineTextBox(c, event.value, event.position)
+					}
+				} else
+				if (c.isKindOf("D#ComboBox")) {
+					if (c.getText() != eventSpecificValue) {
+						name1 = "FocusLost";
+					}
+				} else
+				if (c.isKindOf("D#CheckBox")) {
+					if (c.getChecked() != eventSpecificValue) {
+						name1 = "FocusLost";
+					}
+				} else
+				if (c.isKindOf("D#RadioButton")) {
+					if (c.getSelected() != eventSpecificValue) {
+						name1 = "FocusLost";
+					}
+				}
+			} else
+			if (eventName === "FocusGainedEvent") {
+				if (c.isKindOf("D#ComboBox")) {
+					name1 = "DropDown";
+				} else
+					return; // do not forward
+			} else
+			if (eventName === "ClickEvent") {
+				if (c.isKindOf("D#Button") || c.isKindOf("D#RadioButton") || c.isKindOf("D#ImageButton"))
+					name1 = "Click";
+				else
+					return;
+			} else
+			if (eventName === "TreeNodeSelectEvent") {
+				if (c.isKindOf("D#Tree")) {
+					// storing the selected link...
+					if (eventSpecificValue) {
+						c.setSelected(webmem[eventSpecificValue.reference]);
+					}					
+					else
+						c.setSelected([]);
+					name1 = "TreeNodeSelect";
+					class1 = "D#TreeNodeSelectEvent";
+					f1 = function(ev) {
+						if (eventSpecificValue)
+							ev.linkTreeNode(webmem[eventSpecificValue.reference]);
+						if (event.previousValue) {
+							ev.linkPrevious(webmem[event.previousValue.reference]);
+						}
+					}
+				}
+				else
+					return;
+			} else
+			if (eventName === "FormCloseEvent") {
+				if (c.isKindOf("D#Form"))
+					name1 = "Close";
+				else
+					return;
+			} else
+			if ((eventName == "ResizeEvent") && (c.isKindOf("D#Form"))) {
+				console.log("onResize form");
+
+				// automatically resize the parent iframe...
+				var browserWidth = webappos.desktop.get_width();
+				var browserHeight = webappos.desktop.get_height();
+
+				var frameBorderWidth = (10 + 10);
+				var frameHeaderHeight = 22 + (10 + 10);
+
+				let w = eventSpecificValue.width;
+				let h = eventSpecificValue.height;
+				let scrollh=false;
+				let scrollw=false;
+				if (h > browserHeight - 60) {
+					h = browserHeight - 60;
+					scrollh=true;
+				}
+				if (w > browserWidth - 60) {
+					w = browserWidth - 60;
+					scrollw=true;
+				}
+				var N = 1; //10;
+				var curX = parseInt($(iframe).parent().parent().css("left"), 10);
+				var curY = parseInt($(iframe).parent().parent().css("top"), 10);
+				var curW = parseInt($(iframe).parent().parent().css("width"), 10);
+				var curH = parseInt($(iframe).parent().parent().css("height"), 10);
+				var dx = ((browserWidth - w - frameBorderWidth) / 2 - curX) / N;
+				var dy = (15 + (browserHeight - 30 - h - frameHeaderHeight) / 2 - curY) / N;
+				var dw = ((w + frameBorderWidth) - curW) / N;
+				var dh = ((h + frameHeaderHeight) - curH) / N;
+				for (var i = 1; i <= N; i++) {
+					setTimeout(function (i) {
+						$(iframe).parent().parent().css("width", curW + dw * i);
+						$(iframe).parent().parent().css("height", curH + dh * i);
+						$(iframe).css("width", curW + dw * i );
+						$(iframe).css("height", curH + dh * i - 20); // -20 required for correct scroll
+						$(iframe).parent().parent().css("left", curX + dx * i);
+						$(iframe).parent().parent().css("top", curY + dy * i);
+
+						$(iframe).parent().parent().removeClass("dijitHidden");
+					}, 50 * i, i);
+				}
+
+				return;
+			} else {
+				console.log("unrecognized event " + eventName + ", ignoring...");
+				return;
+			}
+
+
+
+			// check for modern event handlers obj.on[EventName]...
+			invokeOnHandler(c, name1, class1, f1);
+			invokeOnHandler(c, name2, "D#Event");
+
+
+			invokeLegacyHandler(c, name1, class1, f1);
+			invokeLegacyHandler(c, name2, "D#Event");
+			// check for legacy event handlers...
 		}
 		// <<<<< global event handler
 
 		// >>>>> window.finalize
-		require(["dijit/registry"], function (registry) {
-			function getWidgetByNode(node) {
-				var result = null;
-				while (!result && node) {
-					result = registry.byNode(node);
-					if (node.parentElement)
-						node = node.parentElement;
-					else
-						node = null;
+		/*	require(["dijit/registry"], function (registry) {
+				function getWidgetByNode(node) {
+					var result = null;
+					while (!result && node) {
+						result = registry.byNode(node);
+						if (node.parentElement)
+							node = node.parentElement;
+						else
+							node = null;
+					}
+					return result;
 				}
-				return result;
-			}
 
 
-			window.finalize = function () {
-				require(["dijit/focus"], function (focusUtil) {
-					var focusedWidget = getWidgetByNode(focusUtil.curNode);
-					if (focusedWidget != null) {
-						if (focusedWidget.onChange)
-							focusedWidget.onChange();
-						if (focusedWidget.onBlur)
-							focusedWidget.onBlur();
-					}
-					if ((formObject != null) && (closeCommandGiven == false)) {
-						callEventHandler({
-							source: formObject,
-							name: "Close"
-						});
-					}
-				});
-			};
+				window.finalize = function () {
+					require(["dijit/focus"], function (focusUtil) {
+						var focusedWidget = getWidgetByNode(focusUtil.curNode);
+						if (focusedWidget != null) {
+							if (focusedWidget.onChange)
+								focusedWidget.onChange();
+							if (focusedWidget.onBlur)
+								focusedWidget.onBlur();
+						}
+						if ((formObject != null) && (closeCommandGiven == false)) {
+							callEventHandler({
+								source: formObject,
+								name: "Close"
+							});
+						}
+					});
+				};
 
 
-		});
+			});*/
 		// <<<<< window.finalize
 
 		function executeAfterConfigCmd(cmd) {
@@ -392,7 +605,78 @@
 
 		function executeD_Command(cmd) {
 			console.log("executeD_Command " + cmd.info, cmd);
-			var dForm = cmd.receiver[0];
+			var dForm = cmd.receiver&&cmd.receiver.length>0?cmd.receiver[0]:null;
+
+			if (cmd.isKindOf("D#AddTreeNodeCmd")) {
+				if (!dForm || !dFrom.isKindOf("D#Tree")) {
+					console.log("D#AddTreeNodeCmd not linked to a D#Tree.")
+					cmd.delete();
+					return;
+				}
+				if (!cmd.treeNode || cmd.treeNode.length==0) {
+					console.log("D#AddTreeNodeCmd not linked to a D#TreeNode.")
+					cmd.delete();
+					return;
+				}
+				let parent = cmd.parent && cmd.parent.length>0?cmd.parent[0]:null;
+				
+				if (parent) {
+					if (parent.isKindOf("D#TreeNode")) {
+						parent.linkChildNode(cmd.treeNode[0]);
+					}
+					else {
+						console.log("D#AddTreeNodeCmd wrong parent link");
+						cmd.delete();
+						return;
+					}
+				}
+				else {
+					dForm.linkTreeNode(cmd.treeNode[0]);
+				}
+
+				window.dialogVisualizer.refresh(dForm.reference);
+				cmd.delete();
+				return;
+			}
+
+			if (cmd.isKindOf("D#DeleteTreeNodeCmd")) {
+				if (!dForm || !dFrom.isKindOf("D#Tree")) {
+					console.log("D#DeleteTreeNodeCmd not linked to a D#Tree.")
+					cmd.delete();
+					return;
+				}
+				if (!cmd.treeNode || cmd.treeNode.length==0) {
+					console.log("D#DeleteTreeNodeCmd not linked to a D#TreeNode.")
+					cmd.delete();
+					return;
+				}
+
+				cmd.treeNode[0].delete();
+
+				window.dialogVisualizer.refresh(dForm.reference);
+				cmd.delete();
+				return;
+			}
+
+			if (cmd.isKindOf("D#SelectTreeNodeCmd")) {
+				console.log("select tree node cmd");
+				if (!dForm || !dFrom.isKindOf("D#Tree")) {
+					console.log("D#SelectTreeNodeCmd not linked to a D#Tree.")
+					cmd.delete();
+					return;
+				}
+				if (!cmd.treeNode || cmd.treeNode.length==0) {
+					console.log("D#SelectTreeNodeCmd not linked to a D#TreeNode.")
+					cmd.delete();
+					return;
+				}
+
+				dForm.setSelected(cmd.treeNode[0]);
+
+				window.dialogVisualizer.refresh(dForm.reference);
+				cmd.delete();
+				return;
+			}
 
 			if (cmd.info == "Close") {
 				closeCommandGiven = true;
@@ -400,7 +684,6 @@
 
 				var r = cmd.reference;
 				var arr = cmd.getReceiver();
-				cmd.delete();
 				for (var i = 0; i < arr.length; i++) {
 					dForm = arr[i];
 					if (dForm.frame && (dForm.frame.length > 0)) {
@@ -413,9 +696,10 @@
 						cmd2.setFrame(dForm.frame[0]);
 						tda.model.submit(cmd2);
 					}
-					console.log("DDDeleting form "+dForm.caption+" "+dForm.reference);
+					console.log("DDDeleting form " + dForm.caption + " " + dForm.reference);
 					dForm.delete();
 				}
+				cmd.delete();
 				return;
 			}
 
@@ -437,30 +721,57 @@
 					var component = cmd.receiver[0];
 					r = component.reference;
 				}
-				cmd.delete();
 
+				// Checking whether we are a modal frame and on top of other modal frames...
+				if (window.formObject.frame[0].location.toLowerCase().indexOf("modalpopup")>=0) {
+					// we are a modal frame; searching for other modals...
+					let onTop = true; // we think we are on top (initally)
+					let map = webmem["Frame"].getAllObjects();
+					for (reference in map) {
+						let other = map[reference];
+						if (other.location.toLowerCase().indexOf("modalpopup")>=0) {
+							if (other.reference > window.formObject.frame[0].reference) {
+								// ups, some other frame is on top of us;
+								onTop = false;
+								break;
+							}
+						}
+					}
+
+					/*if (!onTop) {
+						console.log("REFRESH "+r+" for form "+window.formObject.reference+" ignored since there is another frame on top of it", window.formObject);
+						cmd.delete();
+						return;
+					}*/
+				}
+
+				console.log("REFRESH",r,window.formObject);
 				window.dialogVisualizer.refresh(r);
+				cmd.delete();
 				return;
 			}
 
 			window.formObject = dForm;
 
+			  
+  // for debug>:
+  //let json = webmem.extract(dForm);
+  //console.log(json);
+  //webappos.js_util.download_string(JSON.stringify(json, null, 2), "dialog_with_table.json");
+  // < debug
+  
 			var settings = {
 				iframe: iframe,
-				screenWidth: webappos.desktop.get_width(),
-				screenHeight: webappos.desktop.get_height(),
-				divID: "mainLayout",
 				eventHandler: callEventHandler,
-				resizeFrame: window.parent.resizeFrame // defined in EnvironmentEngine
+				//resizeFrame: window.parent.resizeFrame // defined in EnvironmentEngine
 			};
 
 			try {
 				var d = new Date();
 				var time1 = d.getTime();
-				window.dialogVisualizer = new IMCSDialogVisualizer(dForm, settings);
+				window.dialogVisualizer = new IMCSDialogVisualizer(dForm, document.getElementById("mainLayout"), settings);
 				d = new Date();
 				var time2 = d.getTime();
-				console.log("imcs de viz init "+(time2-time1));
 				window.dialogVisualizer.visualize();
 			} catch (t) {
 				console.log(t);

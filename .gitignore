@@ -27,4 +27,4 @@
 /dist/apps/OWLGrEd.webapp
 /dist/apps/DataGalaxies.webapp
 /src/.gradle
-
+.DS_Store
