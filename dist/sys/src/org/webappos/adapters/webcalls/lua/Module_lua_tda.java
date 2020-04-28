@@ -11,6 +11,7 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.FileUtils;
+import org.codehaus.jettison.json.JSONObject;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
@@ -519,9 +520,16 @@ static int tda_BrowseForFile(lua_State *L) {
 		synchronized public Varargs invoke(Varargs v) {
 			logger.debug("In BrowseForFile");
 			
-			LuaValue filterStr = v.arg(2);
+			LuaValue _filterStr = v.arg(2);
+			String filterStr = "Any file (*.*)";
+			if (!_filterStr.isnil())
+				filterStr = _filterStr.tojstring();
+			LuaValue _startFolder = v.arg(3);
+			String startFolder = "";
+			if (!_startFolder.isnil())
+				startFolder = _startFolder.tojstring();
 			LuaValue isSave = v.arg(5);
-			String[] arr = filterStr.toString().split("\n");
+			String[] arr = filterStr.split("\n");
 			
 			int index = 0;
 			if (!isSave.toboolean()) 
@@ -590,7 +598,7 @@ static int tda_BrowseForFile(lua_State *L) {
 							seed.actionName = "browseForFile_index";
 							
 							seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
-							seed.jsonArgument = filterStr.tojstring();
+							seed.jsonArgument = _filterStr.tojstring();
 							
 							seed.login = login;
 							seed.project_id = project_id;
@@ -604,6 +612,67 @@ static int tda_BrowseForFile(lua_State *L) {
 					  		return varargs;
 						}				  		
 				  		
+					}
+					else if (startFolder.contains("$WEBAPPOS_ROOT")) {
+						int i=startFolder.lastIndexOf("/");
+						if (i<0) {
+							logger.error("Invalid start folder specified for BrowseForFile");
+							Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
+									LuaValue.valueOf(""), LuaValue.valueOf(index)
+						    });	
+							return varargs;
+						}
+						
+						
+						String mountPoint = startFolder.substring(i+1);
+						
+						
+						File fi = new File(API.dataMemory.getProjectFolder(project_id)+File.separator+"browseForServerFile.result");
+						if (fi.exists()) {
+							String s = FileUtils.readFileToString(fi, "UTF-8");
+							
+							if (!s.startsWith("/"))
+								s = "/"+s;
+							s = s.replace("/","\\"); // patch for Lua
+							fi.delete();
+							
+							Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
+									LuaValue.valueOf(startFolder.substring(0,i)+File.separator+s), LuaValue.valueOf(index)
+						    });
+							return varargs;
+						}										
+
+						
+						JSONObject obj = new JSONObject();
+						obj.put("filter", filterStr);
+						obj.put("start_dir", mountPoint);
+						
+						// mounting...
+						String regkey = "users/"+login+"/fs_mount_points/"+mountPoint;
+						if (API.registry.getValue(regkey)==null) {
+							API.registry.setValue(regkey, "serverfs:readonly:"+startFolder);
+						}
+						
+						
+						
+						
+						WebCaller.WebCallSeed seed = new WebCaller.WebCallSeed();
+						
+						seed.actionName = "browseForServerFile";
+						
+						seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
+						seed.jsonArgument = obj.toString();
+						
+						seed.login = login;
+						seed.project_id = project_id;
+				  		
+				  		API.webCaller.enqueue(seed);
+						logger.debug("lua_tda.BrowseForFile: file not chosen yet, the client has to choose the file and re-launch our transformation");
+						Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
+								LuaValue.valueOf(""), LuaValue.valueOf(index)
+					    });			
+				  		return varargs;
+						
 					}
 					else {
 						File fi = new File(API.dataMemory.getProjectFolder(project_id)+File.separator+"uploaded.browseForFile");
@@ -619,7 +688,7 @@ static int tda_BrowseForFile(lua_State *L) {
 							seed.actionName = "browseForFileToUpload";
 							
 							seed.callingConventions = WebCaller.CallingConventions.JSONCALL;
-							seed.jsonArgument = filterStr.tojstring();
+							seed.jsonArgument = _filterStr.tojstring();
 							
 							seed.login = login;
 							seed.project_id = project_id;
@@ -647,7 +716,7 @@ static int tda_BrowseForFile(lua_State *L) {
 			else {
 				final JFileChooser fc = new JFileChooser();
 				
-				for (MyFileFilter fltr : new MyFileFilters(filterStr.tojstring()).getFilters()) {
+				for (MyFileFilter fltr : new MyFileFilters(_filterStr.tojstring()).getFilters()) {
 					fc.addChoosableFileFilter(fltr);
 				}
 				

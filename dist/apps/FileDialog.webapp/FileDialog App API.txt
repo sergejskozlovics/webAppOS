@@ -24,6 +24,7 @@ filter - a string containing descriptions of file filters to look for;
 browse_id - some id representing the file browse dialog; can be used to distinguish multiple
             dialogs when the return value is recevied via a HTML5 message; a good suggestion is to
             use the current timestamp
+start_dir - the directory to start with (relative to the user's home)
 
 URL example for the FileDialog.html iframe:
 ---code---

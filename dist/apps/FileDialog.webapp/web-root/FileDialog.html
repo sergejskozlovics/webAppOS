@@ -28,7 +28,11 @@ function onCancel() {
 }
 
 var dialogType = webappos.js_util.get_query_value("type"); // open, save, dir
-var currentDir = "/home";
+var currentDir = webappos.js_util.get_query_value("start_dir");
+if (currentDir)
+  currentDir="/home/"+currentDir;
+else
+  currentDir="/home";
 var filterStr = webappos.js_util.get_query_value("filter");
 if ((!filterStr) || (dialogType=="dir"))
   filterStr = "All files(*.*)";
@@ -145,7 +149,7 @@ for (var i=0; i<filters.length; i++) {
 var f = function() {
   theIFrame.style.height=(window.innerHeight-theFooter.clientHeight-5)+"px";
 }
-theIFrame.src="/apps/filebrowser?path=/home&embedded=true&mask="+extensions[0];
+theIFrame.src="/apps/filebrowser?path="+currentDir+"&embedded=true&mask="+extensions[0];
 f();
 function onSelectChange(event) {
   theIFrame.src="/apps/filebrowser?path="+currentDir+"&embedded=true&mask="+extensions[event.target.selectedIndex];

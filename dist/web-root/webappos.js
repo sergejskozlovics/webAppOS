@@ -785,14 +785,15 @@ script_label: {
      *     each description is some text followed by file masks in parentheses;
      *     filters are delimited by \n, extensions are delimited by ",";
      *     Example:  Word document (*.doc,*.rtf), C++ file (*.cpp,*.h,*.hpp)
+     *   start_dir - the directory to start with (relative to the user's home)
      *
      * Returns:
      *   a Promise which resolves in a string containing the chosen file name relative to the current login's home folder or null, if no file was chosen;
      */
-    webappos.desktop.browse_for_file = async function (dialog_type, files_filter) {
+    webappos.desktop.browse_for_file = async function (dialog_type, files_filter, start_dir) {
       var d = new Date();
       var browse_id = d.getTime();
-      var content = "<iframe id='theiframe' style='width:700px;height:465px;' src='/apps/filedialog/FileDialog.html?type=" + dialog_type + "&filter=" + files_filter + "&browse_id=" + browse_id + "'></iframe>" +
+      var content = "<iframe id='theiframe' style='width:700px;height:465px;' src='/apps/filedialog/FileDialog.html?type=" + dialog_type + "&filter=" + files_filter + "&browse_id=" + browse_id + (start_dir?"&start_dir="+start_dir:"")+ "'></iframe>" +
         "<script>" +
         "var receiveMessage2 = function(event) {" +
         "  if (event.data.browse_id!=" + browse_id + ") return;" +

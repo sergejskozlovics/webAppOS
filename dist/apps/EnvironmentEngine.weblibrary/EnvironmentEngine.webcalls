@@ -8,6 +8,7 @@ jsoncall\ browseForFile_index(filterStr)=clientjs:browseForFile_index
 jsoncall\ browseForFile_download(ext)=clientjs:browseForFile_download
 jsoncall\ browseForFolder(json)=clientjs:browseForFolder
 jsoncall\ browseForFolderAsList(json)=clientjs:browseForFolderAsList
+jsoncall\ browseForServerFile(json)=clientjs:browseForServerFile
 # json = {message, percentage}
 jsoncall\ showPleaseWait(json)=clientjs:showPleaseWait
 jsoncall\ hidePleaseWait=clientjs:hidePleaseWait

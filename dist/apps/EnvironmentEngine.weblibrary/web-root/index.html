@@ -276,6 +276,28 @@
       return {};
     }
 
+    function browseForServerFile(json) {
+      console.log("in browseForServerFile", json);
+      var cmd = new tda.model[tda.model.last_submitted.className]();
+      for (var attr in tda.model.last_submitted) {
+        if ((attr != "reference") && (attr != "className") && (attr != "classes"))
+          cmd["set" + webappos.js_util.capitalize_first_letter(attr)](tda.model.last_submitted[attr]);
+      }
+      window.relaunch_cmd = cmd; // for re-launching
+
+      webappos.desktop.browse_for_file("open", json.filter, json.start_dir).then((name)=>{
+        console.log("file chosen",name);
+        if (name) {
+          webappos.webcall("webappos.uploadFileToCurrentProject", {
+            fileName: "browseForServerFile.result",
+            content: name
+          }).then(function () {
+            tda.model.submit(window.relaunch_cmd);  
+          });
+        }
+      });
+    }
+
     function selectListDirectory(dir) {
       // save dir
       webappos.webcall("webappos.uploadFileToCurrentProject", {
