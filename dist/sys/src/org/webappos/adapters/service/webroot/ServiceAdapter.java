@@ -6,6 +6,7 @@ import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.webappos.properties.WebServiceProperties;
+import org.webappos.server.API;
 import org.webappos.server.IServiceAdapter;
 
 public class ServiceAdapter implements IServiceAdapter {
@@ -24,6 +25,8 @@ public class ServiceAdapter implements IServiceAdapter {
 		appContext.setWar(dirName);
 		appContext.setContextPath(path);		
 		
+		API.classLoader.addClasspathsForPropertiesId(svcProps.id);
+
 /*		ArrayList<String> arr = new ArrayList<String>();
 		
 		arr.add( svcProps.service_dir+File.separator+"web-root" ); // must always present, then other folders in the search path follow

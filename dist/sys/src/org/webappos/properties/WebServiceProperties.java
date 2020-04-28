@@ -95,6 +95,11 @@ public class WebServiceProperties extends SomeProperties {
 			if (API.config instanceof ConfigEx)
 				((ConfigEx)API.config).addMimes(properties.getProperty("mimes"));
 			
+			
+			if (API.config instanceof ConfigEx)
+				((ConfigEx)API.config).registerFileSystemDriver(properties.getProperty("fs_prefix"), properties.getProperty("fs_driver"));
+
+			
 		} catch (Throwable t) {
 		}		
 	}

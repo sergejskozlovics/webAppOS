@@ -1,0 +1,20 @@
+  apply plugin: 'java'
+
+
+  dependencies {
+    compile project(':sys')
+    compile files('../../sys/bin')
+    compile 'org.slf4j:slf4j-api:1.7.25'
+  }
+
+  sourceSets {
+    main.java.srcDirs = ['src']
+    main {
+      output.resourcesDir = file('bin')
+      java.outputDir = file('bin')
+    }
+  }
+
+
+  jar.enabled = false
+

@@ -38,7 +38,7 @@ public class Module_lfs extends TwoArgFunction {
 
 		@Override
 		synchronized public LuaValue call(LuaValue path) {
-			File f = new File(path.tojstring().replace('\\', File.pathSeparatorChar).replace('/', File.pathSeparatorChar));			
+			File f = new File(path.tojstring().replace('\\', File.separatorChar).replace('/', File.separatorChar));			
 			LuaTable t = new LuaTable();
 			int i =1;
 			
@@ -61,7 +61,7 @@ public class Module_lfs extends TwoArgFunction {
 		@Override
 		synchronized public LuaValue call(LuaValue dirname) {
 			boolean retval = false;
-			File f = new File(dirname.tojstring().replace('\\', File.pathSeparatorChar).replace('/', File.pathSeparatorChar));
+			File f = new File(dirname.tojstring().replace('\\', File.separatorChar).replace('/', File.separatorChar));
 			try {
 				Files.createDirectory(f.toPath());
 				retval = true;
@@ -78,7 +78,7 @@ public class Module_lfs extends TwoArgFunction {
 			LuaValue filepath = v.arg(1);
 			LuaValue aname = v.arg(2);
 			
-			File f = new File(filepath.tojstring().replace('\\', File.pathSeparatorChar).replace('/', File.pathSeparatorChar));
+			File f = new File(filepath.tojstring().replace('\\', File.separatorChar).replace('/', File.separatorChar));
 			
 			if ((aname == null) || aname.isnil()) {				
 				LuaTable t = new LuaTable();

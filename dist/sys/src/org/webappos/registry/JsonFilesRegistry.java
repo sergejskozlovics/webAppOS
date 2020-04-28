@@ -209,7 +209,9 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 					JsonObject xuser = fileToJson(DIR_XUSERS+File.separator+id);
 					if (xuser == null)
 						return null;
-					String alias_of = xuser.get("alias_of").getAsString();
+					JsonElement el = xuser.get("alias_of");				
+					String alias_of = (el!=null)?el.getAsString():null;
+
 					if ((alias_of != null) && (!alias_of.isEmpty())) {
 						user = fileToJson(DIR_USERS+File.separator+alias_of);
 					}
@@ -246,6 +248,7 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 			return obj;
 		}
 		catch(Throwable t) {	
+			t.printStackTrace();
 			logger.error(t.toString());
 			return null;
 		}		
