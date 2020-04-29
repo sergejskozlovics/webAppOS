@@ -160,7 +160,7 @@ public class ValidityChecker {
 			name = path.substring(j+1).toLowerCase();
 		
 		if ((name.isEmpty()&&!allowEmpty) || name.equals("con")||name.equals("prn")||name.equals("aux")||
-				name.startsWith("com")||name.startsWith("lpt")||name.startsWith("nul") || name.equals("undefined"))
+				name.equals("com")||name.equals("lpt")||name.startsWith("nul") || name.equals("undefined"))
 			throw new Exception("Unsupported path format");
 	}
 	

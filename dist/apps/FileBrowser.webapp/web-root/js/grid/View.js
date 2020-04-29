@@ -94,7 +94,14 @@ define([
                                 img.src = require.toUrl('rfe') + '/../icons/'+mime+'.png';
                         }
                         else {
-				img.src = require.toUrl('rfe') + '/../icons/'+ (obj.dir ? 'folder.png' : 'file.png');
+							let i = obj.id.lastIndexOf(".");
+							img.src = require.toUrl('rfe') + '/../icons/'+ (obj.dir ? 'folder.png' : 'file.png');
+							if (!obj.dir && (i>=0)) {
+								// try to show the icon... (by SK)
+								let ext = obj.id.substring(i+1);
+								if ((ext=="bmp") || (ext=="BMP") || (ext=="ico") || (ext=="ICO") || (ext=="png") || (ext=="PNG") || (ext=="jpg") || (ext=="JPG"))
+									img.src = encodeURI("/services/filedownload/"+webappos.login+"/"+obj.id.substring(5)+"?login="+webappos.login+"&ws_token="+webappos.ws_token); // remove "/home"
+							}
                         }
                        
                         img.style["box-shadow"]="none"; // added by SK
