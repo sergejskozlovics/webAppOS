@@ -704,6 +704,16 @@
 			}
 
 
+			for (let r in webmem["D#ImageButton"].getAllObjects()) {
+				// fixing DOS/UNIX-Web file extensions for legacy OWLGrEd...
+				let s = webmem[r].fileName;
+				if (s) {
+					s = s.split(".BMP").join(".bmp");
+					if (s!=webmem[r].fileName)
+						webmem[r].setFileName(s);
+				}
+			}
+
 			if (cmd.info == "Refresh") {
 
 				var r;

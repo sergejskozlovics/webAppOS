@@ -528,6 +528,10 @@ static int tda_BrowseForFile(lua_State *L) {
 			String startFolder = "";
 			if (!_startFolder.isnil())
 				startFolder = _startFolder.tojstring();
+			
+			while (startFolder.endsWith("/"))
+				startFolder = startFolder.substring(0, startFolder.length()-1);
+			
 			LuaValue isSave = v.arg(5);
 			String[] arr = filterStr.split("\n");
 			
@@ -632,8 +636,8 @@ static int tda_BrowseForFile(lua_State *L) {
 							String s = FileUtils.readFileToString(fi, "UTF-8");
 							
 							if (!s.startsWith("/"))
-								s = "/"+s;
-							s = s.replace("/","\\"); // patch for Lua
+								s = "/"+s; // patch for Lua
+							//s = s.replace("/","\\"); // patch for Lua
 							fi.delete();
 							
 							Varargs varargs = LuaValue.varargsOf(new LuaValue[] {
