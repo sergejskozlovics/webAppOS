@@ -397,6 +397,13 @@
 
 			} else
 			if (eventName === "ImageChangeEvent") {
+				if (c.isKindOf("D#VTableCell")) {
+					c.setValue(eventSpecificValue);
+					if (c.component && c.component.length>0) {
+						c = c.component[0];
+						name1 = "Change";
+					}
+				}
 				if (c.isKindOf("D#Image") || c.isKindOf("D#ImageButton")) {
 					c.setFileName(eventSpecificValue);
 					name1 = "Change";
@@ -427,6 +434,16 @@
 				return; // do not forward
 			} else
 			if (eventName === "FocusLostEvent") {
+
+				if (c.isKindOf("D#VTableCell")) {
+					if (c.getValue() !== eventSpecificValue) {
+						c.setValue(eventSpecificValue);
+						if (c.component && c.component.length>0) {
+							c = c.component[0];
+							name1 = "Change";
+						}
+					}
+				} else
 				if (c.isKindOf("D#InputField") || c.isKindOf("D#TextArea") || c.isKindOf("D#TextBox")) {
 					if (c.getText() !== eventSpecificValue) {
 						c.setText(eventSpecificValue);
@@ -465,6 +482,13 @@
 					return; // do not forward
 			} else
 			if (eventName === "ClickEvent") {
+				if (c.isKindOf("D#VTableCell")) {
+					console.log("ClickEvent for cell",c);
+					if (c.component && c.component.length>0) {
+						c = c.component[0];
+						name1 = "Click";
+					}
+				} else
 				if (c.isKindOf("D#Button") || c.isKindOf("D#RadioButton") || c.isKindOf("D#ImageButton"))
 					name1 = "Click";
 				else
@@ -542,6 +566,12 @@
 				}
 
 				return;
+			} else 
+			if ((eventName == "RowChangeEvent") && (c.isKindOf("D#VTable"))) {				
+				console.log("selected row",eventSpecificValue);
+				let row = c.vTableRow[eventSpecificValue];
+				c.setSelectedRow(row);
+				console.log("selected row after",c.getSelectedRow());
 			} else {
 				console.log("unrecognized event " + eventName + ", ignoring...");
 				return;
