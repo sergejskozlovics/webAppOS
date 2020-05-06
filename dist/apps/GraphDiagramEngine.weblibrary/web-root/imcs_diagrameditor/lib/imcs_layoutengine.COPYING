@@ -1,24 +1,25 @@
 IMCS_layout_engine
 ==================
-Files: [imcs_layoutengine.js] and/or [imcs_layoutengine.min.js]
+Files: [imcs_layoutengine.min.js]
 
-The compiled JavaScript files (imcs_layoutengine.js and imcs_layoutengine.min.js)
-incorporate the code of these libraries having different licenses:
-* IMCS layout engine Java classes: GPLv2 or later with the classpath exception
-* W3C Java classes: W3C liberal license
-* GWT-AWT classes: GPLv2 with the classpath exception
-These licenses are listed below.
+The compiled JavaScript file is built from the code
+having the following licenses:
 
-In addition, the tools used at compile time have the following licenses
-(you need these tools, if you want to re-compile the Java sources to JavaScript):
-* GWT: Google Web Toolkit license
-* JavaScript minimizer (Closure Compiler): Apache 2.0 license
+- IMCS layout engine Java classes: src/code/lv/lumii/COPYING (GPLv2 or later with Classpath exception)
+- W3C Java classes: src/code/org/w3c/COPYING (W3C liberal license)
+- GWT-AWT classes: gwt-awt/COPYING (GPLv2 with Classpath exception)
+
+In addition, the following libraries, which are used at compile time,
+have their own licenses:
+
+- GWT (Google Web Toolkit)
+- webpack (as npm module) and dependencies
 
 IMCS layout engine Java classes
 ===============================
 Files: [*/src/client/*] [*/src/code/lv/*]
 
-Copyright 2013-2018 Institute of Mathematics and Computer Science, University of Latvia (IMCS, UL)
+Copyright 2013-2020 Institute of Mathematics and Computer Science, University of Latvia (IMCS, UL)
 
     The GNU General Public License (GPL), version 2
 (at your option, you may use any later GPL version),

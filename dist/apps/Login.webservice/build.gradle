@@ -23,3 +23,6 @@
 
   jar.enabled = false
 
+  task install {
+    dependsOn build
+  }

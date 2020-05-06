@@ -21,13 +21,23 @@ sourceSets {
 
 jar.enabled = false
 
-download {
-    src 'https://raw.githubusercontent.com/LUMII-Syslab/imcs_layoutengine/master/dist/imcs_layoutengine.min.js'
-    dest 'web-root/imcs_dialogvisualizer/lib/imcs_layoutengine.js'
-    onlyIfModified true
+task updatedeps {
+    doLast {
+        download {
+            src([
+                'https://raw.githubusercontent.com/LUMII-Syslab/imcs_dialogvisualizer/master/dist/imcs_dialogvisualizer.css',
+                'https://raw.githubusercontent.com/LUMII-Syslab/imcs_dialogvisualizer/master/dist/imcs_dialogvisualizer.css.map',
+                'https://raw.githubusercontent.com/LUMII-Syslab/imcs_dialogvisualizer/master/dist/imcs_dialogvisualizer.js',
+                'https://raw.githubusercontent.com/LUMII-Syslab/imcs_dialogvisualizer/master/dist/imcs_dialogvisualizer.js.LICENSE.txt',
+                'https://raw.githubusercontent.com/LUMII-Syslab/imcs_dialogvisualizer/master/dist/imcs_dialogvisualizer.js.map'      
+            ])
+            dest 'web-root'
+            onlyIfModified true
+        }
+    }
 }
-download {
-    src 'https://raw.githubusercontent.com/LUMII-Syslab/imcs_layoutengine/master/imcs_layoutengine.COPYING'
-    dest 'web-root/imcs_dialogvisualizer/lib/imcs_layoutengine.COPYING'
-    onlyIfModified true
+
+
+task install {
+    dependsOn build
 }

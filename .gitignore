@@ -29,3 +29,4 @@
 /src/.gradle
 .DS_Store
 dist/etc/registry/xusers/webappos
+.gradle

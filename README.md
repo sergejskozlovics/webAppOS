@@ -11,12 +11,9 @@ For documentation and other info, visit [webAppOS homepage](http://webappos.org)
 ```bash
 git clone https://github.com/LUMII-Syslab/webAppOS.git
 cd webAppOS/src
-./gradlew build
 ./gradlew install
 cd ../..
 ```
-Please, notice that the build step is essential - it compiles certain webAppOS applications and
-services, which do not have the install task.
 
 ## Initial Configuration
 
