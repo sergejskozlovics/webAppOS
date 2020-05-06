@@ -59,6 +59,7 @@ function addScript(src) {
     s.src = SCRIPT_FOLDER + src;
   s.onload = function () {
     imcsdeScriptsAdded++;
+    console.log("script " + src + " LOADED", window.IMCSDiagramLayout);
   };
   s.onerror = function () {
     console.log("script " + src + " not loaded");
@@ -72,8 +73,9 @@ if (typeof jQuery==='undefined') {
   addScript('lib/jquery.js');
 }
 
-if (typeof IMCSDiagramLayout==='undefined')
-  addScript('lib/imcs_layoutengine.js');
+if (typeof IMCSDiagramLayout==='undefined') {
+  addScript('lib/imcs_layoutengine.nocache.js?nocache');
+}
 
 if (typeof tinyscrollbar==='undefined') {
   addScript('lib/tinyscrollbar.js');
@@ -1046,6 +1048,7 @@ var IMCSDiagramEditor = function(settings) { // class
 
   window.ajoo_de = new AjooDiagramEditor(settingsForAjoo);
 
+  console.log(window.IMCSDiagramLayout);
   this.layout = new IMCSDiagramLayout("UNIVERSAL", true);
 
   /**
