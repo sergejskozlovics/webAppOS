@@ -8,6 +8,10 @@ For documentation and other info, visit [webAppOS homepage](http://webappos.org)
 
 ## Installation
 
+Java8+ must be installed (Java 11+ is also supported). The javac and java commands (or the JAVA_HOME environment variable) must be available to build and to run webAppOS.
+
+*Notice for Linux users having Java8:* You have to install JavaFX compiled with Java8. You can find the corresponding commands for Ubuntu [here](https://stackoverflow.com/questions/56166267/how-do-i-get-java-fx-running-with-openjdk-8-on-ubuntu-18-04-2-lts).
+
 ```bash
 git clone https://github.com/LUMII-Syslab/webAppOS.git
 cd webAppOS/src
@@ -17,18 +21,14 @@ cd ../..
 
 ## Initial Configuration
 
-```bash
-cd webAppOS/dist/apps/Login.webservice/
-cp webservice.properties.template webservice.properties
-pico webservice.properties
-cd ../../../..
-cd webAppOS/dist/etc
-copy webappos.properties.template webappos.properties
-pico webappos.properties
-cd ../../..
-```
-You can use any text editor instead of pico. The default (unchanged) configuration should work
-well on localhost (127.0.0.1:4570).
+The default (unchanged) configuration should work
+well on localhost (127.0.0.1:4570). However, to specify a real IP or a domain as well as to
+configure mail server and CAPTCHA, edit the following files:
+
+- webAppOS/dist/apps/Login.webservice/webservice.properties
+- webAppOS/dist/etc/webappos.properties
+
+You can use any text editor.
 
 ## Starting webAppOS
 From the webAppOS directory, run:
