@@ -589,7 +589,7 @@ public class LoginServlet extends HttpServlet
 				xuser.addProperty("email_verified", false); // require to set email_verified=true explicitly after the email validation
 				
 				if (!"email".equals(signup_policy)) { // "email+manual"
-					xuser.addProperty("blocked", true); // require to set blocked=false manually (e.g., via "webappos approveuser")
+					xuser.addProperty("blocked", true); // require to set blocked=false manually (e.g., via the admin script)
 				}
 				
     			API.registry.setValue("xusers/"+login, xuser);

@@ -11,15 +11,16 @@ http_auth_required=false
 # =================================
 
 # signup_policy is one of the following:
-# * deny - signup not allowed (the admin has to add users manually via the registry)
-# * manual - signup is allowed, but the admin has to approve the user manually (via "webappos approveuser")
-# * email - signup is allowed, but the e-mail has to be verified by sending a secret link to the user
+# * deny - signup not allowed (but the admin can add users manually via the registry or via the admin script)
+# * manual - signup is allowed, but the admin has to approve the user manually (in the registry or via the admin script)
+# * email - signup is allowed, but the e-mail has to be validated by sending a secret link to the user
+# * allow - signup is always allowed (do not use this option, unless you use CAPTCHA, see <CAPTCHA-specific properties>)
 # * email+manual - signup is allowed, but the e-mail address has to be verified AND then the admin has to approve (unblock) the user manually
-# * allow - signup is always allowed (not recommended)
-# * webcall:actionName - signup is allowed, but the given web call action
-#   (implemented according to the jsoncall calling conventions)
-#   must handle the signup request; the action must "convert" the signup request to
-#   one of the previous values: "deny"|"manual"|"email"|"email+manual"|"allow"
+# * webcall:<actionName> - signup is allowed, but the given web call (conforming to jsoncall calling conventions)
+#   will hadle the signup request; the function must "convert" the signup request to
+#   one of the previous 4 values by returning a stringified JSON with the "result" attribute with one of the following values: "deny"|"manual"|"email"|"email+manual"|"allow".
+#   In addition, the function can add the "error" attribute.
+
 signup_policy=deny
 
 # password expire time in days (1100 years by default)

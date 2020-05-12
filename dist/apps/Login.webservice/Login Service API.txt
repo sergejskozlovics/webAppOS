@@ -249,15 +249,15 @@ signup_policy=email
 
 Supported values:
 
-* deny - signup not allowed (but the admin can add users manually)
-* manual - signup is allowed, but the admin has to approve the user manually
+* deny - signup not allowed (but the admin can add users manually via the registry or via the admin script)
+* manual - signup is allowed, but the admin has to approve the user manually (in the registry or via the admin script)
 * email - signup is allowed, but the e-mail has to be validated by sending a secret link to the user
 * allow - signup is always allowed (do not use this option, unless you use CAPTCHA, see <CAPTCHA-specific properties>)
-* jsoncall:<actionName> - signup is allowed, but the given web call (jsoncall calling conventions)
+* email+manual - signup is allowed, but the e-mail address has to be verified AND then the admin has to approve (unblock) the user manually
+* webcall:<actionName> - signup is allowed, but the given web call (conforming to jsoncall calling conventions)
   will hadle the signup request; the function must "convert" the signup request to
-  one of the previous 4 values by returning a stringified JSON with the "result" attribute with one of the following values: "deny"|"manual"|"email"|"allow".
-In addition, the function can add the "error" attribute
-e.g.
+  one of the previous 4 values by returning a stringified JSON with the "result" attribute with one of the following values: "deny"|"manual"|"email"|"email+manual"|"allow".
+  In addition, the function can add the "error" attribute, e.g.
 ---code---
 	{
 		"result": "deny",
