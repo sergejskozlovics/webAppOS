@@ -246,11 +246,11 @@ define(function(){
       
             var retVal = null;
             xhr.onreadystatechange = function() {
-                if (this.readyState == this.DONE) {
+                if (this.readyState == this.DONE) {                  
                   if (withRedirect)
-                    window.location.href = "/apps/login?signout=true&redirect="+location.href;
+                    window.top.location.href = "/apps/login?signout=true&redirect="+location.href;
                   else
-                    window.location.href = "/apps/login?signout=true";
+                    window.top.location.href = "/apps/login?signout=true";
                   return resolve(true);
                 }
             };

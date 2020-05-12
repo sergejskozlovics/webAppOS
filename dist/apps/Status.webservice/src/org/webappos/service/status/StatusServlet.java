@@ -139,7 +139,6 @@ public class StatusServlet extends HttpServlet
 		}
 		catch(Throwable t) {
 			logger.error(t.getMessage());
-			t.printStackTrace();
 			if (logger.isTraceEnabled()) {
 				StringWriter errors = new StringWriter();
 				t.printStackTrace(new PrintWriter(errors));
