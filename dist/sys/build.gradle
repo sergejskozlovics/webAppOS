@@ -162,6 +162,20 @@ dependencies {
         include "webappos.org"
         include "webappos.org.bat"
       }
+      if (!file('../etc/webappos.properties').exists())
+        copy {
+          from("../etc")
+          into("../etc")
+          include("webappos.properties.template")
+          rename("webappos.properties.template", "webappos.properties")
+        }
+      if (!file('../apps/Login.webservice/webservice.properties').exists())
+        copy {
+          from("../apps/Login.webservice")
+          into("../apps/Login.webservice")
+          include("webservice.properties.template")
+          rename("webservice.properties.template", "webservice.properties")
+        }
     }
   }
 
