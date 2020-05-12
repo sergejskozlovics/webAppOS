@@ -3658,4 +3658,17 @@ script_label: {
 
   }; // init_web_memory
 
+
+  var q = Object.create(window.webappos);
+  q.local_window = window;
+
+  q.get_client_webcall_window = async function(actionName, arg) {
+    console.log("in local!!!", window[actionName],window);
+    if (window[actionName])
+      return window;
+    return webappos.get_client_webcall_window(actionName, arg);
+  };
+
+  window.webappos = q;
+
 } // script_label
