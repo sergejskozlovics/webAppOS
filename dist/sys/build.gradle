@@ -146,6 +146,8 @@ dependencies {
     into('..')  // relative to this gradle project
     preserve({
           include 'apps/**'
+          include 'bin'
+          exclude 'bin/webappos*'
           include 'cache/**'
           include 'engines/**'
           include 'etc/**'
