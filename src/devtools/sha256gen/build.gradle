@@ -39,3 +39,7 @@
     doLast {
     }
   }
+
+task install {
+    dependsOn installDist
+}
