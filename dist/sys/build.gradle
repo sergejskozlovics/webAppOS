@@ -135,7 +135,6 @@ dependencies {
       unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/webappos.jar', '$APP_HOME/sys/bin')
       windowsScriptFile.text = windowsScriptFile.text.replace('LOG4J_CONF_PLACEHOLDER', '%APP_HOME%\\etc\\log4j2.properties')
       unixScriptFile.text  = unixScriptFile.text.replace('LOG4J_CONF_PLACEHOLDER', '$APP_HOME/etc/log4j2.properties')
-
     }
   }
 
@@ -147,7 +146,6 @@ dependencies {
     into('..')  // relative to this gradle project
     preserve({
           include 'apps/**'
-          exclude 'bin/webappos*'
           include 'cache/**'
           include 'engines/**'
           include 'etc/**'
@@ -166,3 +164,7 @@ dependencies {
   }
 
 
+
+task install {
+    dependsOn installDist
+}
