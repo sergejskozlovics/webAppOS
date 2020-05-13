@@ -237,6 +237,7 @@ public class GraphDiagramEngine_webcalls {
 			  ||(cmd instanceof org.webappos.weblib.gde.mm.UpdateDgrCmd)
 			  ||(cmd instanceof org.webappos.weblib.gde.mm.RefreshDgrCmd)
 			  ||(cmd instanceof org.webappos.weblib.gde.mm.ActiveElementCmd)
+			  ||(cmd instanceof org.webappos.weblib.gde.mm.RerouteCmd)
 			){
 				org.webappos.weblib.gde.mm.GraphDiagram gd = cmd.getGraphDiagram().get(0);
 				

@@ -71,10 +71,7 @@ public class TDAEngine_webcalls {
 			}
 			transformationName = transformationName.substring(0, i) + transformationName.substring(j+1);
 		}
-		
-		if (rArgument==0)
-			rArgument = rCommand;
-		
+				
 		IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
 		
 		seed.actionName = transformationName;
@@ -122,9 +119,6 @@ public class TDAEngine_webcalls {
 			}
 			transformationName = transformationName.substring(0, i) + transformationName.substring(j+1);
 		}
-		
-		if (rArgument==0)
-			rArgument = rCommand;
 		
 		
 		IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();

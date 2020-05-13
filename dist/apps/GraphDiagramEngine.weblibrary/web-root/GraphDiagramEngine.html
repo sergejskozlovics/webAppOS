@@ -73,6 +73,7 @@
       //   console.log("updating collection, len="+arr.length);
       var coll = new tda.model.Collection();
       coll.setElement(arr);
+      console.log(arr);
       gd.setCollection([coll]);
     }
 
@@ -284,7 +285,7 @@
 
       
 
-      console.log("smartLayoutAndRefresh total=",gd.element," changed=",arr);
+      //console.log("smartLayoutAndRefresh total=",gd.element," changed=",arr);
       if (!arr) {
         if (fAfter)
           fAfter();
@@ -799,6 +800,16 @@
       console.log("command PT#RefreshCmd");
       renderGraphDiagram(a.graphDiagram[0], lastReadOnly);
     } */
+
+    function executeRerouteCmd(a) {
+      if (a.element)
+        for (let i=0; i<a.element.length; i++) {
+          a.element[i].setLocation(null);
+        }
+
+      smartLayoutAndRefresh(a.graphDiagram[0], a.element, true);
+    }
+
   </script>
 </body>
 
