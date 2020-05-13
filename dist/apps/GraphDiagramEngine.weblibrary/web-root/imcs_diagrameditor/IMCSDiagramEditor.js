@@ -1087,6 +1087,10 @@ var IMCSDiagramEditor = function(settings) { // class
         for (var i = 0; i < el.compartment.length; i++) {
           var style = el.compartment[i].style;
           var w = getTextWidth(el.compartment[i].input, style.getFontFamily() + " " + style.getFontSizeInPt() + "pt") + 10;
+          if (el.compartment[i].input2) {
+            var w2 = getTextWidth(el.compartment[i].input2, style.getFontFamily() + " " + style.getFontSizeInPt() + "pt") + 10;
+            w = Math.max(w,w2);  
+          }
           var h = getFontHeight(style.getFontFamily(), style.getFontSizeInPt() * 1.45 + 0.5) + 2;
           myThis.layout.addLineLabel(el.compartment[i].reference, el.reference, w, h, style.getPlacement());
         }
