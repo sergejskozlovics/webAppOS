@@ -9,7 +9,7 @@ script_label: {
 
 
   ///// ensure the require is defined /////
-  let css_loaded = document.querySelector("#the_webappos_css")!=null;
+  let css_loaded = document.querySelector("#the_webappos_css") != null;
   if (!css_loaded) {
     let webappos_script = "/webappos.js"; //document.currentScript.src || document.querySelector('script[src*=webappos.js]').src;
 
@@ -33,7 +33,7 @@ script_label: {
 
     if (document.currentScript)
       document.currentScript.parentElement.removeChild(document.currentScript);
-  
+
     console.log(webappos_script + " loaded without dojo; adding the dojo script tag and loading " + webappos_script + " again...");
     break script_label;
     //variant w/o a label: throw new Error(webappos_script+" loaded without dojo; adding the dojo script tag and loading "+webappos_script+" again...");
@@ -96,7 +96,7 @@ script_label: {
     } catch (t) {
       window.webappos.top_location = window.location;
     }
-  
+
     /**
      * Property: webappos.interrupt
      * 
@@ -128,8 +128,8 @@ script_label: {
 
   /** Group: web calls-related functions (iframe-specific) */
 
-  window.webappos.to_jsoncall_string = function(arg) {
-    if (webappos.js_util.is_object(arg)) {            
+  window.webappos.to_jsoncall_string = function (arg) {
+    if (webappos.js_util.is_object(arg)) {
       try {
         arg = JSON.stringify(arg);
       } catch (t) {
@@ -137,30 +137,30 @@ script_label: {
       }
     }
 
-    if (typeof arg=="undefined")
+    if (typeof arg == "undefined")
       arg = "";
 
-    return arg?arg+"":null;
+    return arg ? arg + "" : null;
   };
 
-  window.webappos.to_webmemcall_object = function(arg) {    
-    if (webappos.js_util.is_object(arg)) {           
+  window.webappos.to_webmemcall_object = function (arg) {
+    if (webappos.js_util.is_object(arg)) {
       arg = arg.reference;
     }
-    if (typeof arg=="number") {
+    if (typeof arg == "number") {
       arg = webmem[arg];
-      return arg?arg:null;
+      return arg ? arg : null;
     }
     else
       return null;
   };
 
-  window.webappos.to_webmemcall_reference = function(arg) {    
-    if (webappos.js_util.is_object(arg)) {           
+  window.webappos.to_webmemcall_reference = function (arg) {
+    if (webappos.js_util.is_object(arg)) {
       arg = arg.reference;
     }
 
-    if ((typeof arg=="number") && webmem[arg])
+    if ((typeof arg == "number") && webmem[arg])
       return arg;
     else
       return 0;
@@ -170,7 +170,7 @@ script_label: {
     return new Promise(async function (resolve, reject) {
       var action = webappos.webcalls[actionName];
       if (!action)
-        return reject({error:"webappos js client webcall error: Action "+actionName+" not found."});
+        return reject({ error: "webappos js client webcall error: Action " + actionName + " not found." });
 
       var intr_obj = {
         type: "webcall",
@@ -179,17 +179,17 @@ script_label: {
         argument: arg,
         callingConventions: action.callingConventions
       };
-    
-      if ((webappos.interrupt)&& (webappos.interrupt(intr_obj))) {
-        return resolve({error: "webappos js client webcall error: action "+actionName+" interrupted"});
+
+      if ((webappos.interrupt) && (webappos.interrupt(intr_obj))) {
+        return resolve({ error: "webappos js client webcall error: action " + actionName + " interrupted" });
       };
 
       require([action.resolvedInstructionSet + "_webcalls_adapter.js"], function (adapter) {
         if (adapter.jsoncall) {
-            resolve(adapter.jsoncall(action.resolvedLocation, arg));
+          resolve(adapter.jsoncall(action.resolvedLocation, arg));
         } else {
           console.log("webappos.js client webcall error: Webcalls adapter '" + action.resolvedInstructionSet + "' does not support jsoncall calling conventions.");
-          reject({error: "Webcalls adapter '" + action.resolvedInstructionSet + "' does not support jsoncall calling conventions."});
+          reject({ error: "Webcalls adapter '" + action.resolvedInstructionSet + "' does not support jsoncall calling conventions." });
         }
       });
 
@@ -200,18 +200,18 @@ script_label: {
     return new Promise(async function (resolve, reject) {
       var action = webappos.webcalls[actionName];
       if (!action)
-        return reject({error:"webappos js client webcall error: Action "+actionName+" not found."});
+        return reject({ error: "webappos js client webcall error: Action " + actionName + " not found." });
 
       var intr_obj = {
-          type: "webcall",
-          isClient: true,
-          actionName: actionName,        
-          argument: obj&&obj.reference?obj.reference:0,
-          callingConventions: action.callingConventions
+        type: "webcall",
+        isClient: true,
+        actionName: actionName,
+        argument: obj && obj.reference ? obj.reference : 0,
+        callingConventions: action.callingConventions
       };
-      
-      if ((webappos.interrupt)&& (webappos.interrupt(intr_obj))) {
-          return resolve({error: "webappos js client webcall error: action "+actionName+" interrupted"});
+
+      if ((webappos.interrupt) && (webappos.interrupt(intr_obj))) {
+        return resolve({ error: "webappos js client webcall error: action " + actionName + " interrupted" });
       };
 
       require([action.resolvedInstructionSet + "_webcalls_adapter.js"], function (adapter) {
@@ -220,7 +220,7 @@ script_label: {
           resolve({});
         } else {
           console.log("webappos.js client webcall error: Webcalls adapter '" + action.resolvedInstructionSet + "' does not support webmemcall calling conventions.");
-          reject({error:"Webcalls adapter '" + action.resolvedInstructionSet + "' does not support webmemcall calling conventions."});
+          reject({ error: "Webcalls adapter '" + action.resolvedInstructionSet + "' does not support webmemcall calling conventions." });
         }
       });
     });
@@ -256,9 +256,9 @@ script_label: {
     if (a)
       intr_obj.callingConventions = a.callingConventions;
 
-    if ((webappos.interrupt)&& (webappos.interrupt(intr_obj))) {
+    if ((webappos.interrupt) && (webappos.interrupt(intr_obj))) {
       return {
-            error: "web call interrupted"
+        error: "web call interrupted"
       };
     }
 
@@ -271,7 +271,7 @@ script_label: {
       if (webappos.login && webappos.ws_token)
         q = "?login=" + webappos.login + "&ws_token=" + webappos.ws_token;
     }
-    xhr.open("POST", "/services/webcalls/" + action + q, false /*not async*/ );
+    xhr.open("POST", "/services/webcalls/" + action + q, false /*not async*/);
 
     var retVal = {};
     xhr.onreadystatechange = function () {
@@ -284,7 +284,7 @@ script_label: {
           }
           retVal = json;
         } catch (t) {
-          retVal = (!x || (x=="") || (x == "null")) ? {} : {
+          retVal = (!x || (x == "") || (x == "null")) ? {} : {
             error: "could not parse the resulting JSON"
           };
         }
@@ -292,7 +292,7 @@ script_label: {
     };
 
     xhr.setRequestHeader('Content-Type', 'application/json');
-    let arg1=arg;
+    let arg1 = arg;
     if (!a) { // server-side hidden action
       arg1 = webappos.to_webmemcall_reference(arg);
       if (!arg1)
@@ -343,13 +343,13 @@ script_label: {
             });
           });
         } else
-        if (a.callingConventions == "webmemcall") {
-          if (typeof arg == 'number')
-            webappos.client_webcall_webmemcall(actionName, tda.model[arg]);
-          else
-            webappos.client_webcall_webmemcall(actionName, arg);
-          resolve({});
-        }
+          if (a.callingConventions == "webmemcall") {
+            if (typeof arg == 'number')
+              webappos.client_webcall_webmemcall(actionName, tda.model[arg]);
+            else
+              webappos.client_webcall_webmemcall(actionName, arg);
+            resolve({});
+          }
         return; // return from promise body
       }
 
@@ -362,13 +362,13 @@ script_label: {
       };
       if (a)
         intr_obj.callingConventions = a.callingConventions;
-  
-      if ((webappos.interrupt)&& (webappos.interrupt(intr_obj))) {
-        return resolve( {
-              error: "web call interrupted"
-        } );
+
+      if ((webappos.interrupt) && (webappos.interrupt(intr_obj))) {
+        return resolve({
+          error: "web call interrupted"
+        });
       }
-  
+
       if (typeof arg == 'number')
         arg = arg + "";
 
@@ -381,21 +381,21 @@ script_label: {
           q = "?login=" + webappos.login + "&ws_token=" + webappos.ws_token;
       }
       if (webappos.app_url_name) {
-        if (q=="")
-          q = "?app_url_name="+webappos.app_url_name;
+        if (q == "")
+          q = "?app_url_name=" + webappos.app_url_name;
         else
-          q += "&app_url_name="+webappos.app_url_name;
+          q += "&app_url_name=" + webappos.app_url_name;
       }
-      xhr.open("POST", "/services/webcalls/" + actionName + q, true /*async*/ );
+      xhr.open("POST", "/services/webcalls/" + actionName + q, true /*async*/);
 
       xhr.onreadystatechange = function () {
         if (this.readyState == this.DONE) {
           var json = {};
           var x = xhr.responseText.trim();
-          try {            
+          try {
             json = JSON.parse(x);
           } catch (t) {
-            json = (!x || (x=="") || (x == "null")) ? {} : {
+            json = (!x || (x == "") || (x == "null")) ? {} : {
               error: "could not parse the resulting JSON"
             };
           }
@@ -407,7 +407,7 @@ script_label: {
       };
 
       xhr.setRequestHeader('Content-Type', 'application/json');
-      let arg1=arg;
+      let arg1 = arg;
       if (!a) { // server-side hidden action
         arg1 = webappos.to_webmemcall_reference(arg);
         if (!arg1)
@@ -441,7 +441,7 @@ script_label: {
      * Returns:
      *   a Promise, which resolves in a DOM window object; the promise rejected if the window was not found
      */
-    window.webappos.get_client_webcall_window = async function(actionName, arg) {
+    window.webappos.get_client_webcall_window = async function (actionName, arg) {
       return window;
     };
 
@@ -471,7 +471,7 @@ script_label: {
       try {
         return window.top.document.body.clientWidth;
       }
-      catch(t) {
+      catch (t) {
         return document.body.clientWidth;
       }
     };
@@ -480,7 +480,7 @@ script_label: {
       try {
         return window.top.document.body.clientHeight;
       }
-      catch(t) {
+      catch (t) {
         return document.body.clientHeight;
       }
     };
@@ -692,8 +692,8 @@ script_label: {
          */
         window.webappos.desktop.show_dialog = function (title, content, fOnClose, w, h) {
 
-          var ww=w;
-          var hh=h;
+          var ww = w;
+          var hh = h;
           if (!ww)
             ww = window.innerWidth / 2;
           if (!hh)
@@ -731,7 +731,7 @@ script_label: {
               content: content,
               executeScripts: true,
               //style: "width: " + w + "; height:" + h + ";",
-              style: "width: "+(w?w+"":"auto")+"; height: "+(h?hh+"":"auto")+";",
+              style: "width: " + (w ? w + "" : "auto") + "; height: " + (h ? hh + "" : "auto") + ";",
               onHide: function () {
                 if (fOnClose) fOnClose();
                 myDialog.destroy();
@@ -793,7 +793,7 @@ script_label: {
     webappos.desktop.browse_for_file = async function (dialog_type, files_filter, start_dir) {
       var d = new Date();
       var browse_id = d.getTime();
-      var content = "<iframe id='theiframe' style='width:700px;height:465px;' src='/apps/filedialog/FileDialog.html?type=" + dialog_type + "&filter=" + files_filter + "&browse_id=" + browse_id + (start_dir?"&start_dir="+start_dir:"")+ "'></iframe>" +
+      var content = "<iframe id='theiframe' style='width:700px;height:465px;' src='/apps/filedialog/FileDialog.html?type=" + dialog_type + "&filter=" + files_filter + "&browse_id=" + browse_id + (start_dir ? "&start_dir=" + start_dir : "") + "'></iframe>" +
         "<script>" +
         "var receiveMessage2 = function(event) {" +
         "  if (event.data.browse_id!=" + browse_id + ") return;" +
@@ -807,14 +807,14 @@ script_label: {
       if (dialog_type == "open")
         title = "Open file";
       else
-      if (dialog_type == "save")
-        title = "Save file";
-      else
-      if (dialog_type == "upload")
-        title = "Upload file";
-      else
-      if (dialog_type == "dir")
-        title = "Choose folder";
+        if (dialog_type == "save")
+          title = "Save file";
+        else
+          if (dialog_type == "upload")
+            title = "Upload file";
+          else
+            if (dialog_type == "dir")
+              title = "Choose folder";
 
       var handle = webappos.desktop.show_dialog(title, content, function () {
         webappos.desktop.set_shared_value('file_dialog_result' + browse_id, "");
@@ -824,7 +824,7 @@ script_label: {
 
       let promise = new Promise(async function (resolve, reject) {
 
-        for (;;) {
+        for (; ;) {
           let value = await webappos.desktop.get_shared_value('file_dialog_result' + browse_id);
           if (value != null) {
             webappos.desktop.close_dialog(handle);
@@ -1147,12 +1147,12 @@ script_label: {
           if (event.data.method == "i_am_desktop!") {
             window.webappos.parent_desktop = true;
           } else
-          if (event.data.method == "callback") {
-            var f = window.webappos.desktop.callback_map[event.data.callback_id];
-            delete window.webappos.desktop.callback_map[event.data.callback_id];
-            if (f)
-              f(event.data.value);
-          }
+            if (event.data.method == "callback") {
+              var f = window.webappos.desktop.callback_map[event.data.callback_id];
+              delete window.webappos.desktop.callback_map[event.data.callback_id];
+              if (f)
+                f(event.data.value);
+            }
         }
       } else {
         // answer as if we are a desktop, if our parent is a desktop...
@@ -1165,15 +1165,15 @@ script_label: {
                 caller_id: webappos.caller_id
               }, event.origin);
           } else
-          if (window.webappos.parent_desktop) {
-            if (event.data.callback_id) { // we act as relay iframe; store the callback function
-              window.webappos.desktop.callback_map[event.data.callback_id] = function (data) {
-                event.source.postMessage(event.data, event.origin);
-              };
-            }
+            if (window.webappos.parent_desktop) {
+              if (event.data.callback_id) { // we act as relay iframe; store the callback function
+                window.webappos.desktop.callback_map[event.data.callback_id] = function (data) {
+                  event.source.postMessage(event.data, event.origin);
+                };
+              }
 
-            window.parent.postMessage(event.data, "*");
-          }
+              window.parent.postMessage(event.data, "*");
+            }
         }
       }
     }
@@ -1479,7 +1479,7 @@ script_label: {
       a new object, which acts a a subclass of the given proto
     */
     webappos.js_util.inherit = function (proto) {
-      function F() {};
+      function F() { };
       F.prototype = proto;
       var object = new F;
       return object;
@@ -1624,35 +1624,35 @@ script_label: {
         return els[i];
     };
 
-    webappos.js_util.internal_fileNameForUpload = function(fileName, pathPrefix) {
+    webappos.js_util.internal_fileNameForUpload = function (fileName, pathPrefix) {
       var name = fileName;
 
-      for (;;) {
-        
-        if (pathPrefix==webappos.project_id || webappos.js_util.starts_with(pathPrefix,webappos.project_id+"/")) {
+      for (; ;) {
+
+        if (pathPrefix == webappos.project_id || webappos.js_util.starts_with(pathPrefix, webappos.project_id + "/")) {
           if (!webappos.webcall_and_wait("webappos.fileExistsInCurrentProject", fileName).result)
             return name;
 
         }
         else {
-          if (!webappos.webcall_and_wait("webappos.fileExists", pathPrefix+"/"+fileName).result)
+          if (!webappos.webcall_and_wait("webappos.fileExists", pathPrefix + "/" + fileName).result)
             return name;
         }
 
-        if (confirm("File "+name+" already exists.<br>Is it OK to overwrite?"))
+        if (confirm("File " + name + " already exists.<br>Is it OK to overwrite?"))
           return name;
 
-        name = prompt("Enter a different file name for "+fileName);
+        name = prompt("Enter a different file name for " + fileName);
         if (!name)
           return null;
       }
 
     };
 
-    webappos.js_util.internal_fileUpload = function(inputElementOrFile, pathPrefix, async) {
-    // inputElementOrFile - a DOM element, a JS File object, or a DOM element ID (string)
-    // returns uploaded file names delimited by ";"
-    // (a name of a file could be changed, if the file already existed)
+    webappos.js_util.internal_fileUpload = function (inputElementOrFile, pathPrefix, async) {
+      // inputElementOrFile - a DOM element, a JS File object, or a DOM element ID (string)
+      // returns uploaded file names delimited by ";"
+      // (a name of a file could be changed, if the file already existed)
 
       if (typeof async == 'undefined')
         async = false;
@@ -1660,12 +1660,12 @@ script_label: {
       if (!inputElementOrFile)
         return "";
 
-      if (typeof inputElementOrFile=="string") {
-        return webappos.js_util.internal_fileUpload(document.getElementById(inputElementOrFile),pathPrefix,async);
+      if (typeof inputElementOrFile == "string") {
+        return webappos.js_util.internal_fileUpload(document.getElementById(inputElementOrFile), pathPrefix, async);
       }
 
-      var isFile = inputElementOrFile.constructor.toString().indexOf("File")>0;
-      var fieldName = "someFile"+Math.random();
+      var isFile = inputElementOrFile.constructor.toString().indexOf("File") > 0;
+      var fieldName = "someFile" + Math.random();
 
       if (isFile) {
         var fdata = new FormData();
@@ -1674,7 +1674,7 @@ script_label: {
 
         // if file exists, ask for new name...
         var customFileName = webappos.js_util.internal_fileNameForUpload(inputElementOrFile.name, pathPrefix);
-        if (!customFileName) 
+        if (!customFileName)
           fdata.append("custom_file_name", ""); // skip
         else {
           fdata.append("custom_file_name", customFileName);
@@ -1684,14 +1684,14 @@ script_label: {
 
         $.ajax({
           async: async,
-          url: "/services/fileupload/"+pathPrefix+"?login="+webappos.login+"&ws_token="+webappos.ws_token+"&project_id="+webappos.project_id,
+          url: "/services/fileupload/" + pathPrefix + "?login=" + webappos.login + "&ws_token=" + webappos.ws_token + "&project_id=" + webappos.project_id,
           type: "post",
           enctype: 'multipart/form-data',
           data: fdata,
           cache: false,
           contentType: false,
           processData: false,
-          success: function(){
+          success: function () {
             uploadedFiles = customFileName;
           }
         });
@@ -1712,19 +1712,19 @@ script_label: {
 
 
         var uploadedFiles = "";
-        for (var i=0; i<inputElementOrFile.files.length; i++) {
+        for (var i = 0; i < inputElementOrFile.files.length; i++) {
           var s = webappos.js_util.internal_fileUpload(inputElementOrFile.files[i], pathPrefix, async);
-          if (s && (s.length>0))
-            if (uploadedFiles=="")
+          if (s && (s.length > 0))
+            if (uploadedFiles == "")
               uploadedFiles = s;
             else
-              uploadedFiles += ";"+s;
-        }  
+              uploadedFiles += ";" + s;
+        }
 
-        if (uploadedFiles=="")
+        if (uploadedFiles == "")
           alert("No files uploaded.");
         else
-          console.log("uploaded: "+uploadedFiles);
+          console.log("uploaded: " + uploadedFiles);
         return uploadedFiles;
       }
 
@@ -1746,29 +1746,28 @@ script_label: {
       the names of previously chosen files encoded as string (using ";" as a delimiter);
       TODO: the return value may differ from the value of the previouslyChosenFiles argument, if such files do not exist any more
     */
-   webappos.js_util.initialize_file_input = function(inputElement, previouslyChosenFiles)
-    {
-      var previouslyChosenDiv = $( "<div></div>" );
-      previouslyChosenDiv.insertAfter( inputElement );
+    webappos.js_util.initialize_file_input = function (inputElement, previouslyChosenFiles) {
+      var previouslyChosenDiv = $("<div></div>");
+      previouslyChosenDiv.insertAfter(inputElement);
       if (previouslyChosenFiles) {
-        previouslyChosenDiv.html(previouslyChosenFiles+" uploaded earlier");
+        previouslyChosenDiv.html(previouslyChosenFiles + " uploaded earlier");
         inputElement.previouslyChosenFiles = previouslyChosenFiles;
       }
 
 
-      var justChosenDiv = $( "<div></div>" );
-      justChosenDiv.insertAfter( inputElement );
+      var justChosenDiv = $("<div></div>");
+      justChosenDiv.insertAfter(inputElement);
 
-      inputElement.onchange=function(){
+      inputElement.onchange = function () {
         var s = "";
-        for (var i=0; i<inputElement.files.length; i++) {
-          if (i==0)
+        for (var i = 0; i < inputElement.files.length; i++) {
+          if (i == 0)
             s = inputElement.files[0].name;
           else
-            s += ";"+inputElement.files[i].name;
+            s += ";" + inputElement.files[i].name;
         }
         if (s.length > 0)
-          justChosenDiv.html("<br>"+s+" chosen for upload<br>");
+          justChosenDiv.html("<br>" + s + " chosen for upload<br>");
         else
           justChosenDiv.html("");
       };
@@ -1791,31 +1790,30 @@ script_label: {
     Returns:
       file names encoded as string (using ";" as a delimiter); file names could be changed, if such files already existed
     */
-    webappos.js_util.upload_file_input = function(inputElement, pathPrefix)
-    {
-        if (inputElement.files.length == 0)
-          return inputElement.previouslyChosenFiles; 
+    webappos.js_util.upload_file_input = function (inputElement, pathPrefix) {
+      if (inputElement.files.length == 0)
+        return inputElement.previouslyChosenFiles;
 
-        if (!pathPrefix)
-          pathPrefix = webappos.login;
+      if (!pathPrefix)
+        pathPrefix = webappos.login;
 
-        if (!pathPrefix)
-          return "";
+      if (!pathPrefix)
+        return "";
 
-        // keeping previous files (TODO: ask whether to clear/delete previous or keep previous and use a new name)
+      // keeping previous files (TODO: ask whether to clear/delete previous or keep previous and use a new name)
 
-        // delete previous files...
-        if (inputElement.previouslyChosenFiles) {
-          var filenames = inputElement.previouslyChosenFiles.split(";");
-          for (var i=0; i<filenames.length; i++) {
-            if (pathPrefix==webappos.project_id || webappos.js_util.starts_with(pathPrefix,webappos.project_id+"/"))
-              webappos.webcall_and_wait("webappos.deleteFileFromCurrentProject", filenames[i]);
-            else
-              webappos.webcall_and_wait("webappos.deleteFile", pathPrefix+"/"+filenames[i]);
-          }
+      // delete previous files...
+      if (inputElement.previouslyChosenFiles) {
+        var filenames = inputElement.previouslyChosenFiles.split(";");
+        for (var i = 0; i < filenames.length; i++) {
+          if (pathPrefix == webappos.project_id || webappos.js_util.starts_with(pathPrefix, webappos.project_id + "/"))
+            webappos.webcall_and_wait("webappos.deleteFileFromCurrentProject", filenames[i]);
+          else
+            webappos.webcall_and_wait("webappos.deleteFile", pathPrefix + "/" + filenames[i]);
         }
+      }
 
-        return webappos.js_util.internal_fileUpload(inputElement, pathPrefix);
+      return webappos.js_util.internal_fileUpload(inputElement, pathPrefix);
     };
 
     /**
@@ -1829,7 +1827,7 @@ script_label: {
     Returns:
       nothing; the window wrap becomes visible
     */
-   webappos.js_util.show_please_wait = function (msg) {
+    webappos.js_util.show_please_wait = function (msg) {
       thePleaseWaitDiv.innerHTML = msg;
       thePleaseWaitDivWrap.style.display = "block";
       if (!msg || (msg == ""))
@@ -1870,7 +1868,7 @@ script_label: {
     Returns:
       nothing; the browser will offer the user to download the string as file
     */
-   webappos.js_util.download_string = function (s, defaultFileName) {
+    webappos.js_util.download_string = function (s, defaultFileName) {
       var element = document.createElement('a');
       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(s));
       element.setAttribute('download', defaultFileName);
@@ -2022,9 +2020,9 @@ script_label: {
       return null;
     var s =
       location.search.replace("?" + key + "=" + value + "&", "?")
-      .replace("&" + key + "=" + value + "&", "&")
-      .replace("&" + key + "=" + value, "")
-      .replace("?" + key + "=" + value, "");
+        .replace("&" + key + "=" + value + "&", "&")
+        .replace("&" + key + "=" + value, "")
+        .replace("?" + key + "=" + value, "");
     if (s == "?")
       s = "";
 
@@ -2055,7 +2053,7 @@ script_label: {
       if (window.parent) {
         window.tda = Object.create(window.parent["tda"]);
       }
-    } catch (t) {}
+    } catch (t) { }
   }
 
   if (!window.webmem) {
@@ -2063,7 +2061,7 @@ script_label: {
       if (window.parent) {
         window.webmem = Object.create(window.parent["webmem"]);
       }
-    } catch (t) {}
+    } catch (t) { }
   }
 
   /**
@@ -2090,7 +2088,7 @@ script_label: {
         if (window.parent) {
           window.tda = Object.create(window.parent["tda"]);
         }
-      } catch (t) {}
+      } catch (t) { }
     }
 
     if (!window.webmem) {
@@ -2098,7 +2096,7 @@ script_label: {
         if (window.parent) {
           window.webmem = Object.create(window.parent["webmem"]);
         }
-      } catch (t) {}
+      } catch (t) { }
     }
 
     // If could not get from the parent, define window.tda here...
@@ -2319,7 +2317,7 @@ script_label: {
           tda.model.registerChange();
         },
 
-        createAttributeSetterGetter: function (cls /*=mmcls*/ , name, rAttr) {
+        createAttributeSetterGetter: function (cls /*=mmcls*/, name, rAttr) {
           // check if the function for the given attr name exists...
           var setName = "set" + webappos.js_util.capitalize_first_letter(name);
           cls[setName] = function (val) {
@@ -2354,7 +2352,7 @@ script_label: {
           };
         },
 
-        deleteAttributeSetterGetter: function (cls /*=mmcls*/ , name) {
+        deleteAttributeSetterGetter: function (cls /*=mmcls*/, name) {
           delete cls["set" + webappos.js_util.capitalize_first_letter(name)];
           delete cls["get" + webappos.js_util.capitalize_first_letter(name)];
         },
@@ -2398,41 +2396,41 @@ script_label: {
           var oldnull = (oldval == null) || (typeof oldval == "undefined");
           var valnull = (val == null) || (typeof val == "undefined");
 
-          if ((curnull && oldnull) || (curval+"" == oldval+"") || (curval && (valnull || (val+"" <= curval + "")))) {
+          if ((curnull && oldnull) || (curval + "" == oldval + "") || (curval && (valnull || (val + "" <= curval + "")))) {
             if (valnull)
               delete obj[attrName];
             else {
               if (attrObj.typeName == "Integer")
                 obj[attrName] = parseInt(val);
               else
-              if (attrObj.typeName == "Real")
-                obj[attrName] = parseFloat(val);
-              else
-              if (attrObj.typeName == "Boolean") {
-                obj[attrName] = (val) && (val.toLowerCase() == "true");
-              }
-              else
-                obj[attrName] = val;
+                if (attrObj.typeName == "Real")
+                  obj[attrName] = parseFloat(val);
+                else
+                  if (attrObj.typeName == "Boolean") {
+                    obj[attrName] = (val) && (val.toLowerCase() == "true");
+                  }
+                  else
+                    obj[attrName] = val;
             }
           }
 
           if ((curnull && oldnull) || (curval == oldval)) {
-              // validating attribute value...
-              setTimeout(function() {
-                // we do not validate at once, since the server could change values sequentially; we just validate the last value obtained within 100ms...
-                var arr = new Float64Array(3);
-                arr[0] = 0xA4;
-                arr[1] = rObj;
-                arr[2] = rAttr;
-                tda.websocket.send(arr.buffer);
-                tda.websocket.send(tda.model.sharpenString("" + obj[attrName]));
-                tda.model.registerChange();  
-              }, 100);
+            // validating attribute value...
+            setTimeout(function () {
+              // we do not validate at once, since the server could change values sequentially; we just validate the last value obtained within 100ms...
+              var arr = new Float64Array(3);
+              arr[0] = 0xA4;
+              arr[1] = rObj;
+              arr[2] = rAttr;
+              tda.websocket.send(arr.buffer);
+              tda.websocket.send(tda.model.sharpenString("" + obj[attrName]));
+              tda.model.registerChange();
+            }, 100);
           }
           tda.model.registerChange();
         },
 
-        createAssociationSetterGetter: function (cls /*=mmcls*/ , roleName, rAssoc, inverseRoleName) {
+        createAssociationSetterGetter: function (cls /*=mmcls*/, roleName, rAssoc, inverseRoleName) {
           var linkName = "link" + webappos.js_util.capitalize_first_letter(roleName);
           cls[linkName] = function (obj2) {
             if (!this[roleName])
@@ -2530,7 +2528,7 @@ script_label: {
 
             var assoc = tda.model[rAssoc];
             if (assoc.inverse && assoc.inverse.isComposition) {
-              if (newArr.length>0) {
+              if (newArr.length > 0) {
                 newArr = [newArr[0]]; // keeping just 1 element
               }
             }
@@ -2538,7 +2536,7 @@ script_label: {
 
             if (inverseRoleName) {
               for (var k = 0; k < newArr.length; k++) {
-                var arr = newArr[k][inverseRoleName]; 
+                var arr = newArr[k][inverseRoleName];
                 if (arr && assoc.isComposition) {
                   // delete links to previous owners;
                   // arr is the list of previous owners for newArr[k]
@@ -2554,7 +2552,7 @@ script_label: {
                   arr = [];
                   newArr[k][inverseRoleName] = [];
                 }
-                if (!arr) { 
+                if (!arr) {
                   arr = [];
                   newArr[k][inverseRoleName] = [];
                 }
@@ -2599,7 +2597,7 @@ script_label: {
           };
         },
 
-        deleteAssociationSetterGetter: function (cls /*=mmcls*/ , roleName) {
+        deleteAssociationSetterGetter: function (cls /*=mmcls*/, roleName) {
           delete cls["link" + webappos.js_util.capitalize_first_letter(roleName)];
           delete cls["unlink" + webappos.js_util.capitalize_first_letter(roleName)];
           delete cls["set" + webappos.js_util.capitalize_first_letter(roleName)];
@@ -2750,10 +2748,10 @@ script_label: {
           var obj = tda.model[rObj];
           if (!obj)
             return;
-            // delete links...	
+          // delete links...	
           for (var i = 0; i < obj.classes.length; i++) {
             var assocs = obj.classes[i].getAllAssociations();
-            for (var assocId in assocs) {              
+            for (var assocId in assocs) {
               var assoc = assocs[assocId];
 
               if (assoc.isComposition) {
@@ -2867,8 +2865,8 @@ script_label: {
 
             if (synced)
               return true; // do not create the link at the client-side (assume the event or command handled)            
-            else  {
-              if ((webappos.interrupt)&& (webappos.interrupt({
+            else {
+              if ((webappos.interrupt) && (webappos.interrupt({
                 type: "submit",
                 argument: obj1.reference,
                 className: obj1.getClassName()
@@ -2896,7 +2894,7 @@ script_label: {
                 obj1[assoc.roleName] = [obj2]; // delete all other links to the owner
               }
               if (!obj2[assoc.inverse.roleName])
-                obj2[assoc.inverse.roleName] = [];              
+                obj2[assoc.inverse.roleName] = [];
               obj2[assoc.inverse.roleName].push(obj1);
               if (assoc.isComposition) {
                 obj2[assoc.inverse.roleName] = [obj1]; // delete all other links to the owner
@@ -3141,10 +3139,10 @@ script_label: {
                     break;
                   case 0x05:
                     var parts = event.data.split("/");
-                    tda.model.createAssociation(arr[1], arr[2], tda.model.unsharpenString(parts[0]), tda.model.unsharpenString(parts[1]), arr[3]?true:false, arr[4], arr[5]);
+                    tda.model.createAssociation(arr[1], arr[2], tda.model.unsharpenString(parts[0]), tda.model.unsharpenString(parts[1]), arr[3] ? true : false, arr[4], arr[5]);
                     break;
                   case 0x15:
-                    tda.model.createDirectedAssociation(arr[1], arr[2], tda.model.unsharpenString(event.data), arr[3]?true:false, arr[4]);
+                    tda.model.createDirectedAssociation(arr[1], arr[2], tda.model.unsharpenString(event.data), arr[3] ? true : false, arr[4]);
                     break;
                   case 0xC1:
                     var callback = tda.websocket.jsonsubmitCallbacks[arr[1]];
@@ -3171,11 +3169,11 @@ script_label: {
                     } else {
                       var id = arr[1];
                       webappos.client_webcall_jsoncall(tda.model.unsharpenString(aa[0]), tda.model.unsharpenString(aa[1])).then(function (result) {
-                        if (id>0) {
+                        if (id > 0) {
                           if (!result)
                             result = "{}";
                           if (typeof result != "string")
-                            result = result+"";
+                            result = result + "";
                           var arr2 = new Float64Array(2);
                           arr2[0] = 0xC1;
                           arr2[1] = id;
@@ -3188,7 +3186,7 @@ script_label: {
                   case 0xFC:
                     webappos.set_project_id(tda.model.unsharpenString(event.data));
                     break;
-                    // TODO: 0x25
+                  // TODO: 0x25
                   case 0xEE:
                     var i = 1;
                     var d = new Date();
@@ -3243,7 +3241,7 @@ script_label: {
                           tda.websocket.onmessage(newEvent);
                           j++;
                           break;
-                          // TODO: 0x25
+                        // TODO: 0x25
                         case 0xF1:
                         case 0xF3:
                         case 0xF5:
@@ -3277,7 +3275,7 @@ script_label: {
                           tda.websocket.onmessage(newEvent);
                           i += 5;
                           break;
-                          // TODO: 0x12 0xE2 0x22
+                        // TODO: 0x12 0xE2 0x22
                         case 0xFC:
                           newEvent.data = webappos.js_util.slice(arr, i, i + 1);
                           tda.websocket.onmessage(newEvent);
@@ -3323,120 +3321,120 @@ script_label: {
                         }*/
               }
             } else
-            if ((event.data instanceof ArrayBuffer) || (event.data instanceof Float64Array) || webappos.js_util.is_array(event.data)) {
-              if (event.data instanceof ArrayBuffer)
-                arr = new Float64Array(event.data);
-              else
-                arr = event.data;
+              if ((event.data instanceof ArrayBuffer) || (event.data instanceof Float64Array) || webappos.js_util.is_array(event.data)) {
+                if (event.data instanceof ArrayBuffer)
+                  arr = new Float64Array(event.data);
+                else
+                  arr = event.data;
 
-              switch (arr[0]) {
-                case 0x01:
-                case 0x03:
-                case 0x04:
-                case 0xA4:
-                case 0x05:
-                case 0x15:
-                case 0x25:
-                case 0xC1:
-                case 0xFC:
-                case 0xC0:
-                  // for string-containing ops, save the arr, and process the op on string message
-                  tda.websocket.arr = arr;
-                  break;
-                case 0xEE:
-                  var d = new Date();
-                  tda.websocket.arr = arr;
-                  break;
-                case 0xF1:
-                  tda.model.deleteClass(arr[1]);
-                  break;
-                case 0x11:
-                  tda.model.createGeneralization(arr[1], arr[2]);
-                  break;
-                case 0xE1:
-                  tda.model.deleteGeneralization(arr[1], arr[2]);
-                  break;
-                case 0x02:
-                  tda.model.createObject(arr[1], arr[2]);
-                  break;
-                case 0xF2:
-                  tda.model.deleteObject(arr[1]);
-                  break;
-                  // TODO: 0x12 0xE2 0x22
-                case 0xF3:
-                  tda.model.deleteAttribute(arr[1]);
-                  break;
-                case 0xF4:
-                  tda.model.deleteAttributeValue(arr[1], arr[2]);
-                  break;
-                case 0xF5:
-                  tda.model.deleteAssociation(arr[1]);
-                  break;
-                case 0x06:
-                  tda.model.createLink(arr[1], arr[2], arr[3]);
-                  break;
-                case 0x16:
-                  tda.model.createOrderedLink(arr[1], arr[2], arr[3], arr[4]);
-                  break;
-                case 0xA6:
-                  // validate that link exists...
-                  if (tda.model.linkExists(arr[1], arr[2], arr[3])) {} // ok
-                  else {
-                    // the link does not exist; 
-                    // we force to delete the link at the server-side
-                    var arr2 = new Float64Array(4);
-                    arr2[0] = 0xF6;
-                    arr2[1] = arr[1];
-                    arr2[2] = arr[2];
-                    arr2[3] = arr[3];
-                    tda.websocket.send(arr2.buffer);
-                    tda.model.registerChange();
-                  };
-                  break;
-                case 0xF6:
-                  tda.model.deleteLink(arr[1], arr[2], arr[3]);
-                  break;
-                case 0xFF:
-                  tda.model.checkReference(arr[1]);
-                  tda.model.predefinedBitsCount = arr[2];
-                  tda.model.predefinedBitsValues = arr[3];
-                  if (tda.standalone) {
-                    console.log("standalone sync done!");
-                    tda.synced = true;
-                  } else {
-                    console.log("web sync done!");
-                    // issuing a command...
-
-                    tda.synced = true;
+                switch (arr[0]) {
+                  case 0x01:
+                  case 0x03:
+                  case 0x04:
+                  case 0xA4:
+                  case 0x05:
+                  case 0x15:
+                  case 0x25:
+                  case 0xC1:
+                  case 0xFC:
+                  case 0xC0:
+                    // for string-containing ops, save the arr, and process the op on string message
+                    tda.websocket.arr = arr;
+                    break;
+                  case 0xEE:
                     var d = new Date();
-                    webappos.connect_finished = d.getTime();
-                    console.log("Initial sync done in "+(webappos.connect_finished-webappos.connect_started)+" ms");
+                    tda.websocket.arr = arr;
+                    break;
+                  case 0xF1:
+                    tda.model.deleteClass(arr[1]);
+                    break;
+                  case 0x11:
+                    tda.model.createGeneralization(arr[1], arr[2]);
+                    break;
+                  case 0xE1:
+                    tda.model.deleteGeneralization(arr[1], arr[2]);
+                    break;
+                  case 0x02:
+                    tda.model.createObject(arr[1], arr[2]);
+                    break;
+                  case 0xF2:
+                    tda.model.deleteObject(arr[1]);
+                    break;
+                  // TODO: 0x12 0xE2 0x22
+                  case 0xF3:
+                    tda.model.deleteAttribute(arr[1]);
+                    break;
+                  case 0xF4:
+                    tda.model.deleteAttributeValue(arr[1], arr[2]);
+                    break;
+                  case 0xF5:
+                    tda.model.deleteAssociation(arr[1]);
+                    break;
+                  case 0x06:
+                    tda.model.createLink(arr[1], arr[2], arr[3]);
+                    break;
+                  case 0x16:
+                    tda.model.createOrderedLink(arr[1], arr[2], arr[3], arr[4]);
+                    break;
+                  case 0xA6:
+                    // validate that link exists...
+                    if (tda.model.linkExists(arr[1], arr[2], arr[3])) { } // ok
+                    else {
+                      // the link does not exist; 
+                      // we force to delete the link at the server-side
+                      var arr2 = new Float64Array(4);
+                      arr2[0] = 0xF6;
+                      arr2[1] = arr[1];
+                      arr2[2] = arr[2];
+                      arr2[3] = arr[3];
+                      tda.websocket.send(arr2.buffer);
+                      tda.model.registerChange();
+                    };
+                    break;
+                  case 0xF6:
+                    tda.model.deleteLink(arr[1], arr[2], arr[3]);
+                    break;
+                  case 0xFF:
+                    tda.model.checkReference(arr[1]);
+                    tda.model.predefinedBitsCount = arr[2];
+                    tda.model.predefinedBitsValues = arr[3];
+                    if (tda.standalone) {
+                      console.log("standalone sync done!");
+                      tda.synced = true;
+                    } else {
+                      console.log("web sync done!");
+                      // issuing a command...
 
-                    webappos.webcall("webappos.getAvailableWebCalls").then(function (result) {
-                      webappos.webcalls = result;
+                      tda.synced = true;
+                      var d = new Date();
+                      webappos.connect_finished = d.getTime();
+                      console.log("Initial sync done in " + (webappos.connect_finished - webappos.connect_started) + " ms");
 
-                      tda.model.webcall("webappos.initializeProject", {bootstrapped: tda.bootstrapped}).then(()=>resolve(true));
-                    });
+                      webappos.webcall("webappos.getAvailableWebCalls").then(function (result) {
+                        webappos.webcalls = result;
 
-                  }
-                  break;
-                case 0xBB:
-                  tda.model.registerChange(); // start new saveBall
-                  break;
-                case 0xFE:
-                  localStorage.removeItem("login");
-                  localStorage.removeItem("ws_token");
-                  var redirect = window.location.href;
-                  window.location.href = "/apps/login?signout=true&redirect=" + redirect;
-                  break;
-                default:
-                  console.log("bindata(" + arr[0] + "): " + event.data);
+                        tda.model.webcall("webappos.initializeProject", { bootstrapped: tda.bootstrapped }).then(() => resolve(true));
+                      });
+
+                    }
+                    break;
+                  case 0xBB:
+                    tda.model.registerChange(); // start new saveBall
+                    break;
+                  case 0xFE:
+                    localStorage.removeItem("login");
+                    localStorage.removeItem("ws_token");
+                    var redirect = window.location.href;
+                    window.location.href = "/apps/login?signout=true&redirect=" + redirect;
+                    break;
+                  default:
+                    console.log("bindata(" + arr[0] + "): " + event.data);
+                }
+              } else {
+                webappos.js_util.print_stack_trace();
+                console.log("wrong arr type!", typeof event.data, JSON.stringify(event.data));
+                throw "wrong arr type!";
               }
-            } else {
-              webappos.js_util.print_stack_trace();
-              console.log("wrong arr type!", typeof event.data, JSON.stringify(event.data));
-              throw "wrong arr type!";
-            }
           };
           socket.onerror = function (error) {
             console.log("error: " + JSON.stringify(error));
@@ -3473,11 +3471,11 @@ script_label: {
       tda.model.submit = function (obj) {
         tda.model.last_submitted = tda.model.disassemble_object(obj);
         var d = new Date();
-        var dt = d.getTime()-webappos.connect_finished;
+        var dt = d.getTime() - webappos.connect_finished;
 
-        console.log("submit" + obj.getClassName() + ", r=" + obj.reference+", time since connect finished="+dt);
+        console.log("submit" + obj.getClassName() + ", r=" + obj.reference + ", time since connect finished=" + dt);
 
-        if (obj.getClassName()=="LaunchTransformationCommand") {
+        if (obj.getClassName() == "LaunchTransformationCommand") {
           console.log(obj.getUri())
         }
 
@@ -3524,10 +3522,10 @@ script_label: {
             if (action.callingConventions == "jsoncall") {
               return webappos.client_webcall_jsoncall(actionName, webappos.to_jsoncall_string(arg));
             } else
-            if (action.callingConventions == "webmemcall") {
-              return webappos.client_webcall_webmemcall(actionName, webappos.to_webmemcall_object(arg));
-            }
-            return reject({error:"unknown calling conventions for "+actionName});
+              if (action.callingConventions == "webmemcall") {
+                return webappos.client_webcall_webmemcall(actionName, webappos.to_webmemcall_object(arg));
+              }
+            return reject({ error: "unknown calling conventions for " + actionName });
           }
 
           var intr_obj = {
@@ -3538,11 +3536,11 @@ script_label: {
           };
           if (action)
             intr_obj.callingConventions = action.callingConventions;
-    
-          if ((webappos.interrupt)&& (webappos.interrupt(intr_obj))) {
+
+          if ((webappos.interrupt) && (webappos.interrupt(intr_obj))) {
             return resolve({
-                  error: "web call interrupted"
-                });
+              error: "web call interrupted"
+            });
 
           }
 
@@ -3577,21 +3575,21 @@ script_label: {
             } else
               tda.websocket.jsonsubmitID++;
 
-            tda.websocket.jsonsubmitCallbacks[tda.websocket.jsonsubmitID] = function(json) {
+            tda.websocket.jsonsubmitCallbacks[tda.websocket.jsonsubmitID] = function (json) {
               if (!json)
-                return reject({error: "jsoncall webcall "+actionName+" returned no value from the server"});
-              if (json=="null") {
+                return reject({ error: "jsoncall webcall " + actionName + " returned no value from the server" });
+              if (json == "null") {
                 return resolve({});
               }
               else
-              if (webappos.js_util.is_object(json)) {
-                if (json.error)
-                  return reject(json);
+                if (webappos.js_util.is_object(json)) {
+                  if (json.error)
+                    return reject(json);
+                  else
+                    return resolve(json);
+                }
                 else
-                  return resolve(json);
-              }
-              else
-                return reject({error:"jsoncall webcall "+actionName+" returned not-a-JSON"});
+                  return reject({ error: "jsoncall webcall " + actionName + " returned not-a-JSON" });
             };
 
             var arr = new Float64Array(2);
@@ -3614,42 +3612,73 @@ script_label: {
       However, the name of the first class will be available as the "className" property.
     
       Parameters:
-        obj - root object
+        startObj - start object
+        roles - an optional array of role names that have to be traversed in addition to the compositions (to avoid cycles and infinite recursion, objects are not traversed the more than once)
 
       Returns:
         a cloned JS object with attributes and descendants corresponding to composition relations;
         functions are removed from the cloned object; thus, it can be serialized using JSON.stringify
       */
-      tda.model.extract = function(obj) {
-        var root = {};
+      tda.model.extract = function (startObj, roles, visited) {
+        if (!roles)
+          roles = [];
+        if (!visited)
+          visited = {}; // a set of visited objects
 
-        root.className = obj.getClassName();
 
-        // cloning child objects accessible by compositions...
-        for (let i=0; i<obj.classes.length; i++) {
-          let assocs = obj.classes[i].getAllAssociations();
-          for (let j in assocs) {
-            let name = assocs[j].roleName;
-            if (obj[name] && assocs[j].isComposition) {
-              // recurse into children by composition...
-              if (!root[name])
-                root[name] = [];
-              for (let k=0; k<obj[name].length; k++) {
-                root[name].push( tda.model.extract(obj[name][k]) );
-              }              
+        let retVal = [];
+        let queue = [{obj:startObj,pushInto:retVal}];
+        visited[startObj.reference] = true;
+
+        while (queue.length>0) {
+          let x = queue.shift();
+          let obj = x.obj;
+          let pushInto = x.pushInto;
+
+          // processing obj...
+          var root = {};
+          root.className = obj.getClassName();
+          pushInto.push(root);
+
+          // attrs...
+          for (var attr in obj) {
+            if (obj.hasOwnProperty(attr) && !webappos.js_util.is_array(obj[attr])) { // not an array means this is an attribute value; cloning it...
+              root[attr] = obj[attr];
             }
           }
-        }
 
-        for (var attr in obj) {
-          if (obj.hasOwnProperty(attr) && !webappos.js_util.is_array(obj[attr])) { // not an array means this is an attribute value; cloning it...
-            root[attr] = obj[attr];
+          // links...
+          // cloning child objects accessible by compositions or specified in roles...
+          for (let i = 0; i < obj.classes.length; i++) {
+            let assocs = obj.classes[i].getAllAssociations();
+            for (let j in assocs) {
+              let name = assocs[j].roleName;
+              if (obj[name] && (assocs[j].isComposition || roles.includes(name))) {
+                // recurse into children by composition...
+                if (!root[name])
+                  root[name] = [];
+                for (let k = 0; k < obj[name].length; k++) {
+                  let child = obj[name][k];
+                  if (visited[child.reference]) {
+                    // push a stub of an already visited object...
+                    root[name].push({reference:child.reference,className:child.getClassName()});
+                  }
+                  else {
+                    // enqueue for BFS...
+                    queue.push({obj:child, pushInto:root[name]});
+                    visited[child.reference] = true;
+                  }
+                }
+              }
+            }
           }
+
+
         }
 
-        return root;
+        return retVal[0];
       };
-    
+
 
     }; // if (!window.tda)
 
@@ -3663,7 +3692,7 @@ script_label: {
   var q = Object.create(window.webappos);
   q.local_window = window;
 
-  q.get_client_webcall_window = async function(actionName, arg) {
+  q.get_client_webcall_window = async function (actionName, arg) {
     if (window[actionName])
       return window;
     return w.get_client_webcall_window(actionName, arg);
