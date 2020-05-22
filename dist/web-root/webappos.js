@@ -3627,10 +3627,10 @@ script_label: {
 
 
         let retVal = [];
-        let queue = [{obj:startObj,pushInto:retVal}];
+        let queue = [{ obj: startObj, pushInto: retVal }];
         visited[startObj.reference] = true;
 
-        while (queue.length>0) {
+        while (queue.length > 0) {
           let x = queue.shift();
           let obj = x.obj;
           let pushInto = x.pushInto;
@@ -3661,11 +3661,18 @@ script_label: {
                   let child = obj[name][k];
                   if (visited[child.reference]) {
                     // push a stub of an already visited object...
-                    root[name].push({reference:child.reference,className:child.getClassName()});
+                    let root2 = { reference: child.reference, className: child.getClassName() };
+                    root[name].push(root2);
+                    // storing also attrs...
+                    for (var attr in child) {
+                      if (child.hasOwnProperty(attr) && !webappos.js_util.is_array(child[attr])) { // not an array means this is an attribute value; cloning it...
+                        root2[attr] = child[attr];
+                      }
+                    }
                   }
                   else {
                     // enqueue for BFS...
-                    queue.push({obj:child, pushInto:root[name]});
+                    queue.push({ obj: child, pushInto: root[name] });
                     visited[child.reference] = true;
                   }
                 }
