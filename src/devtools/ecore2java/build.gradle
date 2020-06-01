@@ -8,6 +8,9 @@
   // Eclipse OCL
       ivy {
         url "https://archive.eclipse.org/modeling/mdt/ocl/updates/releases/6.6.0/plugins"
+        metadataSources {
+            artifact()
+        }
         patternLayout {
               artifact "[artifact]_[revision].[ext]"
         }
