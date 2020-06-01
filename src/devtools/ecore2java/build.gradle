@@ -17,7 +17,7 @@
       }
   // Eclipse Acceleo
       ivy {
-        url "https://download.eclipse.org/acceleo/updates/releases/3.7/R201812041426/plugins"
+        url "https://download.eclipse.org/acceleo/updates/releases/3.7/R202002210922/plugins"
         patternLayout {
               artifact "[artifact]_[revision].[ext]"
         }
@@ -42,10 +42,10 @@
       implementation 'org.eclipse.ocl:org.eclipse.ocl.common:1.8.100.v20181210-1441'
       implementation 'org.eclipse.ocl:org.eclipse.ocl:3.10.100.v20181210-1441'
 
-      implementation 'org.eclipse.acceleo:org.eclipse.acceleo.engine:3.7.7.201812041426'
-      implementation 'org.eclipse.acceleo:org.eclipse.acceleo.common:3.7.7.201812041426'
-      implementation 'org.eclipse.acceleo:org.eclipse.acceleo.model:3.7.7.201812041426'
-      implementation 'org.eclipse.acceleo:org.eclipse.acceleo.profiler:3.7.7.201812041426'
+      implementation 'org.eclipse.acceleo:org.eclipse.acceleo.engine:3.7.10.202002210922'
+      implementation 'org.eclipse.acceleo:org.eclipse.acceleo.common:3.7.10.202002210922'
+      implementation 'org.eclipse.acceleo:org.eclipse.acceleo.model:3.7.10.202002210922'
+      implementation 'org.eclipse.acceleo:org.eclipse.acceleo.profiler:3.7.10.202002210922'
   }
 
   // Define the main class for the application
