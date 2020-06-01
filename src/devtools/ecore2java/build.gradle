@@ -18,6 +18,9 @@
   // Eclipse Acceleo
       ivy {
         url "https://download.eclipse.org/acceleo/updates/releases/3.7/R202002210922/plugins"
+        metadataSources {
+            artifact()
+        }
         patternLayout {
               artifact "[artifact]_[revision].[ext]"
         }
