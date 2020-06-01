@@ -7,7 +7,7 @@
 
   // Eclipse OCL
       ivy {
-        url "https://download.eclipse.org/modeling/mdt/ocl/updates/releases/6.6.0/plugins"
+        url "https://archive.eclipse.org/modeling/mdt/ocl/updates/releases/6.6.0/plugins"
         patternLayout {
               artifact "[artifact]_[revision].[ext]"
         }

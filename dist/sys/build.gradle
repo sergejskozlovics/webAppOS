@@ -147,6 +147,7 @@ dependencies {
     preserve({
           include 'apps/**'
           include 'bin'
+          include 'bin/**'
           exclude 'bin/webappos*'
           include 'cache/**'
           include 'engines/**'
