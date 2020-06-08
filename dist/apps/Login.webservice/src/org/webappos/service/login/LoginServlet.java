@@ -61,6 +61,10 @@ public class LoginServlet extends HttpServlet
 	
 	private static int password_expire_days = 401500;
 	
+	public static boolean signupAllowed() {
+		return signup_allowed;
+	}
+	
 	public static void setProperties(Properties p) { // file service.properties for the given webAppOS service
 		properties = p;
 		signup_policy = properties.getProperty("signup_policy", "deny");

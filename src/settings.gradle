@@ -18,6 +18,9 @@ project(':WebDAV.webservice').projectDir = new File('../dist/apps/WebDAV.webserv
 include ':ServerFSDriver.webservice'
 project(':ServerFSDriver.webservice').projectDir = new File('../dist/apps/ServerFSDriver.webservice')
 
+include ':google_scopes.webservice'
+project(':google_scopes.webservice').projectDir = new File('../dist/apps/google_scopes.webservice')
+
 include ':DialogEngine.weblibrary'
 project(':DialogEngine.weblibrary').projectDir = new File('../dist/apps/DialogEngine.weblibrary')
 include ':GraphDiagramEngine.weblibrary'
