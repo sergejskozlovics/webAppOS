@@ -200,7 +200,7 @@ public class ConfigEx extends ConfigStatic implements Serializable {
 		String className = null;
 		Constructor<?> constr = null;
 	}
-	private Map<String, FSDriver > fs_drivers = new ConcurrentHashMap<String, FSDriver >(); // driver protocol name -> driver
+	public Map<String, FSDriver > fs_drivers = new ConcurrentHashMap<String, FSDriver >(); // driver protocol name -> driver
 
 	/**
 	 * Registers a a file system driver, i.e., a Java class implementing the IFileSystem interface and

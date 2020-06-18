@@ -8,17 +8,16 @@ import com.google.gson.JsonElement;
 public class RegistryActions_webcalls {
 	
 	public static String getUserRegistryValue(String key, String login) {
-		// login will be non-null
-		
+		// login will be non-null		
 		try {
-			JsonElement value = API.registry.getValue("user/"+key);
+			JsonElement value = API.registry.getValue("users/"+login+"/"+key);
 			if (value.isJsonNull()) {
 				return "{}";
 			}
 			if (value.isJsonPrimitive())
 				return "{\"result\":\""+value.getAsString()+"\"}";
 			else
-				return "{\"result\": "+value.getAsString()+"}";
+				return "{\"result\": "+value.toString()+"}";
 		}
 		catch(Throwable t) {
 			return "{\"error\":\""+t.getMessage()+"\"}";
@@ -36,7 +35,7 @@ public class RegistryActions_webcalls {
 			if (key==null)
 				return "{\"result\":false, \"error\":\"No key specified\"}";
 			
-			return "{\"result\":"+API.registry.setValue("user/"+key, value)+"}";
+			return "{\"result\":"+API.registry.setValue("users/"+login+"/"+key, value)+"}";
 		}
 		catch(Throwable t) {
 			return "{\"result\":false, \"error\":\""+t.getMessage()+"\"}";

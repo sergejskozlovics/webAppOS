@@ -384,10 +384,9 @@ static\ webappos.uploadFile(JSON)=staticjava:org.webappos.webcalls.FSActions_web
 #   ----------
 webappos.uploadFileToCurrentProject(JSON)=staticjava:org.webappos.webcalls.FSActions_webcalls#uploadFileToCurrentProject
 
+
 ##
-# Function: renameActiveProject
-#   Renames the active project. The current user must be the owner of the project
-#   (i.e., the old and new project_id must start with "<login>/")
+# Function: getSupportedFileSystems
 #
 #   Parameter:
 #     a JSON object
@@ -413,6 +412,28 @@ webappos.uploadFileToCurrentProject(JSON)=staticjava:org.webappos.webcalls.FSAct
 #   ----------
 webappos.renameActiveProject(JSON)=staticjava:org.webappos.webcalls.FSActions_webcalls#renameActiveProject
 
+##
+# Function: getSupportedFileSystems
+#     
+#   Parameter:
+#     none required
+#      
+#   Returns:
+#      a JSON object
+#   ---Code---
+#      {
+#        result: [array of driver names]
+#      }
+#   ----------
+#   or
+#   ---Code---
+#      {
+#        error: "<message>"
+#      }
+#   ----------
+static\ inline\ jsoncall\ webappos.getSupportedFileSystems()=staticjava:org.webappos.webcalls.FSActions_webcalls#getSupportedFileSystems
+
+
 # Group: Registry-related functions
 
 ##
@@ -435,7 +456,7 @@ webappos.renameActiveProject(JSON)=staticjava:org.webappos.webcalls.FSActions_we
 #        error: "<message>"
 #      }
 #   ----------
-static\ webappos.getUserRegistryValue(key)=staticjava:org.webappos.webcalls.RegistryActions_webcalls#getUserRegistryValue
+static\ jsoncall\ webappos.getUserRegistryValue(key)=staticjava:org.webappos.webcalls.RegistryActions_webcalls#getUserRegistryValue
 
 ##
 # Function: setUserRegistryValue
@@ -464,7 +485,7 @@ static\ webappos.getUserRegistryValue(key)=staticjava:org.webappos.webcalls.Regi
 #        error: "<message>"
 #      }
 #   ----------
-static\ webappos.setUserRegistryValue(JSON)=staticjava:org.webappos.webcalls.RegistryActions_webcalls#setUserRegistryValue
+static\ jsoncall\ webappos.setUserRegistryValue(JSON)=staticjava:org.webappos.webcalls.RegistryActions_webcalls#setUserRegistryValue
 
 # Group: Web calls-related functions
 #
