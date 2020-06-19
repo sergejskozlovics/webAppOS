@@ -31,7 +31,11 @@ public class RegistryActions_webcalls {
 		try {
 			JSONObject obj = new JSONObject(json);
 			String key = obj.getString("key");
-			Object value = obj.get("value");
+			Object value = null;
+			if (obj.has("value"))
+				value = obj.get("value");
+			if ("org.codehaus.jettison.json.JSONObject.Null".equals(value.getClass().getCanonicalName()))
+				value = null;
 			if (key==null)
 				return "{\"result\":false, \"error\":\"No key specified\"}";
 			
