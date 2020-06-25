@@ -107,8 +107,22 @@ public class SomeProperties implements Serializable {
 		String s = properties.getProperty("classpaths", defVal);
 		String arr[] = s.split(";");
 		for (String cp : arr)
-			if (!cp.isEmpty())
-				classpaths.add(sDir+File.separator+cp);
+			if (!cp.isEmpty()) {
+				if (cp.endsWith("/*") || cp.endsWith("\\*") || cp.equals("*")) {
+					while (cp.endsWith("*") || cp.endsWith("/") || cp.endsWith("\\")) {
+						cp = cp.substring(0, cp.length()-1);
+					}
+					File d = new File(sDir+File.separator+cp);
+					if (d.exists() && d.isDirectory()) 
+						for (String fname : d.list()) {
+							if (fname.toLowerCase().endsWith(".jar")) {
+								classpaths.add(sDir+File.separator+cp+File.separator+fname);
+							}
+						}
+				}
+				else
+					classpaths.add(sDir+File.separator+cp);
+			}
 								
 		for (String fname : fDir.list()) {
 			if (fname.endsWith(WebCaller.FILE_EXTENSION)) {
