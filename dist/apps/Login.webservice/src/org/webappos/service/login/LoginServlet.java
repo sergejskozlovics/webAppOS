@@ -578,6 +578,9 @@ public class LoginServlet extends HttpServlet
 			
 			xuser.addProperty("_id", login);
 			user.addProperty("_id", login);
+//				
+//			if (emailToAllow && signup_policy.equals("email"))
+//				signup_policy = "allow";
 				
    			if (signup_policy.startsWith("email")) { // "email" | "email+manual"
 				if (email==null)

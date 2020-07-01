@@ -1,50 +1,39 @@
 package org.webappos.scopes.google;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.concurrent.CompletableFuture;
+import com.google.api.client.auth.oauth2.BearerToken;
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
+import com.google.gson.JsonElement;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.webappos.antiattack.ValidityChecker;
+import org.webappos.auth.UsersManager;
+import org.webappos.properties.WebServiceProperties;
+import org.webappos.server.API;
+import org.webappos.util.UTCDate;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.codec.digest.DigestUtils;
-
-import org.codehaus.jettison.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.webappos.antiattack.ValidityChecker;
-import org.webappos.auth.UsersManager;
-import org.webappos.server.API;
-import org.webappos.server.ConfigStatic;
-import org.webappos.util.RandomToken;
-import org.webappos.util.UTCDate;
-import org.webappos.webcaller.WebCaller;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 
 @SuppressWarnings( "serial" )
@@ -52,86 +41,326 @@ public class GoogleServlet extends HttpServlet
 {
 	private static Logger logger =  LoggerFactory.getLogger(GoogleServlet.class);
 	private static Charset utf8_charset = Charset.forName("UTF-8");
-	
+
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {		
-		
+			throws ServletException, IOException {
 		try {
-	        String path = request.getPathInfo();
-	        if (path == null)
-	        	path = "";
-	        
-			if (request.getCharacterEncoding()!=null)
-				if (!"utf-8".equalsIgnoreCase(request.getCharacterEncoding()))
+			String path = request.getPathInfo();
+			if (path == null)
+				path = "";
+
+			if (request.getCharacterEncoding()!=null) {
+				if (!"utf-8".equalsIgnoreCase(request.getCharacterEncoding())) {
 					throw new RuntimeException("Bad/unsupported character encoding");
-			
-			if (!"application/x-www-form-urlencoded".equals(request.getContentType()))
-				throw new RuntimeException("Bad enctype");
-			
-			String formData = java.net.URLDecoder.decode(IOUtils.toString(request.getInputStream(), utf8_charset), utf8_charset.name());
-			String[] arr = formData.split("&");
-			
-			String idtoken=null;
-			for (String s : arr) {    	
-				if (s.startsWith("idtoken=")) {
-					idtoken = s.substring("idtoken=".length()).trim();
 				}
 			}
-			
-			
-			// yeeah, we have an idtoken!
-
-			// check with google...
-			// if not correct...
-			//String email = payload.getEmail();
-			 //boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
-			boolean emailVerified = true;
-			if (!emailVerified)
-				throw new RuntimeException("idtoken incorrect");
-							
-			
-			// if correct:
-			String email = "a@a.lv";// googleObj.getEmail();
-			// we have a verified email by Google!
-			
-			String login = UsersManager.getUserLogin(email);
-			if (login == null)
-				throw new RuntimeException("Login or email incorrect");
-			
-				
-			ValidityChecker.checkLogin(login, true); // check for wrong symbols; throws an exception on error...
-			
-			// Checking whether the user exists...
-			JsonElement userData = API.registry.getValue("xusers/"+login);
-			if (userData == null) {
-				// user does not exist; register him...
-				
-				// TODO: v klass UsersManager dobavitj funkciju addUser(email, login=email, name, ..., emailToAllow=true dlja google usera, false dlja ostalnih)
-				//                                               ^^^ vzjatj kod iz LoginServlet.signup
-				// v addUser proverjaem:
-				// LoginServlet.signupAllowed()
+			if (!"application/x-www-form-urlencoded".equals(request.getContentType())) {
+				throw new RuntimeException("Bad enctype");
 			}
-			
 
-			// prodolzhaem...
-			
-			// now the user certainly exists! generate our own ws_token..
-			// v klass UsersManager dobavitj funkciju generateToken(login, expirationDateTime)
-			// LoginServlet lines 315-332
-			
-			
-			String redirect = request.getQueryString(); // not encoded
-			// LoginServlet line 336...385
-			response.sendRedirect(redirect);
-			
+			String formData = java.net.URLDecoder.decode(IOUtils.toString(request.getInputStream(), utf8_charset), utf8_charset.name());
+
+			//System.out.println(formData);
+
+			String[] arr = formData.split("&");
+
+			String idTokenString = arr[0].substring(arr[0].indexOf("id_token=") + 9);
+			String accessTokenString = arr[1].substring(arr[1].indexOf("access_token=") + 13);
+
+
+			// Google magical verification
+			// TODO: change clientID to webAppOS clientID
+			GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(getDefaultHttpTransport(), getDefaultJsonFactory())
+					.setAudience(Collections.singletonList("378541335360-3l5gej61dnqtpqp0j2slfs25vg5jod2a.apps.googleusercontent.com"))
+					.build();
+
+			GoogleIdToken idToken = verifier.verify(idTokenString);
+			if (idToken != null) {
+				Payload payload = idToken.getPayload();
+
+				// Print user identifier
+				String userId = payload.getSubject();
+				System.out.println("User ID: " + userId);
+
+				// Get profile information from payload
+				String email = payload.getEmail();
+				boolean emailVerified = payload.getEmailVerified();
+				String name = (String) payload.get("name");
+				String expirationTime = UTCDate.stringify(new Date(payload.getExpirationTimeSeconds() * 1000));
+
+				String wsToken;
+				String userExpirationTime; // expiration time in UserData
+
+				// Print user Email verification status
+				System.out.println("Email verified: " + emailVerified);
+
+				if (!emailVerified) {
+					throw new RuntimeException("id token incorrect");
+				}
+
+				String login = UsersManager.getUserLogin(email);
+				System.out.println("Login: " + login);
+
+				System.out.println("Expiration Date: " + expirationTime);
+
+				if (login != null) {
+					System.out.println("1");
+					ValidityChecker.checkLogin(email, true);
+					JsonElement userData = API.registry.getValue("xusers/"+login);
+
+					if(userData == null) {
+						System.out.println("2");
+						// Register user
+						WebServiceProperties p = API.propertiesManager.getWebServicePropertiesByFullName("Login.webservice");
+						p.properties.setProperty("signup_policy", "email");
+
+						// Print to console Response status (OK; FAILED; PROCESSING)
+						System.out.println(UsersManager.addUser(email, true));
+
+						// Write to registry google drive token
+						API.registry.setValue("xusers/"+login+"/google_scopes/google_drive_token", accessTokenString);
+
+						userData = API.registry.getValue("xusers/"+login);
+
+						if (userData != null){
+							// Set wsToken and write to registry wsToken and expiration time
+							writeTokensToRegistry(login, expirationTime);
+							userData = API.registry.getValue("xusers/"+login);
+						}
+					} else {
+						System.out.println("3");
+						// User already is registered
+						long unixTime = Instant.now().getEpochSecond(); // Gets unix time for now
+						wsToken = getWsToken(userData);
+
+						userExpirationTime = getExpirationDate(userData, wsToken);
+
+						if (UTCDate.expired(userExpirationTime)){
+							// Token is expired
+							userData.getAsJsonObject()
+									.getAsJsonObject("tokens")
+									.getAsJsonObject("ws")
+									.remove(wsToken);
+
+							API.registry.setValue("xusers/"+login, userData);
+							writeTokensToRegistry(login, expirationTime);
+
+						} else {
+							// Token isn't expired, update it
+							userData.getAsJsonObject()
+									.getAsJsonObject("tokens")
+									.getAsJsonObject("ws")
+									.addProperty(wsToken, expirationTime);
+
+							API.registry.setValue("xusers/"+login, userData);
+						}
+					}
+
+					System.out.println("4");
+					String redirect = request.getQueryString(); // not encoded
+
+					if ((redirect == null) || (redirect.isEmpty())) {
+						// redirecting to desktop app
+						redirect = "Desktop"; // default desktop app
+						JsonElement element = API.registry.getValue("users/"+login+"/desktop_app");
+						if ((element!=null) && (!element.toString().isEmpty())) {
+							redirect = element.toString();
+						}
+
+						redirect = API.config.domain_or_ip+"/apps/"+redirect.toLowerCase();
+					}
+
+					System.out.println("5");
+					// deleting previous ws_token=value (if any) from the redirect string
+					int i = redirect.indexOf("?ws_token=");
+					if (i<0)
+						i = redirect.indexOf("&ws_token=");
+					if (i>=0) {
+						int j = redirect.indexOf("&", i+1);
+						if (j<0)
+							j=redirect.length()-1;
+
+						// we will have to delete a substring from i+1 to j inclusive
+						redirect = redirect.substring(0, i+1) + redirect.substring(j+1);
+					}
+					logger.trace("redirect was "+redirect);
+
+					wsToken = getWsToken(userData);
+
+					System.out.println(wsToken);
+
+					// attaching ws_token
+					if (redirect.indexOf('?')<0)
+						redirect += "?ws_token="+wsToken;
+					else {
+						if (redirect.endsWith("&"))
+							redirect += "ws_token="+wsToken;
+						else
+							redirect += "&ws_token="+wsToken;
+					}
+
+					redirect += "&login="+login;
+					logger.trace("redirect now "+redirect);
+
+
+					if (!redirect.startsWith("http://") && !redirect.startsWith("https://")) {
+						if (request.isSecure()) {
+							redirect = "https://"+redirect;
+						}
+						else {
+							redirect = "http://"+redirect;
+						}
+					}
+					System.out.println(redirect);
+//					response.sendRedirect(redirect);
+					userExpirationTime = getExpirationDate(userData, wsToken);
+					response.getOutputStream().print("{\"login\":\""+login+"\",\"ws_token\":\""+wsToken+"\",\"expires\":\""+userExpirationTime+"\",\"redirect\":\""+redirect+"\"}");
+
+					// TODO: println("spisok failov na gugl diske v korne")
+
+					try {
+						final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+						Drive service = new Drive.Builder(HTTP_TRANSPORT, getDefaultJsonFactory(), getCredentials(HTTP_TRANSPORT, login))
+								.setApplicationName("webappos")
+								.build();
+
+						FileList result = service.files().list()
+								.setPageSize(10)
+								.setFields("nextPageToken, files(id, name)")
+								.execute();
+						List<File> files = result.getFiles();
+						if (files == null || files.isEmpty()) {
+							System.out.println("No files found.");
+						} else {
+							System.out.println("Files:");
+							for (File file : files) {
+								System.out.printf("%s (%s)\n", file.getName(), file.getId());
+							}
+						}
+					} catch (Throwable t){
+						t.printStackTrace();
+					}
+
+				} else {
+					throw new RuntimeException("Login or email incorrect");
+				}
+
+			} else {
+				System.out.println("Invalid ID token.");
+				throw new RuntimeException("Invalid ID token.");
+			}
+
+
+
 		}
 		catch(Throwable t) {
-			response.getOutputStream().print("Hello from our servlet! An exception occurred. User denied!");
-			//response.sendError(400);			
+			response.getOutputStream().print("{\"error\":\""+t.getMessage().replace('\"', ' ')+"\"}");
 		}
-		
+	}
 
-    }	
-	
+	/**
+	 * Returns only WS Token, without expiration time, from registry.
+	 * If registry contains more than one WS Token, it returns the first one
+	 * @param userData Json element which contains user data from registry
+	 * @return WS Token from registry
+	 */
+	private static String getWsToken (JsonElement userData){
+		String ws = userData.getAsJsonObject()
+				.getAsJsonObject("tokens")
+				.getAsJsonObject("ws")
+				.toString();
+		return ws.substring(2, ws.indexOf(":") - 1);
+	}
+
+
+	/**
+	 * Returns expiration date of WS Token from registry
+	 * @param userData Json element which contains user data from registry
+	 * @param wsToken String which contains WS Token
+	 * @return Expiration date in Unix Time format
+	 */
+	private static String getExpirationDate (JsonElement userData, String wsToken){
+		return userData.getAsJsonObject()
+				.getAsJsonObject("tokens")
+				.getAsJsonObject("ws")
+				.get(wsToken)
+				.getAsString();
+	}
+
+	private static void writeTokensToRegistry(String login, String expirationDate){
+		UsersManager.generateToken(login, false, expirationDate);
+	}
+
+	private static JsonFactory getDefaultJsonFactory() {
+		return JacksonFactory.getDefaultInstance();
+	}
+	private static HttpTransport getDefaultHttpTransport() {
+		return new NetHttpTransport();
+	}
+	public static Credential createCredentialWithAccessTokenOnly(
+			HttpTransport transport, JsonFactory jsonFactory, String token) {
+		return new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken(token);
+	}
+
+	private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT, String login) throws IOException {
+		// Load client secrets.
+		WebServiceProperties properties = API.propertiesManager
+				.getWebServicePropertiesByFullName("google_scopes.webservice");
+		String client_id = properties.properties
+				.getProperty("drive_client_id", null);
+		String client_secret = properties.properties
+				.getProperty("drive_client_secret", null);
+		JsonElement el = API.registry.getValue("xusers/"+login+"/google_scopes/google_drive_token");
+		if (el==null)
+			return null;
+		String token = el.getAsString();
+
+		GoogleClientSecrets.Details web = new GoogleClientSecrets.Details();
+
+		web.setClientId(client_id);
+		web.setClientSecret(client_secret);
+
+		GoogleClientSecrets clientSecrets = new GoogleClientSecrets();
+
+		clientSecrets.setWeb(web);
+
+		// Build flow and trigger user authorization request.
+//		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+//				HTTP_TRANSPORT, getDefaultJsonFactory(), clientSecrets, Arrays.asList(DriveScopes.DRIVE))
+//				.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+//				.setAccessType("offline")
+////				.build();
+//
+//		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+//		return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+
+		return createCredentialWithAccessTokenOnly(HTTP_TRANSPORT, getDefaultJsonFactory(), token);
+	}
+		@Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		String path = request.getPathInfo();
+		if (path == null)
+			path = "";
+
+		if (path.startsWith("/"))
+			path = path.substring(1);
+		if (path.endsWith("/"))
+			path = path.substring(0, path.length()-1);
+
+		if (path.equals("oauth_client_id")) {
+			response.setContentType("text/html");
+
+			WebServiceProperties properties = API.propertiesManager
+					.getWebServicePropertiesByFullName("google_scopes.webservice");
+			String client_id = properties.properties
+					.getProperty("oauth_client_id", null);
+
+			response.getOutputStream().print(client_id);
+		}
+
+	}
+
 }

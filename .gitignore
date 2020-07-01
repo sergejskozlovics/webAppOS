@@ -30,3 +30,10 @@
 .DS_Store
 dist/etc/registry/xusers/webappos
 .gradle
+/bin/
+.idea
+/dist/apps/google_scopes.webservice/lib
+/dist/apps/google_scopes.webservice/bin
+*.iml
+*.eml
+.settings

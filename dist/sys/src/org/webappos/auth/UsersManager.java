@@ -2,6 +2,8 @@ package org.webappos.auth;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map.Entry;
 
 import javax.security.auth.Subject;
@@ -10,7 +12,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.jetty.security.DefaultUserIdentity;
 import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.server.UserIdentity;
+import org.webappos.properties.WebServiceProperties;
 import org.webappos.server.API;
+import org.webappos.util.RandomToken;
 import org.webappos.util.UTCDate;
 
 import com.google.gson.JsonElement;
@@ -18,6 +22,13 @@ import com.google.gson.JsonObject;
 
 // all values must be validated (by org.webappos.util.ValidityChecker) in advance
 public class UsersManager {
+	
+	enum Response {
+		OK,
+		FAILED,
+		EMAILED,
+		MANUAL_PROCESSING
+	}
 
 	synchronized public static UserAuthentication getUserAuthentication(String emailOrLogin) {
 		
@@ -68,6 +79,79 @@ public class UsersManager {
 		// TODO: hash auth
 		
     	return auth;
+	}
+
+	public static Response addUser(String email, Boolean emailToAllow) {
+		JsonObject xuser = new JsonObject();
+		JsonObject user = new JsonObject();
+		
+		String salt = RandomToken.generateSalt();
+		
+		xuser.addProperty("salt", salt);
+		xuser.addProperty("signup_time", UTCDate.stringify(new Date()));	
+		
+		WebServiceProperties properties = API.propertiesManager
+										     .getWebServicePropertiesByFullName("Login.webservice");
+		String signup_policy = properties.properties
+										 .getProperty("signup_policy", "deny");
+
+		System.out.println(signup_policy);
+			
+		if(emailToAllow && signup_policy.equals("email")) {
+			signup_policy = "allow";
+		}
+		
+		xuser.addProperty("_id", email);
+		user.addProperty("_id", email);
+
+		switch (signup_policy) {
+			case "allow" -> {
+				API.registry.setValue("xusers/" + email, xuser);
+				API.registry.setValue("users/" + email, user);
+				return Response.OK;
+			}
+			case "deny" -> {
+				// we won't save the xuser and user;
+
+				// "deny" must have been checked on top of the function: if (!signup_allowed) ...
+				// however, the webcall could also return "deny", thus, we check it again here
+				return Response.FAILED;
+			}
+			default -> {
+				//assume "manual"
+				xuser.addProperty("blocked", true); // require to set blocked=false manually (e.g., via "webappos approveuser")
+				API.registry.setValue("xusers/" + email, xuser);
+				API.registry.setValue("users/" + email, user);
+				return Response.MANUAL_PROCESSING;
+			}
+		}
+	}
+
+	public static void generateToken(String login, Boolean remember, String expirationDate){
+		JsonElement email_verified = API.registry.getValue("xusers/"+login+"/email_verified");
+		if ((email_verified!=null) && (!email_verified.getAsBoolean()))
+			throw new RuntimeException("User's e-mail not verified yet");
+
+		JsonElement blocked = API.registry.getValue("xusers/"+login+"/blocked");
+		if ((blocked!=null) && (blocked.toString().equals("true")))
+			throw new RuntimeException("User is blocked");
+
+		String token = RandomToken.generateRandomToken();
+
+		if(expirationDate.isEmpty()){
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(new Date());
+
+			if (remember) {
+				calendar.add(Calendar.DATE, 365); // token valid for 1 year
+			} else {
+				calendar.add(Calendar.MINUTE, 60); // token valid for 1 hour
+			}
+
+			expirationDate = UTCDate.stringify(calendar.getTime());
+		}
+
+		API.registry.setValue("xusers/"+login+"/tokens/ws/"+token, expirationDate);
 	}
 	
 	public static String getUserLogin(String emailOrLogin) {
