@@ -1,25 +1,19 @@
 package org.webappos.webcalls;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Set;
-
+import com.google.gson.JsonObject;
+import lv.lumii.tda.raapi.RAAPI;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.webappos.antiattack.ValidityChecker;
+import org.webappos.fs.FSDriversManager;
 import org.webappos.fs.HomeFS;
 import org.webappos.fs.IFileSystem.PathInfo;
 import org.webappos.server.API;
 import org.webappos.server.ConfigEx;
 
-import com.google.gson.JsonObject;
-
-import lv.lumii.tda.raapi.RAAPI;
+import java.io.*;
+import java.util.Set;
 
 public class FSActions_webcalls {
 
@@ -302,7 +296,7 @@ public class FSActions_webcalls {
 			
 			JSONObject obj = new JSONObject();
 			JSONArray arr = new JSONArray();
-			Set<String> ks = ((ConfigEx)API.config).fs_drivers.keySet();			
+			Set<String> ks = FSDriversManager.getSupportedPrefixes();
 			for (String k : ks) {
 				arr.put(k);
 			}

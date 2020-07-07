@@ -8,21 +8,25 @@ import com.google.gson.JsonElement;
 public class RegistryActions_webcalls {
 	
 	public static String getUserRegistryValue(String key, String login) {
+		String retVal = "{}";
 		// login will be non-null		
 		try {
 			JsonElement value = API.registry.getValue("users/"+login+"/"+key);
-			if (value.isJsonNull()) {
-				return "{}";
+			if ((value==null) || value.isJsonNull()) {
+				retVal = "{}";
 			}
-			if (value.isJsonPrimitive())
-				return "{\"result\":\""+value.getAsString()+"\"}";
 			else
-				return "{\"result\": "+value.toString()+"}";
+			if (value.isJsonPrimitive())
+				retVal = "{\"result\":\""+value.getAsString()+"\"}";
+			else
+				retVal = "{\"result\": "+value.toString()+"}";
+
 		}
 		catch(Throwable t) {
-			return "{\"error\":\""+t.getMessage()+"\"}";
+			retVal = "{\"error\":\""+t.getMessage()+"\"}";
 		}
-		
+
+		return retVal;
 	}
 
 	public static String setUserRegistryValue(String json, String login) {
@@ -39,7 +43,8 @@ public class RegistryActions_webcalls {
 			if (key==null)
 				return "{\"result\":false, \"error\":\"No key specified\"}";
 			
-			return "{\"result\":"+API.registry.setValue("users/"+login+"/"+key, value)+"}";
+			String result = "{\"result\":"+API.registry.setValue("users/"+login+"/"+key, value)+"}";
+			return result;
 		}
 		catch(Throwable t) {
 			return "{\"result\":false, \"error\":\""+t.getMessage()+"\"}";

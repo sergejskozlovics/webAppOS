@@ -1,11 +1,12 @@
 package org.webappos.properties;
 
-import java.io.File;
-import java.util.Map.Entry;
-
+import org.webappos.fs.FSDriversManager;
 import org.webappos.server.API;
 import org.webappos.server.ConfigEx;
 import org.webappos.server.ConfigStatic;
+
+import java.io.File;
+import java.util.Map.Entry;
 
 public class WebServiceProperties extends SomeProperties {
 	private static final long serialVersionUID = 1L;
@@ -97,7 +98,7 @@ public class WebServiceProperties extends SomeProperties {
 			
 			
 			if (API.config instanceof ConfigEx)
-				((ConfigEx)API.config).registerFileSystemDriver(properties.getProperty("fs_prefix"), properties.getProperty("fs_driver"));
+				FSDriversManager.registerFileSystemDriver(properties.getProperty("fs_prefix"), properties.getProperty("fs_driver"));
 
 			
 		} catch (Throwable t) {
