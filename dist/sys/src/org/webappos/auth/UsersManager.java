@@ -104,26 +104,24 @@ public class UsersManager {
 		xuser.addProperty("_id", email);
 		user.addProperty("_id", email);
 
-		switch (signup_policy) {
-			case "allow" -> {
+		if ("allow".equals(signup_policy)) {
 				API.registry.setValue("xusers/" + email, xuser);
 				API.registry.setValue("users/" + email, user);
 				return Response.OK;
-			}
-			case "deny" -> {
+		}
+		else if ("deny".equals(signup_policy)) {
 				// we won't save the xuser and user;
 
 				// "deny" must have been checked on top of the function: if (!signup_allowed) ...
 				// however, the webcall could also return "deny", thus, we check it again here
 				return Response.FAILED;
-			}
-			default -> {
+		}
+		else {
 				//assume "manual"
 				xuser.addProperty("blocked", true); // require to set blocked=false manually (e.g., via "webappos approveuser")
 				API.registry.setValue("xusers/" + email, xuser);
 				API.registry.setValue("users/" + email, user);
 				return Response.MANUAL_PROCESSING;
-			}
 		}
 	}
 
