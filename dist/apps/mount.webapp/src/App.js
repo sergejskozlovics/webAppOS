@@ -93,7 +93,7 @@ class MountTable extends React.Component {
       webappos.webcall("webappos.getSupportedFileSystems").then((resp) => {
         if (resp.result) {
           myThis.setState({
-            supportedFS: [...resp.result] //, "gdrive", "onedrive"]
+            supportedFS: [...resp.result, "gdrive", "onedrive"]
           }, () => {
             myThis.readRegistry();
           });
