@@ -1,5 +1,16 @@
 package org.webappos.webproc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.webappos.server.API;
+import org.webappos.webcaller.IJsonWebCallsAdapter;
+import org.webappos.webcaller.IWebCaller.CallingConventions;
+import org.webappos.webcaller.IWebCaller.WebCallDeclaration;
+import org.webappos.webcaller.IWebCaller.WebCallSeed;
+import org.webappos.webcaller.IWebMemWebCallsAdapter;
+import org.webappos.webmem.IWebMemory;
+import org.webappos.webmem.WebMemoryContext;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -8,17 +19,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.webappos.server.API;
-import org.webappos.webcaller.IJsonWebCallsAdapter;
-import org.webappos.webcaller.IWebMemWebCallsAdapter;
-import org.webappos.webcaller.IWebCaller.CallingConventions;
-import org.webappos.webcaller.IWebCaller.WebCallDeclaration;
-import org.webappos.webcaller.IWebCaller.WebCallSeed;
-import org.webappos.webmem.IWebMemory;
-import org.webappos.webmem.WebMemoryContext;
 
 
 public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebProcessor {
@@ -170,9 +170,7 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 			logger.error("DefaultWebProcessor could not start because not all arguments were specified.");
 			return;
 		}
-		
-		System.out.println("WPARGS="+ args.length+" "+args[2]);
-				
+
 		IRWebProcessor current;
 		try {
 			current = new DefaultWebProcessor(args[0]);
