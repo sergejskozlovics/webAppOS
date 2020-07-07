@@ -15,7 +15,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build && npm run build:after",
-    "build:after": "sed -i '' 's/\\\"\\\//\"/g' build/index.html && rsync -r build/ web-root",
+    "build:after": "rm -r web-root && sed -i '' 's/\\\"\\\//\"/g' build/index.html && rsync -r build/ web-root",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

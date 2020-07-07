@@ -52,6 +52,8 @@ class MountTable extends React.Component {
     let myThis = this;
     this.toDelete = [];
     webappos.webcall("webappos.getUserRegistryValue", "fs_mount_points").then((resp) => {
+      if (!resp.result)
+        resp.result = {};
       if (resp.result) {
         myThis.setState({
           mountPoints: myThis.collectMountPointsRecursively(resp.result, [], "")
@@ -93,7 +95,7 @@ class MountTable extends React.Component {
       webappos.webcall("webappos.getSupportedFileSystems").then((resp) => {
         if (resp.result) {
           myThis.setState({
-            supportedFS: [...resp.result, "gdrive", "onedrive"]
+            supportedFS: [...resp.result] // , "gdrive", "onedrive"]
           }, () => {
             myThis.readRegistry();
           });
