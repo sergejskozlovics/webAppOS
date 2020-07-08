@@ -24,13 +24,12 @@ import org.webappos.properties.WebServiceProperties;
 import org.webappos.server.API;
 import org.webappos.util.UTCDate;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.time.Instant;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -39,12 +38,12 @@ import java.util.List;
 @SuppressWarnings( "serial" )
 public class GoogleServlet extends HttpServlet
 {
-	private static Logger logger =  LoggerFactory.getLogger(GoogleServlet.class);
-	private static Charset utf8_charset = Charset.forName("UTF-8");
+	private static final Logger logger =  LoggerFactory.getLogger(GoogleServlet.class);
+	private static final Charset utf8_charset = StandardCharsets.UTF_8;
 
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+			throws IOException {
 		try {
 			String path = request.getPathInfo();
 			if (path == null)
@@ -70,9 +69,13 @@ public class GoogleServlet extends HttpServlet
 
 
 			// Google magical verification
-			// TODO: change clientID to webAppOS clientID
+			WebServiceProperties properties = API.propertiesManager
+					.getWebServicePropertiesByFullName("google_scopes.webservice");
+			String client_id = properties.properties
+					.getProperty("oauth_client_id", null);
+
 			GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(getDefaultHttpTransport(), getDefaultJsonFactory())
-					.setAudience(Collections.singletonList("378541335360-3l5gej61dnqtpqp0j2slfs25vg5jod2a.apps.googleusercontent.com"))
+					.setAudience(Collections.singletonList(client_id))
 					.build();
 
 			GoogleIdToken idToken = verifier.verify(idTokenString);
@@ -86,7 +89,6 @@ public class GoogleServlet extends HttpServlet
 				// Get profile information from payload
 				String email = payload.getEmail();
 				boolean emailVerified = payload.getEmailVerified();
-				String name = (String) payload.get("name");
 				String expirationTime = UTCDate.stringify(new Date(payload.getExpirationTimeSeconds() * 1000));
 
 				String wsToken;
@@ -126,12 +128,14 @@ public class GoogleServlet extends HttpServlet
 						if (userData != null){
 							// Set wsToken and write to registry wsToken and expiration time
 							writeTokensToRegistry(login, expirationTime);
-							userData = API.registry.getValue("xusers/"+login);
 						}
 					} else {
 						System.out.println("3");
+
+						API.registry.setValue("xusers/"+login+"/google_scopes/google_drive_token", accessTokenString);
+						System.out.println("3.1");
+
 						// User already is registered
-						long unixTime = Instant.now().getEpochSecond(); // Gets unix time for now
 						wsToken = getWsToken(userData);
 
 						userExpirationTime = getExpirationDate(userData, wsToken);
@@ -154,10 +158,14 @@ public class GoogleServlet extends HttpServlet
 									.addProperty(wsToken, expirationTime);
 
 							API.registry.setValue("xusers/"+login, userData);
+
 						}
 					}
 
 					System.out.println("4");
+
+					userData = API.registry.getValue("xusers/"+login);
+
 					String redirect = request.getQueryString(); // not encoded
 
 					if ((redirect == null) || (redirect.isEmpty())) {
@@ -213,11 +221,8 @@ public class GoogleServlet extends HttpServlet
 						}
 					}
 					System.out.println(redirect);
-//					response.sendRedirect(redirect);
 					userExpirationTime = getExpirationDate(userData, wsToken);
 					response.getOutputStream().print("{\"login\":\""+login+"\",\"ws_token\":\""+wsToken+"\",\"expires\":\""+userExpirationTime+"\",\"redirect\":\""+redirect+"\"}");
-
-					// TODO: println("spisok failov na gugl diske v korne")
 
 					try {
 						final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -298,8 +303,7 @@ public class GoogleServlet extends HttpServlet
 	private static HttpTransport getDefaultHttpTransport() {
 		return new NetHttpTransport();
 	}
-	public static Credential createCredentialWithAccessTokenOnly(
-			HttpTransport transport, JsonFactory jsonFactory, String token) {
+	public static Credential createCredentialWithAccessTokenOnly(String token) {
 		return new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken(token);
 	}
 
@@ -325,21 +329,11 @@ public class GoogleServlet extends HttpServlet
 
 		clientSecrets.setWeb(web);
 
-		// Build flow and trigger user authorization request.
-//		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-//				HTTP_TRANSPORT, getDefaultJsonFactory(), clientSecrets, Arrays.asList(DriveScopes.DRIVE))
-//				.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-//				.setAccessType("offline")
-////				.build();
-//
-//		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-//		return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-
-		return createCredentialWithAccessTokenOnly(HTTP_TRANSPORT, getDefaultJsonFactory(), token);
+		return createCredentialWithAccessTokenOnly(token);
 	}
 		@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+			throws IOException {
 
 		String path = request.getPathInfo();
 		if (path == null)
