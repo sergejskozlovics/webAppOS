@@ -111,6 +111,7 @@ public class GoogleServlet extends HttpServlet
 					ValidityChecker.checkLogin(email, true);
 					JsonElement userData = API.registry.getValue("xusers/"+login);
 
+
 					if(userData == null) {
 						System.out.println("2");
 						// Register user
@@ -121,7 +122,6 @@ public class GoogleServlet extends HttpServlet
 						System.out.println(UsersManager.addUser(email, true));
 
 						// Write to registry google drive token
-						API.registry.setValue("xusers/"+login+"/google_scopes/google_drive_token", accessTokenString);
 
 						userData = API.registry.getValue("xusers/"+login);
 
@@ -132,11 +132,8 @@ public class GoogleServlet extends HttpServlet
 					} else {
 						System.out.println("3");
 
-						API.registry.setValue("xusers/"+login+"/google_scopes/google_drive_token", accessTokenString);
-						System.out.println("3.1");
-
 						// User already is registered
-						wsToken = getWsToken(userData);
+						wsToken = getWsToken(userData, login, expirationTime);
 
 						userExpirationTime = getExpirationDate(userData, wsToken);
 
@@ -161,6 +158,7 @@ public class GoogleServlet extends HttpServlet
 
 						}
 					}
+					API.registry.setValue("xusers/"+login+"/google_scopes/google_drive_token", accessTokenString);
 
 					System.out.println("4");
 
@@ -194,7 +192,7 @@ public class GoogleServlet extends HttpServlet
 					}
 					logger.trace("redirect was "+redirect);
 
-					wsToken = getWsToken(userData);
+					wsToken = getWsToken(userData, login, expirationTime);
 
 					System.out.println(wsToken);
 
@@ -231,7 +229,8 @@ public class GoogleServlet extends HttpServlet
 								.build();
 
 						FileList result = service.files().list()
-								.setPageSize(10)
+								.setOrderBy("name")
+								.setPageSize(1000)
 								.setFields("nextPageToken, files(id, name)")
 								.execute();
 						List<File> files = result.getFiles();
@@ -255,9 +254,6 @@ public class GoogleServlet extends HttpServlet
 				System.out.println("Invalid ID token.");
 				throw new RuntimeException("Invalid ID token.");
 			}
-
-
-
 		}
 		catch(Throwable t) {
 			response.getOutputStream().print("{\"error\":\""+t.getMessage().replace('\"', ' ')+"\"}");
@@ -270,11 +266,15 @@ public class GoogleServlet extends HttpServlet
 	 * @param userData Json element which contains user data from registry
 	 * @return WS Token from registry
 	 */
-	private static String getWsToken (JsonElement userData){
+	private static String getWsToken (JsonElement userData, String login, String expirationTime){
 		String ws = userData.getAsJsonObject()
 				.getAsJsonObject("tokens")
 				.getAsJsonObject("ws")
 				.toString();
+		if (ws.equals("{}")){
+			writeTokensToRegistry(login, expirationTime);
+			return getWsToken(API.registry.getValue("xusers/"+login), login, expirationTime);
+		}
 		return ws.substring(2, ws.indexOf(":") - 1);
 	}
 
