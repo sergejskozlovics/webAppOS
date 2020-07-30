@@ -29,17 +29,17 @@ public class HomeFS implements IFileSystem {
 		this.readOnly = value;
 	}
 	
-	private void collectMountPointsRecursively(JsonObject obj, String path, HashMap<String, IFileSystem> mountPoints) {
+	private void collectMountPointsRecursively(JsonObject obj, String login, String path, HashMap<String, IFileSystem> mountPoints) {
 		for (String name : obj.keySet()) {
 			JsonElement el = obj.get(name);
 			if (el.isJsonObject()) {
-				collectMountPointsRecursively(el.getAsJsonObject(), path+"/"+name, mountPoints);
+				collectMountPointsRecursively(el.getAsJsonObject(), login, path+"/"+name, mountPoints);
 			}
 			else
 			if (el.isJsonPrimitive()) {
 				String uri = el.getAsString();
 				if (API.config instanceof ConfigEx) {
-					IFileSystem drv = FSDriversManager.getFileSystemDriver(uri);
+					IFileSystem drv = FSDriversManager.getFileSystemDriver(login, uri);
 					if (drv!=null)
 						mountPoints.put(path+"/"+name, drv);
 				}
@@ -51,7 +51,7 @@ public class HomeFS implements IFileSystem {
 		JsonElement el = API.registry.getValue(registryKey);
 		if ((el==null) || (!el.isJsonObject()))
 			return;
-		collectMountPointsRecursively(el.getAsJsonObject(), login/*=start path*/, mountPoints);
+		collectMountPointsRecursively(el.getAsJsonObject(), login, login/*=start path*/, mountPoints);
 	}
 	
 	private Pair<IFileSystem, String> findDriver(String location) {

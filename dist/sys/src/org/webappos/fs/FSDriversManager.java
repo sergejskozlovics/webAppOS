@@ -31,10 +31,21 @@ public class FSDriversManager {
 	synchronized static public void registerFileSystemDriver(String prefix, String className) {
 		if ((prefix==null) || prefix.isEmpty())
 			return;
+		prefix = prefix.trim();
+
+		while (prefix.startsWith("\"")) {
+			prefix = prefix.substring(1);
+		}
+
+		while (prefix.endsWith("\"")) {
+			prefix = prefix.substring(0, prefix.length()-1);
+		}
 
 		while (prefix.endsWith(":")) {
 			prefix = prefix.substring(0, prefix.length()-1);
 		}
+		
+		prefix = prefix.trim();
 
 		FSDriver drv = new FSDriver();
 		drv.className = className;
@@ -48,10 +59,11 @@ public class FSDriversManager {
 	 * Initializes and returns a file system driver for the given prefix and remote location combined in the URI.
 	 * When being initialized, the driver should take the credentials from the registry key xusers/[login]/[driver_name],
 	 * which is initialized when requesting scopes.
+	 * @param login - the login, on behalf of whom to mount the disk
 	 * @param uri - a remote location with the prefix corresponding to the driver protocol, e.g., "gdrive:my-remote-folder"
 	 * @return an initialized file system driver or null on error
 	 */
-	synchronized public static IFileSystem getFileSystemDriver(String uri) {
+	synchronized public static IFileSystem getFileSystemDriver(String login, String uri) {
 		if (uri==null)
 			return null;
 
@@ -76,7 +88,7 @@ public class FSDriversManager {
 			}
 
 			try {
-				drv.constr = cls.getConstructor(String.class);
+				drv.constr = cls.getConstructor(String.class, String.class);
 			}
 			catch(Throwable t) {
 
@@ -88,7 +100,7 @@ public class FSDriversManager {
 		}
 
 		try {
-			Object obj = drv.constr.newInstance(remoteLocation);
+			Object obj = drv.constr.newInstance(login, remoteLocation);
 			if (obj instanceof IFileSystem)
 				return (IFileSystem)obj;
 		} catch (Throwable t) {
