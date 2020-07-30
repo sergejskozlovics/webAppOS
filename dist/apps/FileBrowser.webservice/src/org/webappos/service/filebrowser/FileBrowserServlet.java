@@ -166,6 +166,7 @@ public class FileBrowserServlet extends HttpServlet {
 			if (info==null)
 				return;
 			
+			response.setCharacterEncoding("UTF-8");
 			String retVal;
 			if (rootInfo) {
 				retVal="{\"id\":\"home\",\"dir\":"+rootInfo+",\"name\":\""+"My home"/*info.name*/+"\",\"size\":"+0+",\"cre\":"+info.modified+",\"mod\":"+info.modified+"}";
