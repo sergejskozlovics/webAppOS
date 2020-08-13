@@ -6,14 +6,10 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
 import com.google.gson.JsonElement;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -32,7 +28,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 
 @SuppressWarnings( "serial" )
@@ -222,30 +217,6 @@ public class GoogleServlet extends HttpServlet
 					userExpirationTime = getExpirationDate(userData, wsToken);
 					response.getOutputStream().print("{\"login\":\""+login+"\",\"ws_token\":\""+wsToken+"\",\"expires\":\""+userExpirationTime+"\",\"redirect\":\""+redirect+"\"}");
 
-					try {
-						final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-						Drive service = new Drive.Builder(HTTP_TRANSPORT, getDefaultJsonFactory(), getCredentials(HTTP_TRANSPORT, login))
-								.setApplicationName("webappos")
-								.build();
-
-						FileList result = service.files().list()
-								.setOrderBy("name")
-								.setPageSize(1000)
-								.setFields("nextPageToken, files(id, name)")
-								.execute();
-						List<File> files = result.getFiles();
-						if (files == null || files.isEmpty()) {
-							System.out.println("No files found.");
-						} else {
-							System.out.println("Files:");
-							for (File file : files) {
-								System.out.printf("%s (%s)\n", file.getName(), file.getId());
-							}
-						}
-					} catch (Throwable t){
-						t.printStackTrace();
-					}
-
 				} else {
 					throw new RuntimeException("Login or email incorrect");
 				}
@@ -278,7 +249,6 @@ public class GoogleServlet extends HttpServlet
 		return ws.substring(2, ws.indexOf(":") - 1);
 	}
 
-
 	/**
 	 * Returns expiration date of WS Token from registry
 	 * @param userData Json element which contains user data from registry
@@ -306,7 +276,6 @@ public class GoogleServlet extends HttpServlet
 	public static Credential createCredentialWithAccessTokenOnly(String token) {
 		return new Credential(BearerToken.authorizationHeaderAccessMethod()).setAccessToken(token);
 	}
-
 	private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT, String login) throws IOException {
 		// Load client secrets.
 		WebServiceProperties properties = API.propertiesManager
