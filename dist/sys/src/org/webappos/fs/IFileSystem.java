@@ -46,7 +46,8 @@ public interface IFileSystem {
 	}
 	
 	/**
-	 * Copies the given file or folder.
+	 * Copies the given file or folder. Both arguments, src and dst, must be either file names, or directory names.
+	 * In case of directories, the directory must be copied recursively.
 	 * @param src source path (relative to the file system root)
 	 * @param dst target path (relative to the file system root)
 	 * @return whether the operation succeeded
