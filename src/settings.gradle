@@ -34,3 +34,4 @@ project(':HelloWorld.webapp').projectDir = new File('../dist/apps/HelloWorld.web
 include ':devtools:ecore2java'
 include ':devtools:mmd2ecore'
 include ':devtools:sha256gen'
+include ':devtools:adminutil'
