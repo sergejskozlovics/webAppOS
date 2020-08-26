@@ -55,8 +55,6 @@ public class GoogleServlet extends HttpServlet
 
 			String formData = java.net.URLDecoder.decode(IOUtils.toString(request.getInputStream(), utf8_charset), utf8_charset.name());
 
-			//System.out.println(formData);
-
 			String[] arr = formData.split("&");
 
 			String idTokenString = arr[0].substring(arr[0].indexOf("id_token=") + 9);
@@ -79,7 +77,6 @@ public class GoogleServlet extends HttpServlet
 
 				// Print user identifier
 				String userId = payload.getSubject();
-				System.out.println("User ID: " + userId);
 
 				// Get profile information from payload
 				String email = payload.getEmail();
@@ -89,32 +86,25 @@ public class GoogleServlet extends HttpServlet
 				String wsToken;
 				String userExpirationTime; // expiration time in UserData
 
-				// Print user Email verification status
-				System.out.println("Email verified: " + emailVerified);
 
 				if (!emailVerified) {
 					throw new RuntimeException("id token incorrect");
 				}
 
 				String login = UsersManager.getUserLogin(email);
-				System.out.println("Login: " + login);
-
-				System.out.println("Expiration Date: " + expirationTime);
 
 				if (login != null) {
-					System.out.println("1");
 					ValidityChecker.checkLogin(email, true);
 					JsonElement userData = API.registry.getValue("xusers/"+login);
 
 
 					if(userData == null) {
-						System.out.println("2");
 						// Register user
 						WebServiceProperties p = API.propertiesManager.getWebServicePropertiesByFullName("Login.webservice");
 						p.properties.setProperty("signup_policy", "email");
 
 						// Print to console Response status (OK; FAILED; PROCESSING)
-						System.out.println(UsersManager.addUser(email, true));
+						UsersManager.addUser(email, true);
 
 						// Write to registry google drive token
 
@@ -125,7 +115,6 @@ public class GoogleServlet extends HttpServlet
 							writeTokensToRegistry(login, expirationTime);
 						}
 					} else {
-						System.out.println("3");
 
 						// User already is registered
 						wsToken = getWsToken(userData, login, expirationTime);
@@ -155,7 +144,6 @@ public class GoogleServlet extends HttpServlet
 					}
 					API.registry.setValue("xusers/"+login+"/google_scopes/google_drive_token", accessTokenString);
 
-					System.out.println("4");
 
 					userData = API.registry.getValue("xusers/"+login);
 
@@ -172,7 +160,6 @@ public class GoogleServlet extends HttpServlet
 						redirect = API.config.domain_or_ip+"/apps/"+redirect.toLowerCase();
 					}
 
-					System.out.println("5");
 					// deleting previous ws_token=value (if any) from the redirect string
 					int i = redirect.indexOf("?ws_token=");
 					if (i<0)
@@ -188,8 +175,6 @@ public class GoogleServlet extends HttpServlet
 					logger.trace("redirect was "+redirect);
 
 					wsToken = getWsToken(userData, login, expirationTime);
-
-					System.out.println(wsToken);
 
 					// attaching ws_token
 					if (redirect.indexOf('?')<0)
@@ -213,7 +198,6 @@ public class GoogleServlet extends HttpServlet
 							redirect = "http://"+redirect;
 						}
 					}
-					System.out.println(redirect);
 					userExpirationTime = getExpirationDate(userData, wsToken);
 					response.getOutputStream().print("{\"login\":\""+login+"\",\"ws_token\":\""+wsToken+"\",\"expires\":\""+userExpirationTime+"\",\"redirect\":\""+redirect+"\"}");
 
@@ -222,11 +206,11 @@ public class GoogleServlet extends HttpServlet
 				}
 
 			} else {
-				System.out.println("Invalid ID token.");
 				throw new RuntimeException("Invalid ID token.");
 			}
 		}
 		catch(Throwable t) {
+			t.printStackTrace();
 			response.getOutputStream().print("{\"error\":\""+t.getMessage().replace('\"', ' ')+"\"}");
 		}
 	}
@@ -256,11 +240,16 @@ public class GoogleServlet extends HttpServlet
 	 * @return Expiration date in Unix Time format
 	 */
 	private static String getExpirationDate (JsonElement userData, String wsToken){
-		return userData.getAsJsonObject()
+		try {
+			return userData.getAsJsonObject()
 				.getAsJsonObject("tokens")
 				.getAsJsonObject("ws")
 				.get(wsToken)
 				.getAsString();
+		}
+		catch(Throwable t) {
+			return null;
+		}
 	}
 
 	private static void writeTokensToRegistry(String login, String expirationDate){

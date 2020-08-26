@@ -144,20 +144,24 @@ License can be found in login.COPYING
   </section>
 </div>
 
-  <!--
+  
   <footer id="footer">
   <div style="margin-top:0; margin-left:7px; margin-right:25px;">
           <div>or log in via:</div>
+        <div id="google_scopes_driver"></div>
+        <!--
           <div class="zocial googleplus" style="width:100%">Google+</div>
           <div class="zocial linkedin" style="width:100%">LinkedIn+</div>
           <div class="zocial facebook" style="width:100%">Facebook</div>
           <div class="zocial amazon" style="width:100%">Amazon</div>
+        -->
   </div>
   </footer>
-  -->
+  
 </div>
 
 <script>
+
   var i = window.location.search.indexOf("redirect=");
   if (i>=0) {
     var redirect = window.location.search.substring(i+9);
@@ -178,6 +182,9 @@ License can be found in login.COPYING
     }
 
   }
+
+  webappos.request_scopes("google_scopes", "button");
+
 </script>  
 
 </body>

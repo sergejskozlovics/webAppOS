@@ -1071,6 +1071,7 @@ script_label: {
   webappos.request_scopes = async function (driver_name, scopes) {
     if (driver_name == "webappos_scopes") {
       if (webappos.server_mode == -1) {
+        alert("\"webappos_scopes\" must be the first scope to request!");
         throw new Error("\"webappos_scopes\" must be the first scope to request!");
       }
       webappos.set_server_mode(+1);
@@ -1080,6 +1081,7 @@ script_label: {
       require(["/services/" + driver_name + "/" + driver_name + "_driver.js"], function (driver) {
         if (!webappos.drivers_set[driver_name]) {
           webappos.drivers_set[driver_name] = driver;
+          alert("adding "+driver_name);
           webappos.drivers_stack.push(driver);
         }
 
@@ -1122,6 +1124,7 @@ script_label: {
     while (webappos.drivers_stack.length) {
       let driver = webappos.drivers_stack.pop();
       await driver.revoke_serverless_access();
+      alert("signed out driver "+driver);
     }
 
     webappos.set_server_mode(0);
