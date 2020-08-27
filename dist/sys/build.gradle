@@ -171,13 +171,6 @@ dependencies {
           include("webappos.properties.template")
           rename("webappos.properties.template", "webappos.properties")
         }
-      if (!file('../apps/Login.webservice/webservice.properties').exists())
-        copy {
-          from("../apps/Login.webservice")
-          into("../apps/Login.webservice")
-          include("webservice.properties.template")
-          rename("webservice.properties.template", "webservice.properties")
-        }
     }
   }
 
