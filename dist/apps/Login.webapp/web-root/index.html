@@ -152,7 +152,7 @@ License can be found in login.COPYING
   </div>
 
 
-  <footer id="footer">
+  <footer id="footer" style="display: none;">
     <div style="margin-top:0; margin-left:7px; margin-right:25px;">
       <div>or log in via:</div>
       <div id="google_scopes_driver"></div>
@@ -198,6 +198,8 @@ License can be found in login.COPYING
         let s = xhr.responseText.trim();
         try {
           let arr = JSON.parse(s);
+          if (arr.length>0)
+            $("#footer").show();
           for (let i = 0; i < arr.length; i++) {
             webappos.request_scopes(arr[i], "button"); // e.g., webappos.request_scopes("google_scopes", "button");
           }
