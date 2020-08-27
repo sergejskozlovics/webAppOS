@@ -19,6 +19,8 @@ public class WebServiceProperties extends SomeProperties {
 	
 	public String service_type = "javaservlet";	
 	
+	
+	public boolean provides_auth = false;	
 	public boolean requires_root_url_paths = false;
 	
 	public int httpPort = -1;  // will be assigned either by the service adapter (from requires_additional_ports), or by webAppOS Gate 
@@ -68,7 +70,13 @@ public class WebServiceProperties extends SomeProperties {
 				if (f.exists() && f.isDirectory())
 					service_type = "webroot";
 			}
-			
+
+			try {
+				provides_auth = Boolean.parseBoolean(properties.getProperty("provides_auth", provides_auth+""));
+			}
+			catch(Throwable t) {				
+			}
+
 			try {
 				requires_root_url_paths = Boolean.parseBoolean(properties.getProperty("requires_root_url_paths", requires_root_url_paths+""));
 			}

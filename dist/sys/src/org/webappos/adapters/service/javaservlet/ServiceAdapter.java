@@ -3,8 +3,6 @@ package org.webappos.adapters.service.javaservlet;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.Principal;
 import java.util.Properties;
 
@@ -13,7 +11,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -23,14 +20,12 @@ import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
-import org.webappos.classloader.PropertiesClassLoader;
 import org.webappos.properties.WebServiceProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
@@ -211,11 +206,32 @@ public class ServiceAdapter implements IServiceAdapter {
 			File f = new File(webroot);
 			if (f.exists() && f.isDirectory()) {
 				// adding web-root handler followed by a servletClass instance...
-				DefaultServlet defaultServlet = new DefaultServlet();
+				DefaultServlet defaultServlet = new DefaultServlet() {
+					
+					// handle POST via the servlet passed to the adapter, not via the default servlet 
+				    @Override
+				    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+				    throws ServletException, IOException {
+				    	Servlet s = holder.getServlet();
+				    	System.out.println("MY POST "+s);
+				    	
+				    	try {
+					    	if (s!=null)
+					    		s.service(request, response);
+				    	}
+				    	catch(Throwable t) {
+				    		t.printStackTrace();
+				    	}
+				    }
+				};
 				ServletHolder holderPwd = new ServletHolder("default", defaultServlet);
 				holderPwd.setInitParameter("resourceBase", webroot);				
 				//holderPwd.setInitParameter("dirAllowed","true");
 		        holderPwd.setInitParameter("pathInfoOnly","true");
+		        
+				holderPwd.setInitParameter("useFileMappedBuffer", "false");
+				holderPwd.setInitParameter("cacheControl", "max-age=0, public");
+
 				contextHandler.addServlet(holderPwd, "/*");
 				contextHandler.setErrorHandler(new ErrorHandler() {
 					 @Override
@@ -233,6 +249,7 @@ public class ServiceAdapter implements IServiceAdapter {
 				try {
 					holder.setServlet(servletClass.getConstructor().newInstance());
 				} catch (Throwable e) {
+					//e.printStackTrace();
 					throw new RuntimeException(e);
 				}
 				// For Variant B:
@@ -242,7 +259,7 @@ public class ServiceAdapter implements IServiceAdapter {
 				// just adding a servletClass instance...
 				try {
 					holder.setServlet(servletClass.getConstructor().newInstance());
-				} catch (Throwable e) {
+				} catch (Throwable e) {					
 					throw new RuntimeException(e);
 				}
 				contextHandler.addServlet(holder, "/*");

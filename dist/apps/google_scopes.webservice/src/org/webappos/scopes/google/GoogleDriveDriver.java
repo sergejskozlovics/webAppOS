@@ -25,10 +25,10 @@ import java.util.List;
 
 public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 	Drive service;
-	String path;
+	String pathPrefix;
 	public GoogleDriveDriver(String login, String path) {
 		try {
-			this.path = path;
+			this.pathPrefix = path;
 			System.out.println("Calling ["+login+"] path=["+path+"]");
 			final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 			this.service = new Drive.Builder(HTTP_TRANSPORT, getDefaultJsonFactory(), getCredentials(login))
@@ -39,9 +39,22 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 		}
 	}
 	
+	private String getFullPath(String path) {
+		if (this.pathPrefix!=null && this.pathPrefix.length()>0) {
+			if (path!=null && path.length()>0)
+				return this.pathPrefix+"/"+path;
+			else
+				return this.pathPrefix;
+		}
+		else
+			return path;
+	}
+	
 
 	@Override
 	public boolean copyPath(String src, String dst) {
+		src = getFullPath(src);
+		dst = getFullPath(dst);
 		//test with folders
 		//both are files or folders
 		//rewrite
@@ -63,6 +76,7 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 
 	@Override
 	public boolean createDirectory(String path) {
+		path = getFullPath(path);
 		File fileMetadata = new File();
 		fileMetadata.setName(path);
 		fileMetadata.setMimeType("application/vnd.google-apps.folder");
@@ -81,6 +95,7 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 
 	@Override
 	public boolean deletePath(String path) {
+		path = getFullPath(path);
 		//test with folder
 		try {
 			File file = getAsFile(path);
@@ -94,6 +109,7 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 
 	@Override
 	public InputStream downloadFile(String path) {
+		path = getFullPath(path);
 		try{
 			System.out.println("Downloading ... " + path);
 			
@@ -158,6 +174,7 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 
 	@Override
 	public boolean pathExists(String path) {
+		path = getFullPath(path);
 		File file = getAsFile(path);
 		return file != null;
 	}
@@ -178,6 +195,7 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 
 	@Override
 	public List<PathInfo> listDirectory(String path) {
+		path = this.getFullPath(path);
 		double d = Math.random();
 		System.out.println("Call list path=["+path+"] rnd="+d);
 		List<PathInfo> retVal = new ArrayList<PathInfo>();
@@ -230,6 +248,7 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 	public PathInfo getPathInfo(String path) {
 		if (path == null)
 			return null;
+		path = getFullPath(path);
 		if (path.equals("")) {
 			PathInfo pi = new PathInfo();
 			pi.created = 0;
@@ -279,6 +298,7 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 	private File getAsFile(String path) {
 		if (path == null)
 			return null;
+		path = getFullPath(path);
 		if (path.equals("")) {
 			return null;
 		}
@@ -312,6 +332,8 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 
 	@Override
 	public boolean renamePath(String src, String dst) {
+		src = getFullPath(src);
+		dst = getFullPath(dst);
 		try {
 			File file = new File();
 			File srcFile = getAsFile(src);
@@ -326,6 +348,7 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 
 	@Override
 	public List<String> searchForFiles(String startDirectory, String query) {
+		startDirectory = getFullPath(startDirectory);
 		List<PathInfo> list = this.listDirectory(startDirectory);
 		if (list == null){
 			return null;
@@ -340,6 +363,7 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 
 	@Override
 	public boolean uploadFile(String path, InputStream stream, long length, boolean overwrite) {
+		path = getFullPath(path);
 		//TODO: upload file
 		//docs: https://developers.google.com/drive/api/v3/manage-uploads
 		return false;
@@ -377,22 +401,22 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 		return createCredentialWithAccessTokenOnly(token);
 	}
 	
-	private static String getName(String path){
-		int i=path.lastIndexOf("/");
+	private static String getName(String fullPath){
+		int i=fullPath.lastIndexOf("/");
 		if (i>=0) {
-			return path.substring(i + 1);
+			return fullPath.substring(i + 1);
 		} else {
-			i = path.lastIndexOf("\\");
+			i = fullPath.lastIndexOf("\\");
 			if (i>=0) {
-				return path.substring(i + 1);
+				return fullPath.substring(i + 1);
 			} else {
-				return path;
+				return fullPath;
 			}
 		}
 	}
 	
-	private static String getFolderID(String path, Drive service) {
-		String name = getName(path);
+	private static String getFolderID(String fullPath, Drive service) {
+		String name = getName(fullPath);
 		try {
 			String pageToken = null;
 			do {

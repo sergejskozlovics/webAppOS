@@ -1,11 +1,15 @@
 define(function () {
 
   var gapi;
+  var on_gapi_load;
 
   var init = function () {
     console.log("in google_scopes init");
     gapi = window.gapi;
     gapi.load('auth2', function () {
+
+      if (on_gapi_load)
+        on_gapi_load();
       // console.log(gapi.auth2);
       /* Ready. Make a call to gapi.auth2.init or some other API */
     });
@@ -97,21 +101,53 @@ define(function () {
   }
 
   var signOut = async function () {
-    alert("Google sign out");
     console.log("Signing out");
 
     return new Promise(function (resolve, reject) {
-      var auth2 = gapi.auth2.getAuthInstance();
-      if (auth2) {
-        auth2.signOut().then(function () {
-          console.log('User signed out.');
+
+      let f = async function() {
+        var auth2 = gapi.auth2.getAuthInstance();
+
+        if (!auth2) {
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", "/services/google_scopes/oauth_client_id", false);
+          var google_oauth_client_id = "";
+          xhr.onreadystatechange = async function () {
+            if (this.readyState == this.DONE) {
+              google_oauth_client_id = xhr.responseText.trim(); // assign to the upper variable
+            }
+          };
+      
+          xhr.send();
+          console.log("Google OAuth Client ID: " + google_oauth_client_id);
+          await gapi.auth2.init({ client_id: google_oauth_client_id });
+
+          auth2 = gapi.auth2.getAuthInstance();
+        }
+
+        if (auth2) {
+          auth2.signOut().then(function () {
+            console.log('User signed out.');
+            auth2.disconnect();
+            resolve(true);
+          }).catch(function () {
+            resolve(false);
+          });
+        }
+        else {
+          console.log(gapi);
+          alert("Google auth2 not present.");
           resolve(true);
-        }).catch(function () {
-          resolve(false);
-        });
-      }
+        }
+  
+      };
+
+      if (gapi && gapi.auth2)
+        f();
       else
-        resolve(true);
+        on_gapi_load = f;
+      
+
     });
   }
 
@@ -138,7 +174,6 @@ define(function () {
                <div style="width:100%" class="zocial google" onclick="onSignIn()">Google login</div>\
                <input type="checkbox" id="google-drive" name="google-drive" value="google-drive" checked>\
                <label for="google-drive">&nbsp;&nbsp;with Google drive</label>\
-               <a href="#" onclick="signOut();">Sign out</a>\
             ';
       return true;
     },

@@ -26,6 +26,10 @@ public class PropertiesManager extends UnicastRemoteObject implements IPropertie
 	public synchronized WebAppProperties[] getAllInstalledWebApps() {
 		return appPropsMap.values().toArray(new WebAppProperties[]{});
 	}
+	
+	public synchronized WebServiceProperties[] getAllInstalledWebServices() {
+		return svcPropsMap.values().toArray(new WebServiceProperties[]{});
+	}
 
 	public synchronized WebAppProperties[] getAvailableWebApps(String login) {
 		return getAllInstalledWebApps(); // TODO: for some users not all apps can be available
@@ -219,6 +223,11 @@ public class PropertiesManager extends UnicastRemoteObject implements IPropertie
 		return this.getAllInstalledWebApps();
 	}
 
+	@Override
+	public WebServiceProperties[] getAllInstalledWebServices_R() throws RemoteException {
+		return this.getAllInstalledWebServices();
+	}
+	
 	@Override
 	public WebAppProperties[] getAvailableWebApps_R(String login) throws RemoteException {
 		return this.getAvailableWebApps(login);

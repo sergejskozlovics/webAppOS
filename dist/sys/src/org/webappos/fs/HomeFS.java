@@ -328,8 +328,9 @@ public class HomeFS implements IFileSystem {
 			}		
 			return arr;
 		}
-		else
+		else {
 			return drv.getKey().listDirectory(drv.getValue());
+		}
 	}
 
 	@Override

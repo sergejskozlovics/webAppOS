@@ -10,6 +10,7 @@ import java.util.List;
  */
 public interface IPropertiesManager {
 	public WebAppProperties[] getAllInstalledWebApps();
+	public WebServiceProperties[] getAllInstalledWebServices();
 	public WebAppProperties[] getAvailableWebApps(String login);
 	public WebAppProperties getWebAppPropertiesByFullName(String appName);
 	public WebServiceProperties getWebServicePropertiesByFullName(String serviceName);

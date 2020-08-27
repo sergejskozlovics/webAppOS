@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.webappos.antiattack.ValidityChecker;
 import org.webappos.auth.UsersManager;
+import org.webappos.properties.WebServiceProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
 import org.webappos.util.RandomToken;
@@ -198,6 +199,27 @@ public class LoginServlet extends HttpServlet
         if (path.equals("recaptcha_site_key")) {
         	response.setContentType("text/html");
         	response.getOutputStream().print(properties.getProperty("recaptcha_site_key",""));
+        	return;
+        }
+        if (path.equals("auth_services")) {
+        	response.setContentType("application/json");
+        	
+        	String retVal = "[";
+        	
+        	for (WebServiceProperties wsp : API.propertiesManager.getAllInstalledWebServices()) {
+        		if (wsp.provides_auth) {
+        			if (retVal.length()>1) // at least one service already added
+        				retVal += ",";
+        			String simpleName = wsp.service_full_name;
+        			int i = simpleName.lastIndexOf('.');
+        			if (i>=0)
+        				simpleName = simpleName.substring(0,i);
+        			retVal += "\""+simpleName+"\"";
+        		}
+        	}
+        	retVal += "]";
+        	
+        	response.getOutputStream().print(retVal);
         	return;
         }
         if (path.startsWith("verify/")) {
