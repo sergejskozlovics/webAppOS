@@ -3,9 +3,11 @@ package org.webappos.webcalls;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jettison.json.JSONObject;
@@ -242,7 +244,10 @@ public class FSActions_webcalls {
 			BufferedWriter writer = null;
 			try
 			{
-			    writer = new BufferedWriter( new FileWriter(projectDir+File.separator+fileName));
+			    writer = new BufferedWriter(			    
+			    		new OutputStreamWriter(new FileOutputStream(new File(projectDir+File.separator+fileName)), "UTF-8"));
+			    
+			    
 			    writer.write(content);
 			    return "{\"result\":true}";
 			}
