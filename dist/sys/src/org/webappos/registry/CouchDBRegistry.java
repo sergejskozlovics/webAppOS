@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 public class CouchDBRegistry extends UnicastRemoteObject implements IRegistry, IRRegistry {
@@ -559,15 +560,6 @@ public class CouchDBRegistry extends UnicastRemoteObject implements IRegistry, I
 		}		
 	}
 
-	@Override
-	public JsonElement getValue_R(String key) throws RemoteException {
-		return this.getValue(key);
-	}
-
-	@Override
-	public boolean setValue_R(String key, Object value) throws RemoteException {
-		return this.setValue(key, value);
-	}
 	
 	/*
 	public static void main(String[] args) {

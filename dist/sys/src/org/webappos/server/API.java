@@ -76,10 +76,11 @@ public class API {
 		
 		try {
 			status = new InMemoryLoggedStatus();
+			status.setValue("server/pid", PID.getPID()+"");
 		} catch (RemoteException e) {
+			e.printStackTrace();
 		} 
 		
-		status.setValue("server/pid", PID.getPID()+"");
 		
 		try {
 			webCaller = new WebCaller();

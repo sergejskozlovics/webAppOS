@@ -505,16 +505,5 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 		}				
 	}
 
-
-	@Override
-	public JsonElement getValue_R(String key) throws RemoteException {
-		return this.getValue(key);
-	}
-
-
-	@Override
-	public boolean setValue_R(String key, Object value) throws RemoteException {
-		return this.setValue(key, value);
-	}
 	
 }

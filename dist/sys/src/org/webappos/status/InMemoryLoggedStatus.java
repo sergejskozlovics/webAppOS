@@ -103,15 +103,5 @@ public class InMemoryLoggedStatus extends UnicastRemoteObject implements IStatus
 		
 		return el;
 	}
-
-	@Override
-	public boolean setValue_R(String key, Object value) throws RemoteException {
-		return setValue(key, value);		
-	}
-
-	@Override
-	public JsonElement getValue_R(String key) throws RemoteException {
-		return getValue(key);		
-	}
 	
 }

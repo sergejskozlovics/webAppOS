@@ -3,6 +3,7 @@ package org.webappos.registry;
 import java.rmi.RemoteException;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 public class IRegistryWrapper implements IRegistry {
 	private IRRegistry delegate;
@@ -12,7 +13,13 @@ public class IRegistryWrapper implements IRegistry {
 	}
 	public JsonElement getValue(String key) {
 		try {
-			return delegate.getValue_R(key);
+			String stringifiedValue = delegate.getValue_R(key);
+			if (stringifiedValue==null)
+				return null;
+			
+            JsonParser parser = new JsonParser();
+            return parser.parse(stringifiedValue);
+    		
 		} catch (RemoteException e) {
 			return null;
 
@@ -20,8 +27,10 @@ public class IRegistryWrapper implements IRegistry {
 	}
 	public boolean setValue(String key, Object value) {
 		try {
-			return delegate.setValue_R(key, value);
+			System.out.println("SET "+key+" -> "+value);
+			return delegate.setValue_R(key, value.toString());
 		} catch (RemoteException e) {
+			e.printStackTrace();
 			return false;
 		}
 	}

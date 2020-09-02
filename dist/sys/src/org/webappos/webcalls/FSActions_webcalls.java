@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -20,7 +19,6 @@ import org.webappos.fs.IFileSystem.PathInfo;
 import org.webappos.server.API;
 import org.webappos.server.ConfigEx;
 
-import java.io.*;
 import java.util.Set;
 
 public class FSActions_webcalls {

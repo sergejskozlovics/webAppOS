@@ -234,17 +234,20 @@ public class UsersManager {
 			return false;
 
     	JsonElement el = API.registry.getValue("xusers/"+login+"/groups");
+    	
     	if (el!=null) {
     		try {
     			JsonObject obj = el.getAsJsonObject();
     			for (Entry<String, JsonElement> entry : obj.entrySet()) {
+    				System.out.println(entry.getKey());
     				if (group.equals(entry.getKey())) {
     					return true;
     				}
     				
     			}
     		}
-    		catch(Throwable t) {    			
+    		catch(Throwable t) { 
+    			t.printStackTrace();
     		}
     		
     	}

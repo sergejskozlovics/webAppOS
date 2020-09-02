@@ -111,7 +111,7 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 							jsonResult = ((IJsonWebCallsAdapter)adapter).jsoncall(action.resolvedLocation, action.pwd, seed.jsonArgument, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
 						}
 						catch(Throwable t) {
-							jsonResult = "ERROR:"+t.getMessage();
+							jsonResult = "{\"error\":\""+t.getMessage()+"\"}";
 						}
 						if (newOwner)
 							webmem.setContext(null);
@@ -131,7 +131,7 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 							((IWebMemWebCallsAdapter)adapter).webmemcall(action.resolvedLocation, action.pwd, seed.webmemArgument, webmem, seed.project_id, API.dataMemory.getProjectFullAppName(seed.project_id), seed.login);
 						}
 						catch(Throwable t) {
-							jsonResult = "ERROR:"+t.getMessage();
+							jsonResult = "{\"error\":\""+t.getMessage()+"\"}";
 						}
 						if (newOwner)
 							webmem.setContext(null);
