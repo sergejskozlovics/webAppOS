@@ -8,18 +8,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-
+import com.google.gson.JsonObject;
+import lv.lumii.tda.raapi.RAAPI;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.webappos.antiattack.ValidityChecker;
+import org.webappos.fs.FSDriversManager;
 import org.webappos.fs.HomeFS;
 import org.webappos.fs.IFileSystem.PathInfo;
 import org.webappos.server.API;
+import org.webappos.server.ConfigEx;
 
-import com.google.gson.JsonObject;
-
-import lv.lumii.tda.kernel.RAAPIWrapper;
-import lv.lumii.tda.raapi.RAAPI;
+import java.io.*;
+import java.util.Set;
 
 public class FSActions_webcalls {
 
@@ -291,6 +293,28 @@ public class FSActions_webcalls {
 				return "{\"error\":\"The new project name must start with your login followed by '/'.\"}";
 						
 		    return "{\"result\": "+API.dataMemory.renameActiveProject(project_id, new_project_id)+" }";
+		}
+		catch(Throwable t) {
+			return "{\"error\":\""+t.getMessage()+"\"}";
+		}
+	}
+	
+	public static String getSupportedFileSystems(String json) {
+		// must be called inline (from the webAppOS server process, not from a web processor)
+		try {
+			if (!(API.config instanceof ConfigEx))
+				throw new RuntimeException("Error accessing the driver list. Perhaps, not an inline web call.");
+			
+			JSONObject obj = new JSONObject();
+			JSONArray arr = new JSONArray();
+			Set<String> ks = FSDriversManager.getSupportedPrefixes();
+			for (String k : ks) {
+				arr.put(k);
+			}
+			
+			obj.put("result", arr);
+			
+			return obj.toString();
 		}
 		catch(Throwable t) {
 			return "{\"error\":\""+t.getMessage()+"\"}";

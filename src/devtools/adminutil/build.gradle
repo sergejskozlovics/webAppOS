@@ -1,0 +1,45 @@
+  apply plugin: 'java'
+  apply plugin: 'application'
+
+
+  // Define the main class for the application
+  application {
+    mainClassName = 'org.webappos.util.AdminUtil'
+  }
+
+  dependencies {
+    compile project(':sys')
+  }
+
+  distZip.enabled = false
+  distTar.enabled = false
+  jar.enabled = false
+
+  startScripts {
+    classpath += files('BIN_PLACEHOLDER')
+    doLast {
+      def windowsScriptFile = file getWindowsScript()
+      def unixScriptFile    = file getUnixScript()
+      windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\BIN_PLACEHOLDER', '%APP_HOME%\\sys\\bin')
+      windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\adminutil.jar', '%APP_HOME%\\sys\\bin')
+
+      unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/BIN_PLACEHOLDER', '$APP_HOME/sys/bin')
+      unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/adminutil.jar', '$APP_HOME/sys/bin')
+    }
+  }
+
+  installDist {
+    doFirst {
+    }
+    into('../../../dist')
+    preserve({
+          include '**'
+          exclude 'bin/adminutil*'
+    })
+    doLast {
+    }
+  }
+
+task install {
+    dependsOn installDist
+}

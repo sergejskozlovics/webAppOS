@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface IRPropertiesManager extends Remote {
 	public WebAppProperties[] getAllInstalledWebApps_R() throws RemoteException;
+	public WebServiceProperties[] getAllInstalledWebServices_R() throws RemoteException;
 	public WebAppProperties[] getAvailableWebApps_R(String login) throws RemoteException;
 	public WebAppProperties getWebAppPropertiesByFullName_R(String appName) throws RemoteException;
 	public WebServiceProperties getWebServicePropertiesByFullName_R(String serviceName) throws RemoteException;

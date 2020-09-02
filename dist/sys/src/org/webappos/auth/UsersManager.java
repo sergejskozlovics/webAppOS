@@ -1,23 +1,34 @@
 package org.webappos.auth;
 
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Map.Entry;
-
-import javax.security.auth.Subject;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.jetty.security.DefaultUserIdentity;
 import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.server.UserIdentity;
+import org.webappos.properties.WebServiceProperties;
 import org.webappos.server.API;
+import org.webappos.server.ConfigEx;
+import org.webappos.util.RandomToken;
 import org.webappos.util.UTCDate;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import javax.security.auth.Subject;
+import java.io.File;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map.Entry;
 
 // all values must be validated (by org.webappos.util.ValidityChecker) in advance
 public class UsersManager {
+	
+	enum Response {
+		OK,
+		FAILED,
+		EMAILED,
+		MANUAL_PROCESSING
+	}
 
 	synchronized public static UserAuthentication getUserAuthentication(String emailOrLogin) {
 		
@@ -57,7 +68,7 @@ public class UsersManager {
     				
     			}
     		}
-    		catch(Throwable t) {    			
+    		catch(Throwable t) {
     		}
     		
     		groupsArr = arr.toArray(groupsArr);
@@ -69,21 +80,90 @@ public class UsersManager {
 		
     	return auth;
 	}
+
+	public static Response addUser(String login, Boolean emailToAllow) {
+		JsonObject xuser = new JsonObject();
+		JsonObject user = new JsonObject();
+		
+		String salt = RandomToken.generateSalt();
+		
+		xuser.addProperty("salt", salt);
+		xuser.addProperty("signup_time", UTCDate.stringify(new Date()));	
+		
+		WebServiceProperties properties = API.propertiesManager
+										     .getWebServicePropertiesByFullName("Login.webservice");
+		String signup_policy = properties.properties
+										 .getProperty("signup_policy", "deny");
+		
+		System.out.println(signup_policy);
+			
+		if(emailToAllow && signup_policy.equals("email")) {
+			signup_policy = "allow";
+		}
+		
+		xuser.addProperty("_id", login);
+		user.addProperty("_id", login);
+
+		if ("allow".equals(signup_policy)) {
+			API.registry.setValue("xusers/" + login, xuser);
+			API.registry.setValue("users/" + login, user);
+			
+			File file = new File(ConfigEx.HOME_DIR + "/" + user);
+			
+			return Response.OK;
+		}
+		else if ("deny".equals(signup_policy)) {
+				// we won't save the xuser and user;
+
+				// "deny" must have been checked on top of the function: if (!signup_allowed) ...
+				// however, the webcall could also return "deny", thus, we check it again here
+				return Response.FAILED;
+		}
+		else {
+				//assume "manual"
+				xuser.addProperty("blocked", true); // require to set blocked=false manually (e.g., via "webappos approveuser")
+				API.registry.setValue("xusers/" + login, xuser);
+				API.registry.setValue("users/" + login, user);
+				return Response.MANUAL_PROCESSING;
+		}
+	}
+
+	public static void generateToken(String login, Boolean remember, String expirationDate){
+		JsonElement email_verified = API.registry.getValue("xusers/"+login+"/email_verified");
+		if ((email_verified!=null) && (!email_verified.getAsBoolean()))
+			throw new RuntimeException("User's e-mail not verified yet");
+
+		JsonElement blocked = API.registry.getValue("xusers/"+login+"/blocked");
+		if ((blocked!=null) && (blocked.toString().equals("true")))
+			throw new RuntimeException("User is blocked");
+
+		String token = RandomToken.generateRandomToken();
+
+		if(expirationDate.isEmpty()){
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(new Date());
+
+			if (remember) {
+				calendar.add(Calendar.DATE, 365); // token valid for 1 year
+			} else {
+				calendar.add(Calendar.MINUTE, 60); // token valid for 1 hour
+			}
+
+			expirationDate = UTCDate.stringify(calendar.getTime());
+		}
+
+		API.registry.setValue("xusers/"+login+"/tokens/ws/"+token, expirationDate);
+	}
 	
 	public static String getUserLogin(String emailOrLogin) {
 		// implement via alias_of
 		String alias = emailOrLogin;
-		int level = 5;
-		for (;;) {
-			JsonElement newAlias = API.registry.getValue("xusers/"+alias+"/alias_of");
-			if ((newAlias == null) || (newAlias.getAsString().isEmpty()))
-				return alias;
-			else {
-				alias = newAlias.getAsString();
-				level--;
-			}
-			if (level<=0)
-				return null;
+		JsonElement login = API.registry.getValue("xusers/"+alias+"/_id");
+		try {
+			return login.getAsString();
+		}
+		catch(Throwable t) {
+			return null;
 		}
 	}
 	

@@ -1,24 +1,19 @@
 package org.webappos.fs;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.webappos.server.API;
 import org.webappos.server.ConfigEx;
 import org.webappos.server.ConfigStatic;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class HomeFS implements IFileSystem {
 	
@@ -34,17 +29,17 @@ public class HomeFS implements IFileSystem {
 		this.readOnly = value;
 	}
 	
-	private void collectMountPointsRecursively(JsonObject obj, String path, HashMap<String, IFileSystem> mountPoints) {
+	private void collectMountPointsRecursively(JsonObject obj, String login, String path, HashMap<String, IFileSystem> mountPoints) {
 		for (String name : obj.keySet()) {
 			JsonElement el = obj.get(name);
 			if (el.isJsonObject()) {
-				collectMountPointsRecursively(el.getAsJsonObject(), path+"/"+name, mountPoints);
+				collectMountPointsRecursively(el.getAsJsonObject(), login, path+"/"+name, mountPoints);
 			}
 			else
 			if (el.isJsonPrimitive()) {
 				String uri = el.getAsString();
 				if (API.config instanceof ConfigEx) {
-					IFileSystem drv = ((ConfigEx)API.config).getFileSystemDriver(uri);
+					IFileSystem drv = FSDriversManager.getFileSystemDriver(login, uri);
 					if (drv!=null)
 						mountPoints.put(path+"/"+name, drv);
 				}
@@ -56,7 +51,7 @@ public class HomeFS implements IFileSystem {
 		JsonElement el = API.registry.getValue(registryKey);
 		if ((el==null) || (!el.isJsonObject()))
 			return;
-		collectMountPointsRecursively(el.getAsJsonObject(), login/*=start path*/, mountPoints);
+		collectMountPointsRecursively(el.getAsJsonObject(), login, login/*=start path*/, mountPoints);
 	}
 	
 	private Pair<IFileSystem, String> findDriver(String location) {
@@ -333,8 +328,9 @@ public class HomeFS implements IFileSystem {
 			}		
 			return arr;
 		}
-		else
+		else {
 			return drv.getKey().listDirectory(drv.getValue());
+		}
 	}
 
 	@Override

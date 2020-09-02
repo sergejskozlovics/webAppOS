@@ -80,7 +80,8 @@ dependencies {
       implementation 'org.codehaus.jettison:jettison:1.4.0'
 
   // Google Guava (for MultiSet)
-      compile 'com.google.guava:guava:27.1-jre'
+      implementation 'com.google.guava:guava:27.1-jre'
+     // implementation 'com.google.guava:guava:26.0-android'
 
   // lightcouch (for couchdb registry)
       implementation 'org.lightcouch:lightcouch:0.2.0'
@@ -169,13 +170,6 @@ dependencies {
           into("../etc")
           include("webappos.properties.template")
           rename("webappos.properties.template", "webappos.properties")
-        }
-      if (!file('../apps/Login.webservice/webservice.properties').exists())
-        copy {
-          from("../apps/Login.webservice")
-          into("../apps/Login.webservice")
-          include("webservice.properties.template")
-          rename("webservice.properties.template", "webservice.properties")
         }
     }
   }

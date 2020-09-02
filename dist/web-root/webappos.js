@@ -1037,6 +1037,18 @@ script_label: {
   webappos.drivers_set = {};
   webappos.drivers_stack = [];
 
+  webappos.load_driver = async function(driver_name) {
+    return new Promise((resolve, reject) => {
+      require(["/services/" + driver_name + "/" + driver_name + "_driver.js"], function (driver) {
+        if (!webappos.drivers_set[driver_name]) {
+          webappos.drivers_set[driver_name] = driver;
+          webappos.drivers_stack.push(driver);
+        }
+        resolve(driver);
+      });
+    });
+  };
+
   /**
     Function: webappos.request_scopes (async)
   
@@ -1071,26 +1083,21 @@ script_label: {
   webappos.request_scopes = async function (driver_name, scopes) {
     if (driver_name == "webappos_scopes") {
       if (webappos.server_mode == -1) {
+        alert("\"webappos_scopes\" must be the first scope to request!");
         throw new Error("\"webappos_scopes\" must be the first scope to request!");
       }
       webappos.set_server_mode(+1);
     } else
       webappos.set_server_mode(-1);
-    return new Promise((resolve, reject) => {
-      require(["/services/" + driver_name + "/" + driver_name + "_driver.js"], function (driver) {
-        if (!webappos.drivers_set[driver_name]) {
-          webappos.drivers_set[driver_name] = driver;
-          webappos.drivers_stack.push(driver);
-        }
+    let driver = await webappos.load_driver(driver_name);
 
-        webappos.webcall("webappos.getAvailableWebCalls").then(function (result) {
-          webappos.webcalls = result;
-          driver.request_access(scopes, (webappos.server_mode == -1)).then(() => resolve(true)).catch((e) => reject(e));
-        });
-      });
+    return new Promise((resolve, reject) => {
+      webappos.webcall("webappos.getAvailableWebCalls").then(function (result) { // TODO: invoke this webcall only once
+        webappos.webcalls = result;
+        driver.request_access(scopes, (webappos.server_mode == -1)).then(() => resolve(driver)).catch((e) => reject(e));
+      }).catch((e)=>reject(e));
     });
   };
-
 
   /**
    * 	Function: webappos.get_scopes_driver
@@ -1119,19 +1126,49 @@ script_label: {
    *    true (if not redirected to the login page)
    */
   window.webappos.sign_out = async function () {
-    while (webappos.drivers_stack.length) {
-      let driver = webappos.drivers_stack.pop();
-      await driver.revoke_serverless_access();
-    }
 
-    webappos.set_server_mode(0);
 
-    // executing "webappos.drivers_set = []" on the last drivers_set in the prototype chain:
-    var props = Object.keys(drivers_set);
-    for (var i = 0; i < props.length; i++) {
-      delete drivers_set[props[i]];
-    }
-    return true;
+    return new Promise((resolve, reject) => {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/services/login/auth_services", false);
+  
+      xhr.onreadystatechange = async function () {
+        if (this.readyState == this.DONE) {
+          let s = xhr.responseText.trim();
+
+          // loading auth drivers to revoke their (perhaps, previously saved) serverless tokens...
+          try {
+            let arr = JSON.parse(s);
+            for (let i = 0; i < arr.length; i++) {
+              let driver = webappos.get_scopes_driver(arr[i]);
+              if (!driver)
+                driver = await webappos.load_driver(arr[i]);
+            }
+          } catch (t) {
+            console.log(t);
+          }
+
+          while (webappos.drivers_stack.length) {
+            let driver = webappos.drivers_stack.pop();
+            await driver.revoke_serverless_access();
+          }
+
+          webappos.set_server_mode(0);
+  
+          // executing "webappos.drivers_set = []" on the last drivers_set in the prototype chain:
+          var props = Object.keys(drivers_set);
+          for (var i = 0; i < props.length; i++) {
+            delete drivers_set[props[i]];
+          }
+          return resolve(true);
+        }
+      };
+  
+      xhr.send();
+  
+
+    });
+
   };
 
   if (window.webappos.defined_here) {

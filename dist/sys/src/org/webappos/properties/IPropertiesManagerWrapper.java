@@ -18,6 +18,14 @@ public class IPropertiesManagerWrapper implements IPropertiesManager {
 			return new WebAppProperties[] {};
 		}
 	}
+	
+	public WebServiceProperties[] getAllInstalledWebServices() {
+		try {
+			return delegate.getAllInstalledWebServices_R();
+		} catch (RemoteException e) {
+			return new WebServiceProperties[] {};
+		}
+	}
 
 	public WebAppProperties[] getAvailableWebApps(String login) {
 		try {

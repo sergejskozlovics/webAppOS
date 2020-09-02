@@ -23,6 +23,18 @@
 
   jar.enabled = false
 
+  task copyTemplate {
+        if (!file('webservice.properties').exists())
+        copy {
+          from(".")
+          into(".")
+          include("webservice.properties.template")
+          rename("webservice.properties.template", "webservice.properties")
+        }
+
+  }
+
   task install {
     dependsOn build
+    dependsOn copyTemplate
   }

@@ -1,5 +1,20 @@
 package org.webappos.webproc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.webappos.properties.IRPropertiesManager;
+import org.webappos.registry.IRRegistry;
+import org.webappos.server.API;
+import org.webappos.server.ConfigStatic;
+import org.webappos.server.IShutDownListener;
+import org.webappos.status.IRStatus;
+import org.webappos.webcaller.*;
+import org.webappos.webcaller.IWebCaller.CallingConventions;
+import org.webappos.webmem.IRWebMemoryArea;
+import org.webappos.webmem.IWebMemory;
+import org.webappos.webmem.WebMemoryArea;
+import org.webappos.webmem.WebMemoryContext;
+
 import java.io.File;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
@@ -7,25 +22,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.webappos.webmem.IRWebMemoryArea;
-import org.webappos.webmem.IWebMemory;
-import org.webappos.webmem.WebMemoryArea;
-import org.webappos.webmem.WebMemoryContext;
-import org.webappos.properties.IRPropertiesManager;
-import org.webappos.registry.IRRegistry;
-import org.webappos.server.API;
-import org.webappos.server.ConfigStatic;
-import org.webappos.server.IShutDownListener;
-import org.webappos.status.IRStatus;
-import org.webappos.webcaller.IJsonWebCallsAdapter;
-import org.webappos.webcaller.IRWebCaller;
-import org.webappos.webcaller.IWebMemWebCallsAdapter;
-import org.webappos.webcaller.WebCaller;
-import org.webappos.webcaller.IWebCaller;
-import org.webappos.webcaller.IWebCaller.CallingConventions;
 
 
 public class WebProcessorBusService extends UnicastRemoteObject implements IRWebProcessorBusService {
@@ -203,7 +199,7 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 
 	@Override
 	public ConfigStatic getConfig() throws RemoteException {
-		return API.config;
+		return (ConfigStatic)API.config;
 	} 
 
 	@Override

@@ -1,11 +1,12 @@
 package org.webappos.properties;
 
-import java.io.File;
-import java.util.Map.Entry;
-
+import org.webappos.fs.FSDriversManager;
 import org.webappos.server.API;
 import org.webappos.server.ConfigEx;
 import org.webappos.server.ConfigStatic;
+
+import java.io.File;
+import java.util.Map.Entry;
 
 public class WebServiceProperties extends SomeProperties {
 	private static final long serialVersionUID = 1L;
@@ -18,6 +19,8 @@ public class WebServiceProperties extends SomeProperties {
 	
 	public String service_type = "javaservlet";	
 	
+	
+	public boolean provides_auth = false;	
 	public boolean requires_root_url_paths = false;
 	
 	public int httpPort = -1;  // will be assigned either by the service adapter (from requires_additional_ports), or by webAppOS Gate 
@@ -67,7 +70,13 @@ public class WebServiceProperties extends SomeProperties {
 				if (f.exists() && f.isDirectory())
 					service_type = "webroot";
 			}
-			
+
+			try {
+				provides_auth = Boolean.parseBoolean(properties.getProperty("provides_auth", provides_auth+""));
+			}
+			catch(Throwable t) {				
+			}
+
 			try {
 				requires_root_url_paths = Boolean.parseBoolean(properties.getProperty("requires_root_url_paths", requires_root_url_paths+""));
 			}
@@ -97,7 +106,7 @@ public class WebServiceProperties extends SomeProperties {
 			
 			
 			if (API.config instanceof ConfigEx)
-				((ConfigEx)API.config).registerFileSystemDriver(properties.getProperty("fs_prefix"), properties.getProperty("fs_driver"));
+				FSDriversManager.registerFileSystemDriver(properties.getProperty("fs_prefix"), properties.getProperty("fs_driver"));
 
 			
 		} catch (Throwable t) {

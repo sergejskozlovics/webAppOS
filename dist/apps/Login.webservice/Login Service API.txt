@@ -43,6 +43,19 @@ Returns:
   the value of the *recaptcha_site_key* property (see <CAPTCHA-specific properties>);
   if empty, then no captcha required
 
+method: auth_services
+---prototype---
+GET https://[domain_or_ip]/services/login/auth_services
+---------------
+
+Used by client-side code (e.g., in the login app) to get the list of available web services that provide authentication (e.g., google_scopes).
+
+Returns:
+  
+  an array of strings with the names of web services that support authentication in the JSON array format; can be empty;
+  the names are simple names WITHOUT the .webservice extension
+
+
 method: verify
 ---prototype---
 GET https://[domain_or_ip]/services/login/verify/[login]/[emailed_token]

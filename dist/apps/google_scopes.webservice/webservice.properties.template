@@ -1,0 +1,11 @@
+service_type=javaservlet
+servlet_class=org.webappos.scopes.google.GoogleServlet
+classpaths=lib/*;bin
+provides_auth=true
+fs_prefix=gdrive
+fs_driver=org.webappos.scopes.google.GoogleDriveDriver
+
+# Look at web-root/cfg/index.html to find out how to obtain the following keys from Google.
+oauth_client_id=YOUR_GOOGLE_CLIENT_ID
+drive_client_id=YOUR_GOOGLE_DRIVE_CLIENT_ID
+drive_client_secret=YOUR_GOOGLE_DRIVE_SECRET

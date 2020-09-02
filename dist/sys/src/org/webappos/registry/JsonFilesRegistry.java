@@ -1,22 +1,16 @@
 package org.webappos.registry;
 
+import com.google.gson.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.webappos.server.ConfigStatic;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.webappos.server.ConfigStatic;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
 
 public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry, IRRegistry {		
 
@@ -152,7 +146,7 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 		if (key == null)
 			return null;
 		
-		if ("#xusers".equals(key)) {
+		if ("xusers".equals(key)) {
 			
 			File dir = new File(DIR_XUSERS);
 			if (!dir.exists() || !dir.isDirectory())			
@@ -283,7 +277,12 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 							
 							// if id is not e-mail then create redirect
 							if (id.indexOf('@')<0) {
-								String email = ((JsonObject) value).get("email").getAsString();
+								String email = null;
+								try {
+									email = ((JsonObject) value).get("email").getAsString();
+								}
+								catch(Throwable t) {
+								}
 								if (email != null) {
 									JsonObject redirect = new JsonObject();
 									redirect.addProperty("_id", email);
