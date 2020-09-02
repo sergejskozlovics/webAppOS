@@ -277,7 +277,12 @@ public class JsonFilesRegistry extends UnicastRemoteObject implements IRegistry,
 							
 							// if id is not e-mail then create redirect
 							if (id.indexOf('@')<0) {
-								String email = ((JsonObject) value).get("email").getAsString();
+								String email = null;
+								try {
+									email = ((JsonObject) value).get("email").getAsString();
+								}
+								catch(Throwable t) {
+								}
 								if (email != null) {
 									JsonObject redirect = new JsonObject();
 									redirect.addProperty("_id", email);
