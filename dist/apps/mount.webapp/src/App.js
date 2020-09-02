@@ -65,7 +65,7 @@ class MountTable extends React.Component {
   writeRegistry() {
     let myThis = this;
     for (let i=0; i<this.toDelete.length; i++) {
-      webappos.webcall("webappos.setUserRegistryValue", {key:"fs_mount_points/"+this.toDelete[i], value:null});
+      webappos.webcall_and_wait("webappos.setUserRegistryValue", {key:"fs_mount_points/"+this.toDelete[i], value:null});
     }
     this.toDelete = [];
     for (let i=0; i<this.state.mountPoints.length; i++) {
@@ -73,7 +73,7 @@ class MountTable extends React.Component {
       let dir = mp.mountPoint.trim();
       // TODO: create dir, if it does not exist
       if (dir)
-        webappos.webcall("webappos.setUserRegistryValue", {key:"fs_mount_points/"+dir, value:mp.driver+":"+mp.location});
+        webappos.webcall_and_wait("webappos.setUserRegistryValue", {key:"fs_mount_points/"+dir, value:mp.driver+":"+mp.location});
     }
     this.readRegistry(); // refresh
   }
@@ -95,7 +95,7 @@ class MountTable extends React.Component {
       webappos.webcall("webappos.getSupportedFileSystems").then((resp) => {
         if (resp.result) {
           myThis.setState({
-            supportedFS: [...resp.result] // , "gdrive", "onedrive"]
+            supportedFS: [...resp.result] // a, "gdrive", "onedrive"]
           }, () => {
             myThis.readRegistry();
           });

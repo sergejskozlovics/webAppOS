@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 public class NoStatus extends UnicastRemoteObject implements IStatus, IRStatus {
 
@@ -21,16 +22,6 @@ public class NoStatus extends UnicastRemoteObject implements IStatus, IRStatus {
 	@Override
 	public JsonElement getValue(String key) {
 		return null;
-	}
-
-	@Override
-	public boolean setValue_R(String key, Object value) throws RemoteException {
-		return setValue(key, value);		
-	}
-
-	@Override
-	public JsonElement getValue_R(String key) throws RemoteException {
-		return getValue(key);		
 	}
 
 }
