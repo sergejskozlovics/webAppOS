@@ -347,13 +347,14 @@ public class Module_lua_tda extends TwoArgFunction {
 			
 			IWebCaller.WebCallSeed seed = new IWebCaller.WebCallSeed();
 			
-			logger.debug("lua invokeNow "+className+" r="+r2);
+			logger.debug("lua invokeNow "+className+" r="+r2+" ctx="+ctx);
 			seed.actionName = className;
 			
 			seed.callingConventions = WebCaller.CallingConventions.WEBMEMCALL;
-			seed.webmemArgument = r2;			
-	
+			seed.webmemArgument = r2;	
+			//
 			if (ctx!=null) {
+				
 				seed.login = ctx.login;
 				seed.project_id = ctx.project_id;
 			}

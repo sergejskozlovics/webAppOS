@@ -407,6 +407,7 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 					IWebMemory webmem = API.dataMemory.getWebMemory(seed.project_id);
 					boolean newSingleSynchronizer = (webmem!=null) && (seed instanceof WebCaller.SyncedWebCallSeed) && (API.dataMemory instanceof WebMemoryArea) && (((WebMemoryArea)API.dataMemory).getSingleSynchronizer(seed.project_id)==null);
 					if (newSingleSynchronizer) {
+						System.out.println(">>>SET SIGNLE SYNC "+((WebCaller.SyncedWebCallSeed)seed).singleSynchronizer+" for "+seed.project_id);
 						((WebMemoryArea)API.dataMemory).setSingleSynchronizer(seed.project_id, ((WebCaller.SyncedWebCallSeed)seed).singleSynchronizer);
 						((WebCaller.SyncedWebCallSeed)seed).singleSynchronizer = null; // do not pass singleSyncrhonizer to the web processor
 					}
@@ -422,6 +423,7 @@ public class WebProcessorBusService extends UnicastRemoteObject implements IRWeb
 							h.onceWebCallFinished = new Runnable() {
 								@Override
 								public void run() {
+									System.out.println(">>>SET SIGNLE SYNC NULL "+seed.project_id);
 									((WebMemoryArea)API.dataMemory).setSingleSynchronizer(seed.project_id, null);
 									((WebMemoryArea)API.dataMemory).unlock(seed.project_id);
 									WebProcessorHandle h = wpMap.get(wpId);

@@ -379,8 +379,6 @@ public class WebMemoryArea extends UnicastRemoteObject implements IWebMemoryArea
 		if (h==null)
 			return;
 		
-		System.out.println("DISCONNECT "+h.predefinedBitsValues);
-		
 		Slot slot = projectIdToSlotMap.get(h.project_id);
 		if (slot==null)
 			return;
@@ -390,7 +388,6 @@ public class WebMemoryArea extends UnicastRemoteObject implements IWebMemoryArea
 		slot.allSynchronizers.remove(h.currentSynchronizer);
 		slot.handles.remove(h);
 		if (slot.ws_tokens.isEmpty()) { // or handles.isEmpty()
-			System.out.println("SLOT CLEAR");
 			// clearing MRAM slot
 			slot.done(false/*no fault*/);
 			projectIdToSlotMap.remove(h.project_id);

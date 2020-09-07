@@ -23,8 +23,10 @@ import org.webappos.properties.SomeProperties;
 import org.webappos.properties.WebAppProperties;
 import org.webappos.server.API;
 import org.webappos.server.ConfigStatic;
+import org.webappos.webcaller.IWebCaller.WebCallSeed;
 import org.webappos.webmem.IWebMemory;
 import org.webappos.webmem.WebMemoryArea;
+import org.webappos.webmem.WebMemoryContext;
 import org.webappos.webproc.WebProcessorBusService;
 
 import lv.lumii.tda.kernel.TDAKernel;
@@ -143,7 +145,6 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		
 		final WebCallSeed seed1 = _seed;
 		
-		//System.out.println("WebCaller enqueue "+seed1.actionName+" ("+seed1.hashCode()+")");
 		logger.debug("WebCaller enqueue "+seed1.actionName+" ("+seed1.hashCode()+")");
 		String id = seed1.project_id!=null?seed1.project_id:"";
 		Queue<WebCallSeed> q = p2q.get(id);
@@ -269,8 +270,10 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 								
 								if (sync != null)						
 									sync.syncRawAction(new double[] {0xC0, seed2.webmemArgument}, RAAPI_Synchronizer.sharpenString(seed2.actionName));
-								else
+								else {
 									logger.error("Could not forward client-side webmemcall web call "+seed2.actionName);
+
+								}
 								
 								if (seed2.jsonResult!=null) {
 									if (sync == null)
@@ -371,7 +374,6 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		String id = seed2.project_id!=null?seed2.project_id:"";
 		
 
-	
 		logger.trace("WebCaller trying to invoke now "+seed2.actionName+" ("+seed2.hashCode()+") app="+seed2.fullAppName+",action="+seed2.actionName+",synced="+(seed2 instanceof SyncedWebCallSeed)+",webmem="+webmem+",arg="+seed2.webmemArgument);
 		WebCallDeclaration action = map.get(seed2.actionName);
 		if (action==null && seed2.fullAppName!=null) {
@@ -452,8 +454,9 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 				
 				if (sync != null)						
 					sync.syncRawAction(new double[] {0xC0, seed2.webmemArgument}, RAAPI_Synchronizer.sharpenString(seed2.actionName));
-				else
-					logger.error("Could not forward client-side WEBMEMCALL web call "+seed2.actionName);
+				else {					
+					logger.error("Could not forward client-side WEBMEMCALL web call "+seed2.actionName);					
+				}
 				
 				if (seed2.jsonResult!=null) {
 					if (sync == null)
@@ -500,6 +503,16 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 		}
 		else
 		if ((seed2.callingConventions == CallingConventions.WEBMEMCALL) && (adapter instanceof IWebMemWebCallsAdapter)) {
+			
+			boolean newOwner = false;
+			if (webmem!=null && webmem.getContext()==null) {
+				newOwner = true;
+				WebMemoryContext ctx = new WebMemoryContext();
+				ctx.login = seed2.login;
+				ctx.project_id = seed2.project_id;
+				webmem.setContext(ctx);							
+			}
+
 			try {
 				((IWebMemWebCallsAdapter)adapter).webmemcall(action.resolvedLocation, action.pwd, seed2.webmemArgument, webmem, seed2.project_id, seed2.fullAppName, seed2.login);
 				if (seed2.jsonResult!=null)
@@ -510,6 +523,10 @@ public class WebCaller extends UnicastRemoteObject implements IWebCaller, IRWebC
 				if (seed2.jsonResult!=null)
 					seed2.jsonResult.completeExceptionally(new RuntimeException(jsonResult));
 			}
+			if (newOwner) {
+				webmem.setContext(null);
+			}
+
 			return true;
 		}
 		else {

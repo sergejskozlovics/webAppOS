@@ -133,8 +133,9 @@ public class DefaultWebProcessor extends UnicastRemoteObject implements IRWebPro
 						catch(Throwable t) {
 							jsonResult = "{\"error\":\""+t.getMessage()+"\"}";
 						}
-						if (newOwner)
+						if (newOwner) {
 							webmem.setContext(null);
+						}
 					}
 					else {
 						logger.error("Could not peform server-side web call "+seed.actionName+" within web processor `"+id+"'since calling conventions do not match. ");

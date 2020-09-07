@@ -23,8 +23,9 @@ public class IWebMemoryAreaWrapper implements IWebMemoryArea {
 	public TDAKernel getWebMemory(String project_id) {
 		if (project_id==null)
 			return null;
-		if (project_id.equals(cached_project_id))
+		if (project_id.equals(cached_project_id)) {
 			return cached_kernel;
+		}
 		
 		if (cached_kernel!=null)
 			cached_kernel.close();
@@ -37,17 +38,14 @@ public class IWebMemoryAreaWrapper implements IWebMemoryArea {
 			return null;
 		
 		cached_kernel = new TDAKernel();
-		System.err.println("CLIENT KERNEL "+IProject.CLIENT_REPOSITORY+":"+folder);
 		if (!cached_kernel.open(IProject.CLIENT_REPOSITORY+":"+folder)) {
 			cached_kernel = null;
-			System.err.println("CLIENT KERNEL OBLOM");
 			return null;
 		}
 		
 		cached_kernel.attachSynchronizer(new SynchronizerToIRWebMemoryArea(project_id, delegate), false, -1/*ignored*/);
 		cached_kernel.setEventsCommandsHook(BridgeEventsCommandsHook.INSTANCE);
 		
-		System.err.println("CLIENT KERNEL OK");
 		return cached_kernel;
 	}
 	
