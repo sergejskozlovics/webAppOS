@@ -35,7 +35,6 @@
     preserve({
           include '**'
           exclude 'bin/mmd2ecore*'
-          exclude 'lib/ecore2java.jar'
     })
     doLast {
     }
