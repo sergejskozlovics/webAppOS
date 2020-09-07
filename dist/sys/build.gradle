@@ -3,12 +3,15 @@
     id 'application'
   }
 
+  compileJava.options.encoding = "UTF-8"
+
   project.buildDir = file('../../build')
 
   repositories {
       jcenter()
       mavenCentral()
   }
+
 
 dependencies {
 

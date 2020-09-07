@@ -1,7 +1,6 @@
   apply plugin: 'java'
   apply plugin: 'application'
 
-
   // Define the main class for the application
   application {
     mainClassName = 'org.webappos.util.AdminUtil'
@@ -15,6 +14,8 @@
   distTar.enabled = false
   jar.enabled = false
 
+
+
   startScripts {
     classpath += files('BIN_PLACEHOLDER')
     doLast {
@@ -22,6 +23,10 @@
       def unixScriptFile    = file getUnixScript()
       windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\BIN_PLACEHOLDER', '%APP_HOME%\\sys\\bin')
       windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\adminutil.jar', '%APP_HOME%\\sys\\bin')
+
+      // force cmd to switch to UTF-8 encoding
+      windowsScriptFile.text = "chcp 65001\n"+windowsScriptFile.text;
+
 
       unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/BIN_PLACEHOLDER', '$APP_HOME/sys/bin')
       unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/adminutil.jar', '$APP_HOME/sys/bin')
@@ -41,5 +46,5 @@
   }
 
 task install {
-    dependsOn installDist
+  dependsOn installDist
 }

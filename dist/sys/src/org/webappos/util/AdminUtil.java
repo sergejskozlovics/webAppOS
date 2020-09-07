@@ -6,16 +6,27 @@ import org.webappos.server.API;
 import org.webappos.server.ConfigEx;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class AdminUtil {
 	public static void main(String[] args) {
+		try {
+		    System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true, "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+		    System.out.println("VM does not support mandatory encoding UTF-8");
+		}
+		
 		API.initOfflineAPI();
 		if (args.length == 0) {
 			showHelpMessage();
+			System.exit(0);
 			return;
 		}
 		
@@ -57,7 +68,7 @@ public class AdminUtil {
 				showHelpMessage();
 				break;
 		}
-		
+
 		System.exit(0);
 	}
 	
