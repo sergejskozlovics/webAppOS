@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+The webAppOS ServerFSDriver web service allows to mount some server-side directory
+as a subdirectory in users' home directories. This may be useful when some server-side
+directory contains resources (e.g., icons) that can be shared between many users.
+<p>
+You should list your server-side directory in the webAppOS registry key "apps/ServerFSDriver.webservice/allowed_dirs".
+
+<p>
+The driver prefix to be used is "serverfs". If you wish to mount the desired server-side directory
+in the read-only mode, use the double-prefix "serverfs:readonly", e.g., "serverfs:readonly:/my/server-side/path".
+<p>
+To find out more about how file system drivers work and how file systems are mounted in the registry,
+look
+<a target="_blank" href="https://webappos.org/dev/doc/#File:API_Specifications/APIs_for_Drivers/File_System_Drivers.txt">here</a>.
+
+<p>
+
+</body>
+</html>
+
+

@@ -207,13 +207,33 @@ public class ServiceAdapter implements IServiceAdapter {
 			if (f.exists() && f.isDirectory()) {
 				// adding web-root handler followed by a servletClass instance...
 				DefaultServlet defaultServlet = new DefaultServlet() {
-					
+
+					// handle GET to an empty path via the servlet passed to the adapter, not via the default servlet							
+				    @Override
+				    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+				    throws ServletException, IOException {				    	
+				    	Servlet s = holder.getServlet();
+				    	
+				    	String pi = request.getPathInfo();
+				    	if (pi==null || pi.isEmpty() || pi.equals("/")) {				    						    						    		
+					    	try {
+						    	if (s!=null) {
+						    		s.service(request, response);
+						    		return;
+						    	}
+					    	}
+					    	catch(Throwable t) {
+					    	}
+				    	}
+				    		 
+				    	super.doGet(request, response);
+				    }
+
 					// handle POST via the servlet passed to the adapter, not via the default servlet 
 				    @Override
 				    protected void doPost(HttpServletRequest request, HttpServletResponse response)
 				    throws ServletException, IOException {
 				    	Servlet s = holder.getServlet();
-				    	System.out.println("MY POST "+s);
 				    	
 				    	try {
 					    	if (s!=null)
@@ -226,7 +246,7 @@ public class ServiceAdapter implements IServiceAdapter {
 				};
 				ServletHolder holderPwd = new ServletHolder("default", defaultServlet);
 				holderPwd.setInitParameter("resourceBase", webroot);				
-				//holderPwd.setInitParameter("dirAllowed","true");
+				holderPwd.setInitParameter("dirAllowed","false");
 		        holderPwd.setInitParameter("pathInfoOnly","true");
 		        
 				holderPwd.setInitParameter("useFileMappedBuffer", "false");
