@@ -296,4 +296,7 @@ public class FileUploadServlet extends HttpServlet
 			        
     }
  
+	protected void doGet ( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException {
+        response.sendRedirect("https://webappos.org/dev/doc/files/API_Specifications/APIs_of_Bundled_Apps___Services/FileUpload_Service_API-txt.html");
+	}
 }

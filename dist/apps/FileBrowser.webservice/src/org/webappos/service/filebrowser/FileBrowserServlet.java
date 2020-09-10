@@ -98,7 +98,7 @@ public class FileBrowserServlet extends HttpServlet {
 			
 			if (authorization == null) {
 				//ValidityChecker.checkRelativePath(path, false); // allow empty relative path
-				
+				response.sendRedirect("https://webappos.org/dev/doc/files/API_Specifications/APIs_of_Bundled_Apps___Services/FileBrowser_Service_API-txt.html");
 				return;
 			}
 			

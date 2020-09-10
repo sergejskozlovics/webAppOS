@@ -37,6 +37,12 @@ public class FileDownloadServlet extends HttpServlet
 	        if (pathToDownload == null)
 	        	pathToDownload = "";
 	        
+	        if (pathToDownload.equals("/doc") || pathToDownload.equals("/doc/")) {
+	        	response.sendRedirect("https://webappos.org/dev/doc/files/API_Specifications/APIs_of_Bundled_Apps___Services/FileDownload_Service_API-txt.html");
+	        	return;	        	
+	        }	        		        		        	
+	        	 
+		        
 	        if (pathToDownload.startsWith("/"))
 	        	pathToDownload = pathToDownload.substring(1);
 	        
