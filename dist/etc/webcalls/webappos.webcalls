@@ -386,7 +386,7 @@ webappos.uploadFileToCurrentProject(JSON)=staticjava:org.webappos.webcalls.FSAct
 
 
 ##
-# Function: getSupportedFileSystems
+# Function: renameActiveProject
 #
 #   Parameter:
 #     a JSON object
