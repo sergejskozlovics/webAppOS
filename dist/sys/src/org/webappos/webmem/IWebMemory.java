@@ -10,8 +10,8 @@ import lv.lumii.tda.raapi.RAAPI;
  * Provides access to web memory from the server-side Java code.
  * IWebMemory is an extension of the universal model repository interface RAAPI (Repository Access API).
  * 
- * @see <a href="/dev/raapi/javadoc/lv/lumii/tda/raapi/RAAPI.html">RAAPI Docs</a>
- * @see <a href="/dev/raapi/notes.html">Notes on RAAPI</a> 
+ * @see <a href="http://webappos.org/dev/raapi/javadoc/lv/lumii/tda/raapi/RAAPI.html">RAAPI Docs</a>
+ * @see <a href="http://webappos.org/dev/raapi/notes.html">Notes on RAAPI</a> 
  *
  */
 public interface IWebMemory extends RAAPI {
