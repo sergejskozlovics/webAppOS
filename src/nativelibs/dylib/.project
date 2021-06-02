@@ -80,16 +80,4 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>tda_unicode.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/src_tda_unicode/tda_unicode.c</locationURI>
-		</link>
-		<link>
-			<name>tda_unicode.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/src_tda_unicode/tda_unicode.h</locationURI>
-		</link>
-	</linkedResources>
 </projectDescription>

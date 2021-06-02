@@ -1,7 +1,9 @@
 #include "tda_unicode.h"
 
 #include <stdio.h>
-#include <conio.h>
+#include <curses.h>
+#include <string.h>
+#include <wchar.h>
 #include <string.h>
 
 // Example form http://msdn.microsoft.com/en-us/library/system.text.encoding.utf8(v=vs.80).aspx
