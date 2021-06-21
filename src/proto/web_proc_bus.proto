@@ -27,7 +27,12 @@ service WebProcessorBus {
 message WebProcessorCapabilities {
   string webProcessorName = 1;
   repeated string availableInstructionSets = 3;
-  repeated string cachedInstructionSets = 4;
+  repeated string cachedInstructionSetPatterns = 4;
+    /* can use patterns, e.g., "*" or "java*";
+       once the given instruction set s matches some pattern p and the webcall
+       is forwarded to this web proc,
+       all other instruction sets that match the same pattern p will be forwarded
+       to this web proc or the cache will be cleared */                      
   string webmemProtocol = 2;
 }
 
@@ -42,7 +47,7 @@ message WebProcessorCallback {
   }
   message ClearCacheRequest {
     string webmemUrl = 1;
-    string instructionSet = 2;
+    string instructionSetPattern = 2;
   }
   message DetachRequest {
   }
@@ -53,7 +58,7 @@ message WebProcessorCallback {
 
 message WebcallResult {
   string jsonResult = 1;
-  optional bool isFailure = 2; // must cleanup web memory
+  optional bool isFailure = 2; // must cleanup web memory; recover from the last snapshot or undo history
 }
 
 message WebMemoryChanges {
