@@ -2,12 +2,12 @@
 
 
   dependencies {
-    compile project(':sys')
-    compile files('../../sys/bin')
-    compile 'com.google.code.gson:gson:2.8.5'
-    compile 'commons-io:commons-io:2.6'
-    compile 'org.slf4j:slf4j-api:1.7.25'
-    compile 'org.eclipse.jetty:jetty-servlet:9.4.14.v20181114'
+    implementation project(':sys')
+    implementation files('../../sys/bin')
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+    implementation 'org.eclipse.jetty:jetty-servlet:9.4.14.v20181114'
   }
 
   sourceSets {

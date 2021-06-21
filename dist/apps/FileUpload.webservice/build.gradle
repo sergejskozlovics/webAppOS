@@ -2,12 +2,12 @@
 
 
   dependencies {
-    compile project(':sys')
-    compile files('../../sys/bin')
-    compile 'commons-io:commons-io:2.6'
-    compile 'commons-fileupload:commons-fileupload:1.4'
-    compile 'org.slf4j:slf4j-api:1.7.25'
-    compile 'org.eclipse.jetty:jetty-servlet:9.4.14.v20181114'
+    implementation project(':sys')
+    implementation files('../../sys/bin')
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'commons-fileupload:commons-fileupload:1.4'
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+    implementation 'org.eclipse.jetty:jetty-servlet:9.4.14.v20181114'
   }
 
   sourceSets {

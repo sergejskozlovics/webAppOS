@@ -4,10 +4,10 @@ plugins {
 }
 
 dependencies {
-	compile project(':sys')
-	compile files('../../sys/bin')
-	compile 'org.slf4j:slf4j-api:1.7.25'
-	compile 'org.codehaus.jettison:jettison:1.4.0'
+	implementation project(':sys')
+	implementation files('../../sys/bin')
+	implementation 'org.slf4j:slf4j-api:1.7.25'
+	implementation 'org.codehaus.jettison:jettison:1.4.0'
 }
 
 sourceSets {

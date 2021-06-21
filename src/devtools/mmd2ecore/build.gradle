@@ -8,7 +8,7 @@
   }
 
   dependencies {
-    compile project(':sys')
+    implementation project(':sys')
   }
 
   distZip.enabled = false

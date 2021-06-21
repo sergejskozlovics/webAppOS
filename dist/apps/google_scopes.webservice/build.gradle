@@ -10,14 +10,14 @@ extraLibs
 
 
   dependencies {
-    compile project(':sys')
-    compile files('../../sys/bin')
-    compile 'com.google.code.gson:gson:2.8.5'
-    compile 'commons-io:commons-io:2.6'
-    compile 'org.apache.directory.studio:org.apache.commons.codec:1.8'
-    compile 'org.codehaus.jettison:jettison:1.4.0'
-    compile 'org.slf4j:slf4j-api:1.7.25'
-    compile 'org.eclipse.jetty:jetty-servlet:9.4.14.v20181114'
+    implementation project(':sys')
+    implementation files('../../sys/bin')
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'org.apache.directory.studio:org.apache.commons.codec:1.8'
+    implementation 'org.codehaus.jettison:jettison:1.4.0'
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+    implementation 'org.eclipse.jetty:jetty-servlet:9.4.14.v20181114'
     extraLibs group: 'com.google.api-client', name: 'google-api-client', version: '1.30.9'
     extraLibs group: 'com.google.oauth-client', name: 'google-oauth-client', version: '1.31.0'
     extraLibs group: 'com.google.http-client', name: 'google-http-client', version: '1.35.0'
