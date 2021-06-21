@@ -1,0 +1,64 @@
+// Copyright 2021 Sergejs Kozlovics
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "org.webappos.webproc";
+// option java_outer_classname = "WebProcessorBusProto";
+option csharp_namespace = "Webappos.Webproc";
+
+import "google/protobuf/empty.proto";
+package webappos.webproc;
+
+service RemoteWebProcessor {
+  rpc enroll(EnrollRequest) returns (google.protobuf.Empty) {}
+}
+
+message EnrollRequest {
+  string webProcessorName = 1;
+  string webProcessorBusAddress = 2;
+}
+
+service WebProcessorBus {
+  rpc attach(WebProcessorCapabilities) returns (stream WebProcessorCallback) {}
+  rpc resolve(WebcallResult) returns (google.protobuf.Empty) {}
+  rpc sync(WebMemoryChanges) returns (google.protobuf.Empty) {}
+}
+
+message WebProcessorCapabilities {
+  string webProcessorName = 1;
+  repeated string availableInstructionSets = 3;
+  repeated string cachedInstructionSets = 4;
+  string webmemProtocol = 2;
+}
+
+message WebProcessorCallback {
+  message WebcallRequest {
+    string actionName = 1;
+    optional int64 thisReference = 2;
+    string jsonArgument = 3;
+    optional string webmemUrl = 4; // shm:dir or grpc:URL or rmi:URL or ws://...
+    optional string login = 5;
+    optional string appName = 6;
+  }
+  message ClearCacheRequest {
+    string webmemUrl = 1;
+    string instructionSet = 2;
+  }
+  message DetachRequest {
+  }
+  repeated WebcallRequest = 1;
+  repeated ClearCacheRequest = 2;
+  repeated DetachRequest = 3;
+}
+
+message WebcallResult {
+  string jsonResult = 1;
+  optional bool isFailure = 2; // must cleanup web memory
+}
+
+message WebMemoryChanges {
+  string webmemUrl = 1;
+  int64 nActions = 2;
+  repeated double actions = 3;
+  repeated string strings = 4;
+}
