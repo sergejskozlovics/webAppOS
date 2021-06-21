@@ -378,17 +378,17 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 	}
 	private static Credential getCredentials(String login) {
 		// Load client secrets.
-		WebServiceProperties properties = API.propertiesManager
+/*		WebServiceProperties properties = API.propertiesManager
 				.getWebServicePropertiesByFullName("google_scopes.webservice");
 		String client_id = properties.properties
 				.getProperty("drive_client_id", null);
 		String client_secret = properties.properties
-				.getProperty("drive_client_secret", null);
+				.getProperty("drive_client_secret", null);*/
 		JsonElement el = API.registry.getValue("xusers/"+login+"/google_scopes/google_drive_token");
 		if (el==null)
 			return null;
 		String token = el.getAsString();
-
+/*
 		GoogleClientSecrets.Details web = new GoogleClientSecrets.Details();
 
 		web.setClientId(client_id);
@@ -396,7 +396,7 @@ public class GoogleDriveDriver implements org.webappos.fs.IFileSystem {
 
 		GoogleClientSecrets clientSecrets = new GoogleClientSecrets();
 
-		clientSecrets.setWeb(web);
+		clientSecrets.setWeb(web);*/
 
 		return createCredentialWithAccessTokenOnly(token);
 	}

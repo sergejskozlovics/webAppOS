@@ -81,7 +81,7 @@ public class GoogleServlet extends HttpServlet
 				// Get profile information from payload
 				String email = payload.getEmail();
 				boolean emailVerified = payload.getEmailVerified();
-				String expirationTime = UTCDate.stringify(new Date(payload.getExpirationTimeSeconds() * 1000));
+				String expirationTime = UTCDate.stringify(new Date(payload.getExpirationTimeSeconds() * 1000)); //TODO:!
 
 				String wsToken;
 				String userExpirationTime; // expiration time in UserData
@@ -101,7 +101,7 @@ public class GoogleServlet extends HttpServlet
 					if(userData == null) {
 						// Register user
 						WebServiceProperties p = API.propertiesManager.getWebServicePropertiesByFullName("Login.webservice");
-						p.properties.setProperty("signup_policy", "email");
+						p.properties.setProperty("signup_policy", "email");  // TODO!
 
 						// Print to console Response status (OK; FAILED; PROCESSING)
 						UsersManager.addUser(email, true);
