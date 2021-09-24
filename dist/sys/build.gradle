@@ -8,7 +8,6 @@
   project.buildDir = file('../../build')
 
   repositories {
-      jcenter()
       mavenCentral()
   }
 
@@ -118,7 +117,7 @@ dependencies {
 
   // Define the main class for the application
   application {
-    mainClassName = 'org.webappos.server.Gate'
+    mainClass.set("org.webappos.server.Gate")
     applicationDefaultJvmArgs = ['-Dlog4j.configurationFile=LOG4J_CONF_PLACEHOLDER','-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.Slf4jLog']
   }
 

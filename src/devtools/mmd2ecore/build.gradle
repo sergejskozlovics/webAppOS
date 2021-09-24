@@ -4,7 +4,7 @@
 
   // Define the main class for the application
   application {
-    mainClassName = 'lv.lumii.tda.kernel.mmdparser.MMD2Ecore'
+    mainClass.set("lv.lumii.tda.kernel.mmdparser.MMD2Ecore")
   }
 
   dependencies {

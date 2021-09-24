@@ -2,7 +2,6 @@
   apply plugin: 'application'
 
   repositories {
-      jcenter()
       mavenCentral()
 
   // Eclipse OCL

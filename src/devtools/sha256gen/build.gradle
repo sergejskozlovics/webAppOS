@@ -4,7 +4,7 @@
 
   // Define the main class for the application
   application {
-    mainClassName = 'org.webappos.util.SHA256Gen'
+    mainClass.set("org.webappos.util.SHA256Gen")
   }
 
   dependencies {

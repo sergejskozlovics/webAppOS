@@ -3,7 +3,7 @@
 
   // Define the main class for the application
   application {
-    mainClassName = 'org.webappos.util.AdminUtil'
+    mainClass.set("org.webappos.util.AdminUtil")
   }
 
   dependencies {
